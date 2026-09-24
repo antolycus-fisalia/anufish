@@ -23,9 +23,9 @@ Route::get('/admin', function (): Response {
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('login.store');
     Route::get('/register', [RegisterViewController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterViewController::class, 'store'])->name('register.store');
+    Route::post('/register', [RegisterViewController::class, 'store'])->middleware('throttle:registration')->name('register.store');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
