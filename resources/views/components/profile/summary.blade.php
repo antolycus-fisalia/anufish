@@ -21,14 +21,14 @@
                 text-white
             "
         >
-            @if ($user->photo)
+            @if ($user->foto_profil)
                 <img
-                    src="{{ $user->photo }}"
-                    alt="{{ $user->name }}"
+                    src="{{ $user->foto_profil }}"
+                    alt="{{ $user->nama }}"
                     class="h-full w-full object-cover"
                 >
             @else
-                {{ collect(explode(' ', $user->name))
+                {{ collect(explode(' ', $user->nama))
                     ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
                     ->take(2)
                     ->join('') }}
@@ -37,7 +37,7 @@
 
         <div>
             <h3 class="text-xl font-bold">
-                {{ $user->name }}
+                {{ $user->nama }}
             </h3>
 
             <p class="text-anufish-muted">
