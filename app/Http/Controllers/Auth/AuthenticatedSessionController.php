@@ -20,6 +20,11 @@ class AuthenticatedSessionController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+            'password.string' => 'Password harus berupa teks.',
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -31,5 +36,16 @@ class AuthenticatedSessionController extends Controller
         return back()->withErrors([
             'email' => 'Email atau kata sandi salah. Silakan coba lagi.',
         ])->onlyInput('email');
+    }
+
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
 }
