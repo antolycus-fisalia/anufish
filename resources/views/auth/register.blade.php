@@ -17,10 +17,7 @@
 
     <main class="flex min-h-screen items-center justify-center px-4 py-8">
 
-        <section
-            class="w-full max-w-md rounded-2xl border border-slate-200
-                   bg-white p-6 shadow-sm sm:p-8"
-        >
+        <x-ui.card class="w-full max-w-md shadow-sm">
 
             {{-- Header --}}
             <div class="mb-6 text-center">
@@ -45,210 +42,90 @@
             </div>
 
 
+            {{-- Alert global --}}
+            @if ($errors->any())
+                <x-ui.alert
+                    type="error"
+                    class="mb-5"
+                >
+                    Periksa kembali data registrasi Anda.
+                </x-ui.alert>
+            @endif
+
+
             {{-- Form Registrasi --}}
             <form
                 method="POST"
                 action="{{ route('register.store') }}"
                 class="space-y-5"
             >
-
                 @csrf
 
 
                 {{-- Nama --}}
-                <div>
-
-                    <label
-                        for="nama"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
-                    >
-                        Nama Lengkap
-                    </label>
-
-                    <input
-                        id="nama"
-                        name="nama"
-                        type="text"
-                        value="{{ old('nama') }}"
-                        autocomplete="name"
-                        placeholder="Masukkan nama lengkap"
-                        required
-
-                        class="w-full rounded-xl border px-3.5 py-2.5
-                               text-sm outline-none transition
-
-                               @error('nama')
-                                   border-rose-400
-                                   focus:border-rose-500
-                                   focus:ring-4
-                                   focus:ring-rose-100
-                               @else
-                                   border-slate-300
-                                   focus:border-anufish-cyan
-                                   focus:ring-4
-                                   focus:ring-cyan-100
-                               @enderror"
-                    >
-
-                    @error('nama')
-                        <p class="mt-1.5 text-sm font-medium text-rose-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-
-                </div>
+                <x-ui.input
+                    label="Nama Lengkap"
+                    name="nama"
+                    type="text"
+                    value="{{ old('nama') }}"
+                    autocomplete="name"
+                    placeholder="Masukkan nama lengkap"
+                    required
+                />
 
 
                 {{-- Email --}}
-                <div>
-
-                    <label
-                        for="email"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
-                    >
-                        Email
-                    </label>
-
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value="{{ old('email') }}"
-                        autocomplete="email"
-                        placeholder="nama@email.com"
-                        required
-
-                        class="w-full rounded-xl border px-3.5 py-2.5
-                               text-sm outline-none transition
-
-                               @error('email')
-                                   border-rose-400
-                                   focus:border-rose-500
-                                   focus:ring-4
-                                   focus:ring-rose-100
-                               @else
-                                   border-slate-300
-                                   focus:border-anufish-cyan
-                                   focus:ring-4
-                                   focus:ring-cyan-100
-                               @enderror"
-                    >
-
-                    @error('email')
-                        <p class="mt-1.5 text-sm font-medium text-rose-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-
-                </div>
+                <x-ui.input
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value="{{ old('email') }}"
+                    autocomplete="email"
+                    placeholder="nama@email.com"
+                    required
+                />
 
 
                 {{-- Password --}}
-                <div>
+                <x-ui.input
+                    label="Password"
+                    name="password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Minimal 8 karakter"
+                    required
+                />
 
-                    <label
-                        for="password"
-                        class="mb-1.5 block text-sm font-semibold text-slate-700"
-                    >
-                        Password
-                    </label>
+                <p class="-mt-3 text-xs text-anufish-muted">
+                    Gunakan minimal 8 karakter.
+                </p>
 
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        autocomplete="new-password"
-                        placeholder="Minimal 8 karakter"
-                        required
 
-                        class="w-full rounded-xl border px-3.5 py-2.5
-                               text-sm outline-none transition
+                {{-- Konfirmasi Password --}}
+                <x-ui.input
+                    label="Konfirmasi Password"
+                    name="password_confirmation"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Ulangi password"
+                    required
+                />
 
-                               @error('password')
-                                   border-rose-400
-                                   focus:border-rose-500
-                                   focus:ring-4
-                                   focus:ring-rose-100
-                               @else
-                                   border-slate-300
-                                   focus:border-anufish-cyan
-                                   focus:ring-4
-                                   focus:ring-cyan-100
-                               @enderror"
-                    >
 
-                    <p class="mt-1.5 text-xs text-anufish-muted">
-                        Gunakan minimal 8 karakter.
-                    </p>
-
-                    @error('password')
-                        <p class="mt-1.5 text-sm font-medium text-rose-600">
-                            {{ $message }}
-                        </p>
-                    @enderror
-
-                </div>
-
-{{-- Konfirmasi Password --}}
-<div>
-
-    <label
-        for="password_confirmation"
-        class="mb-1.5 block text-sm font-semibold text-slate-700"
-    >
-        Konfirmasi Password
-    </label>
-
-    <input
-        id="password_confirmation"
-        name="password_confirmation"
-        type="password"
-        autocomplete="new-password"
-        placeholder="Ulangi password"
-        required
-
-        class="w-full rounded-xl border px-3.5 py-2.5
-               text-sm outline-none transition
-
-               @error('password')
-                   border-rose-400
-                   focus:border-rose-500
-                   focus:ring-4
-                   focus:ring-rose-100
-               @else
-                   border-slate-300
-                   focus:border-anufish-cyan
-                   focus:ring-4
-                   focus:ring-cyan-100
-               @enderror"
-    >
-
-            </div>
-
-                {{-- Tombol Daftar --}}
-                <button
+                {{-- Tombol --}}
+                <x-ui.button
                     type="submit"
-                    class="w-full rounded-xl
-                           bg-gradient-to-r
-                           from-anufish-blue to-anufish-cyan
-                           px-4 py-3
-                           text-sm font-semibold text-white
-                           shadow-sm transition
-                           hover:opacity-95
-                           focus:outline-none
-                           focus:ring-4
-                           focus:ring-cyan-200"
+                    variant="primary"
+                    class="w-full"
                 >
                     Daftar
-                </button>
+                </x-ui.button>
 
             </form>
 
 
-            {{-- Navigasi Login --}}
-            <div
-                class="mt-6 border-t border-slate-100 pt-5 text-center"
-            >
+            {{-- Navigasi login --}}
+            <div class="mt-6 border-t border-slate-100 pt-5 text-center">
 
                 <p class="text-sm text-anufish-muted">
 
@@ -256,8 +133,7 @@
 
                     <a
                         href="{{ route('login') }}"
-                        class="font-semibold text-anufish-blue
-                               hover:text-anufish-cyan"
+                        class="font-semibold text-anufish-blue hover:text-anufish-cyan"
                     >
                         Masuk
                     </a>
@@ -266,7 +142,7 @@
 
             </div>
 
-        </section>
+        </x-ui.card>
 
     </main>
 
