@@ -1,23 +1,5 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Registrasi - Anufish</title>
-
-    @vite('resources/css/app.css')
-</head>
-
-<body class="min-h-screen bg-anufish-background text-anufish-text">
-
-    <main class="flex min-h-screen items-center justify-center px-4 py-8">
-
-        <x-ui.card class="w-full max-w-md shadow-sm">
+<x-layouts.guest>
+    <x-ui.card class="w-full max-w-md shadow-sm">
 
             {{-- Header --}}
             <div class="mb-6 text-center">
@@ -143,8 +125,4 @@
             </div>
 
         </x-ui.card>
-
-    </main>
-
-</body>
-</html>
+</x-layouts.guest>
