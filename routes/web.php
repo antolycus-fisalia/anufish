@@ -25,12 +25,14 @@ Route::get('/profile', [ProfileController::class, 'index'])
     ->middleware('auth')
     ->name('profile.index');
 
+Route::put('/profile', [ProfileController::class, 'update'])
+    ->name('profile.update')
+    ->middleware('auth');
 
 Route::middleware('guest')->group(function () {
 
     Route::get('/register', [RegisterViewController::class, 'create'])
         ->name('register');
-
 
     /*
      * Route sementara.
@@ -56,29 +58,22 @@ Route::middleware('guest')->group(function () {
                 'confirmed',
             ],
         ], [
-            'nama.required' =>
-                'Nama wajib diisi.',
+            'nama.required' => 'Nama wajib diisi.',
 
-            'email.required' =>
-                'Email wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
 
-            'email.email' =>
-                'Format email tidak valid.',
+            'email.email' => 'Format email tidak valid.',
 
-            'password.required' =>
-                'Password wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
 
-            'password.min' =>
-                'Password minimal 8 karakter.',
+            'password.min' => 'Password minimal 8 karakter.',
 
-            'password.confirmed' =>
-                'Konfirmasi password tidak sama.',
+            'password.confirmed' => 'Konfirmasi password tidak sama.',
         ]);
 
         return back();
 
     })->name('register.store');
-
 
     /*
      * Sementara karena halaman login belum dikerjakan

@@ -10,7 +10,7 @@
 
     <form
         method="POST"
-        action="#"
+        action="{{ route('profile.update') }}"
         enctype="multipart/form-data"
         class="space-y-5"
         x-data="{
@@ -37,11 +37,12 @@
     >
 
         @csrf
+        @method('PUT')
 
         <x-ui.input
-            name="name"
+            name="nama"
             label="Nama Lengkap"
-            :value="old('name', $user->name)"
+            :value="old('nama', $user->nama)"
             required
         />
 
@@ -82,7 +83,7 @@
 
                     <template x-if="!preview">
                         <span>
-                            {{ collect(explode(' ', $user->name))
+                            {{ collect(explode(' ', $user->nama))
                                 ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
                                 ->take(2)
                                 ->join('') }}
