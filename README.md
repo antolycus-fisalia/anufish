@@ -1,6 +1,6 @@
 # Anufish
 
-Anufish adalah aplikasi web berbasis Laravel. Struktur saat ini menyediakan halaman beranda, tentang, fitur, dan profil pada rute `/`, `/about`, `/feature`, dan `/profile`. Basis datanya juga sudah memiliki struktur untuk artikel dan riwayat pemindaian.
+Anufish adalah aplikasi web berbasis Laravel. Struktur saat ini menyediakan halaman beranda, tentang, fitur, dan profil pada rute `/`, `/about` (alias `/tentang`), `/feature` (alias `/fitur`), dan `/profile`. Basis datanya juga sudah memiliki struktur untuk artikel dan riwayat pemindaian.
 
 README ini menjadi panduan utama bagi anggota tim baru untuk menyiapkan proyek, memahami bagian frontend, dan mengikuti alur kontribusi.
 
