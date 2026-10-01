@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@theme {
+    --color-anufish-navy: #124F7C;
+    --color-anufish-teal: #197E8F;
+    --color-anufish-cyan: #2AB7CB;
+    --color-anufish-pale: #EFF9FB;
+    --color-anufish-muted: #66798B;
+    --color-anufish-border: #B9DDE3;
+}
+
 @source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
 @source "../../storage/framework/views/*.php";
 @source "../**/*.blade.php";
