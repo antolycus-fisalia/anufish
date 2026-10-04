@@ -1,0 +1,77 @@
+@extends('layouts.guest')
+
+@section('title', 'Registrasi - Anufish')
+
+@section('page-content')
+    <x-auth.card
+        title="Buat akun baru"
+        description="Daftar untuk mulai menggunakan Anufish."
+    >
+        <form
+            class="space-y-4"
+            x-data="{ submitting: false }"
+            x-on:submit.prevent="submitting = true"
+        >
+            <x-ui.form-field
+                label="Nama"
+                name="nama"
+                :value="old('nama')"
+                placeholder="Nama lengkap"
+                autocomplete="name"
+                :required="true"
+                :autofocus="true"
+            />
+
+            <x-ui.form-field
+                label="Email"
+                name="email"
+                type="email"
+                :value="old('email')"
+                placeholder="nama@contoh.com"
+                autocomplete="email"
+                :required="true"
+            />
+
+            <x-auth.password-field
+                label="Password"
+                name="password"
+                placeholder="Minimal 8 karakter"
+                autocomplete="new-password"
+                :required="true"
+            />
+
+            <x-auth.password-field
+                label="Konfirmasi Password"
+                name="password_confirmation"
+                placeholder="Ulangi password"
+                autocomplete="new-password"
+                :required="true"
+            />
+
+            <x-ui.button
+                type="submit"
+                class="w-full"
+                x-bind:disabled="submitting"
+            >
+                <span x-show="! submitting">
+                    Daftar
+                </span>
+
+                <span x-cloak x-show="submitting">
+                    Memproses...
+                </span>
+            </x-ui.button>
+        </form>
+
+        <p class="mt-5 text-center text-sm text-anufish-muted">
+            Sudah punya akun?
+
+            <a
+                href="{{ route('login') }}"
+                class="font-bold text-anufish-teal hover:underline"
+            >
+                Login
+            </a>
+        </p>
+    </x-auth.card>
+@endsection

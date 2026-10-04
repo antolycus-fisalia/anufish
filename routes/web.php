@@ -17,7 +17,7 @@ Route::middleware('guest')->group(function () {
         return view('pages.auth.login');
     })->name('login');
 
-    // Route::get('/register', function () {
-    //     return view('auth.register');
-    // })->name('register');
+    Route::get('/register', function () {
+        return view('pages.auth.register');
+    })->name('register');
 });
