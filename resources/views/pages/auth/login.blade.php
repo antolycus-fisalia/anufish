@@ -44,13 +44,9 @@
             </x-ui.button>
         </form>
 
-        <p class="mt-5 text-center tex
-        t-sm text-anufish-muted">
+        <p class="mt-5 text-center text-sm text-anufish-muted">
             Belum punya akun?
-            <a
-                href="{{ route('register') }}"
-                class="font-bold text-anufish-teal"
-            >
+            <a href="{{ route('register') }}" class="font-bold text-anufish-teal hover:underline">
                 Daftar
             </a>
         </p>

@@ -1,13 +1,19 @@
 @extends('layouts.guest')
 
-@section('title', 'Daftar - Anufish')
+@section('title', 'Registrasi - Anufish')
 
 @section('page-content')
     <x-auth.card
-        title="Registrasi Pengguna"
-        description="Buat akun baru untuk menggunakan Anufish."
+        title="Buat akun baru"
+        description="Daftar untuk mulai menggunakan Anufish."
     >
-        <form action="{{ route('register.store') }}" method="POST" class="space-y-4">
+        <form
+            action="{{ route('register.store') }}"
+            method="POST"
+            class="space-y-4"
+            x-data="{ submitting: false }"
+            x-on:submit="submitting = true"
+        >
             @csrf
 
             <x-ui.form-field
@@ -47,8 +53,18 @@
                 :required="true"
             />
 
-            <x-ui.button type="submit" class="w-full">
-                Daftar
+            <x-ui.button
+                type="submit"
+                class="w-full"
+                x-bind:disabled="submitting"
+            >
+                <span x-show="! submitting">
+                    Daftar
+                </span>
+
+                <span x-cloak x-show="submitting">
+                    Memproses...
+                </span>
             </x-ui.button>
         </form>
 
@@ -56,7 +72,7 @@
             Sudah punya akun?
             <a
                 href="{{ route('login') }}"
-                class="font-bold text-anufish-teal"
+                class="font-bold text-anufish-teal hover:underline"
             >
                 Login
             </a>
