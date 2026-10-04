@@ -7,6 +7,16 @@
         title="Login Pengguna"
         description="Gunakan email dan password untuk masuk ke dashboard."
     >
+
+        @if (session('success'))
+    <div
+        class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
+        role="status"
+    >
+        {{ session('success') }}
+    </div>
+        @endif
+
         <form action="{{ route('login') }}" method="POST" class="space-y-4">
             @csrf
 

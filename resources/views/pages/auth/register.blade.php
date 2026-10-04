@@ -8,14 +8,19 @@
         description="Daftar untuk mulai menggunakan Anufish."
     >
         <form
+            action="{{ route('register.store') }}"
+            method="POST"
             class="space-y-4"
             x-data="{ submitting: false }"
-            x-on:submit.prevent="submitting = true"
+            x-on:submit="submitting = true"
         >
+            @csrf
+
             <x-ui.form-field
                 label="Nama"
-                name="nama"
-                :value="old('nama')"
+                name="name"
+                type="text"
+                :value="old('name')"
                 placeholder="Nama lengkap"
                 autocomplete="name"
                 :required="true"
@@ -65,7 +70,6 @@
 
         <p class="mt-5 text-center text-sm text-anufish-muted">
             Sudah punya akun?
-
             <a
                 href="{{ route('login') }}"
                 class="font-bold text-anufish-teal hover:underline"
