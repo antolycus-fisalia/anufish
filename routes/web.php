@@ -16,11 +16,11 @@ Route::middleware('guest')->group(function () {
         return view('pages.auth.login');
     })->name('login');
 
-    Route::get('/register', function () {
-        return view('pages.auth.register');
-    })->name('register');
+    Route::controller(AuthController::class)->group(function () {
+        Route::get('/register', 'create')->name('register');
 
-    Route::post('/register', [AuthController::class, 'register'])
-        ->middleware('throttle:register')
-        ->name('register.store');
+        Route::post('/register', 'register')
+            ->middleware('throttle:register')
+            ->name('register.store');
+    });
 });

@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+
+    public function create()
+    {
+        return view('pages.auth.register');
+    }
+
     public function register(RegisterRequest $request): RedirectResponse
     {
         $data = $request->validated();
