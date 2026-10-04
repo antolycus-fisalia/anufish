@@ -36,7 +36,9 @@
 
         <p class="mt-5 text-center text-sm text-anufish-muted">
             Belum punya akun?
-            <span class="font-bold text-anufish-teal">Daftar</span>
+            <a href="{{ route('register') }}" class="font-bold text-anufish-teal hover:underline">
+                Daftar
+            </a>
         </p>
     </x-auth.card>
 @endsection
