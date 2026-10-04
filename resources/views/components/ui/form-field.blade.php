@@ -8,6 +8,7 @@
     'autocomplete' => null,
     'required' => false,
     'autofocus' => false,
+    'disabled' => false,
 ])
 
 @php
@@ -33,9 +34,5 @@
             'border-anufish-border hover:border-anufish-cyan focus:border-anufish-teal focus:ring-4 focus:ring-anufish-pale' => ! $hasError,
         ]) }}>
 
-    @error($name)
-        <p id="{{ $fieldId }}-error" class="mt-2 text-sm font-medium text-rose-600" role="alert">
-            {{ $message }}
-        </p>
-    @enderror
+    <x-ui.validation-error :name="$name" :id="$fieldId" />
 </div>

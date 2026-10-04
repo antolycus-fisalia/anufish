@@ -5,6 +5,7 @@
     'placeholder' => null,
     'autocomplete' => null,
     'required' => false,
+    'disabled' => false,
 ])
 
 @php
@@ -23,10 +24,11 @@
             @if ($placeholder) placeholder="{{ $placeholder }}" @endif
             @if ($autocomplete) autocomplete="{{ $autocomplete }}" @endif
             @if ($required) required @endif
+            @if ($disabled) disabled @endif
             aria-invalid="{{ $hasError ? 'true' : 'false' }}"
             @if ($hasError) aria-describedby="{{ $fieldId }}-error" @endif
             {{ $attributes->class([
-                'block w-full rounded-lg border bg-white px-4 py-3 pr-12 text-base text-anufish-navy shadow-sm outline-none transition placeholder:text-anufish-muted sm:text-sm',
+                'block w-full rounded-lg border bg-white px-4 py-3 pr-12 text-base text-anufish-navy shadow-sm outline-none transition placeholder:text-anufish-muted sm:text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-60',
                 'border-rose-300 ring-1 ring-rose-100 focus:border-rose-500 focus:ring-4 focus:ring-rose-100' => $hasError,
                 'border-anufish-border hover:border-anufish-cyan focus:border-anufish-teal focus:ring-4 focus:ring-anufish-pale' => ! $hasError,
             ]) }}>
@@ -50,9 +52,5 @@
         </button>
     </div>
 
-    @error($name)
-        <p id="{{ $fieldId }}-error" class="mt-2 text-sm font-medium text-rose-600" role="alert">
-            {{ $message }}
-        </p>
-    @enderror
+    <x-ui.validation-error :name="$name" :id="$fieldId" />
 </div>
