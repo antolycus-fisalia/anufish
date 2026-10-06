@@ -31,12 +31,6 @@
                     :required="true"
                     :autofocus="true"
                 />
-
-                @error('email')
-                    <p class="mt-1 text-sm text-red-600">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <div>
@@ -47,12 +41,6 @@
                     autocomplete="current-password"
                     :required="true"
                 />
-
-                @error('password')
-                    <p class="mt-1 text-sm text-red-600">
-                        {{ $message }}
-                    </p>
-                @enderror
             </div>
 
             <x-ui.button type="submit" class="w-full">
