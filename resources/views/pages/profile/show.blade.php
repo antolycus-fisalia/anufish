@@ -5,25 +5,7 @@
 @section('page-content')
     <div
         class="mx-auto max-w-3xl"
-        x-data="{
-            preview: null,
-            submitting: false,
-
-            previewPhoto(event) {
-                const file = event.target.files[0];
-
-                if (!file) {
-                    this.preview = null;
-                    return;
-                }
-
-                if (this.preview) {
-                    URL.revokeObjectURL(this.preview);
-                }
-
-                this.preview = URL.createObjectURL(file);
-            }
-        }"
+        x-data="profileForm"
     >
         {{-- Header halaman --}}
         <div class="mb-6">
@@ -47,31 +29,30 @@
         @endif
 
         {{-- Card profil --}}
-        <div
-            class="rounded-2xl border border-anufish-border bg-white p-6 shadow-sm sm:p-8"
-        >
+        <div class="rounded-2xl border border-anufish-border bg-white p-6 shadow-sm sm:p-8">
             {{-- Ringkasan profil --}}
             <div class="mb-8 flex flex-col items-center gap-4 sm:flex-row">
+
                 {{-- Foto profil --}}
                 <div
                     class="size-24 shrink-0 overflow-hidden rounded-full border border-anufish-border bg-anufish-pale"
                 >
-                    {{-- Preview foto yang baru dipilih --}}
-                    <template x-if="preview">
+                    {{-- Preview foto baru --}}
+                    <template x-if="previewUrl">
                         <img
-                            :src="preview"
+                            :src="previewUrl"
                             alt="Preview foto profil"
                             class="size-full object-cover"
                         >
                     </template>
 
-                    {{-- Foto profil saat ini --}}
-                    <template x-if="!preview">
+                    {{-- Foto tersimpan --}}
+                    <template x-if="!previewUrl">
                         <div class="size-full">
-                            @if ($user->foto_profil)
+                            @if ($user->profile_photo_path)
                                 <img
-                                    src="{{ asset('storage/' . $user->foto_profil) }}"
-                                    alt="Foto profil {{ $user->nama }}"
+                                    src="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                    alt="Foto profil {{ $user->name }}"
                                     class="size-full object-cover"
                                 >
                             @else
@@ -79,17 +60,17 @@
                                     class="flex size-full items-center justify-center text-2xl font-bold text-anufish-navy"
                                     aria-label="Inisial pengguna"
                                 >
-                                    {{ strtoupper(substr($user->nama, 0, 1)) }}
+                                    {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                             @endif
                         </div>
                     </template>
                 </div>
 
-                {{-- Data profil aktif --}}
+                {{-- Data profil --}}
                 <div class="text-center sm:text-left">
                     <h2 class="text-xl font-bold text-anufish-navy">
-                        {{ $user->nama }}
+                        {{ $user->name }}
                     </h2>
 
                     <p class="mt-1 text-sm text-anufish-muted">
@@ -106,15 +87,20 @@
 
             {{-- Form edit profil --}}
             <form
-                class="space-y-5"
+                action="{{ route('profile.update') }}"
+                method="POST"
                 enctype="multipart/form-data"
-                x-on:submit.prevent="submitting = true"
+                class="space-y-5"
+                x-on:submit="startSubmitting"
             >
+                @csrf
+                @method('PUT')
+
                 {{-- Nama --}}
                 <x-ui.form-field
                     label="Nama"
-                    name="nama"
-                    :value="old('nama', $user->nama)"
+                    name="name"
+                    :value="old('name', $user->name)"
                     autocomplete="name"
                     :required="true"
                 />
@@ -132,15 +118,15 @@
                 {{-- Foto profil --}}
                 <div>
                     <label
-                        for="foto_profil"
+                        for="profile_photo"
                         class="mb-2 block text-sm font-semibold text-anufish-navy"
                     >
                         Foto Profil
                     </label>
 
                     <input
-                        id="foto_profil"
-                        name="foto_profil"
+                        id="profile_photo"
+                        name="profile_photo"
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
                         x-on:change="previewPhoto($event)"
@@ -156,8 +142,8 @@
                     </p>
 
                     <x-ui.validation-error
-                        name="foto_profil"
-                        id="foto_profil"
+                        name="profile_photo"
+                        id="profile_photo"
                     />
                 </div>
 
