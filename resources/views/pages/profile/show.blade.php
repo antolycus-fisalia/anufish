@@ -88,10 +88,14 @@
 
             {{-- Form edit profil --}}
             <form
-                class="space-y-5"
+                action="{{ route('profile.update') }}"
+                method="POST"
                 enctype="multipart/form-data"
-                x-on:submit.prevent="startSubmitting()"
-            >
+                class="space-y-5"
+                @submit="startSubmitting">
+
+                @csrf
+                @method('PUT')
                 {{-- Nama --}}
                 <x-ui.form-field
                     label="Nama"
@@ -125,12 +129,34 @@
                         name="profile_photo"
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
-                        x-on:change="previewPhoto($event)"
-                        class="block w-full rounded-lg border border-anufish-border bg-white px-4 py-3 text-sm text-anufish-navy shadow-sm outline-none transition
-                               file:mr-4 file:rounded-md file:border-0 file:bg-anufish-pale file:px-4 file:py-2
-                               file:text-sm file:font-semibold file:text-anufish-teal
-                               hover:border-anufish-cyan
-                               focus:border-anufish-teal focus:ring-4 focus:ring-anufish-pale"
+                        @change="previewPhoto"
+                        class="
+    block w-full
+    rounded-lg
+    border border-anufish-border
+    bg-white
+    px-4 py-3
+    text-sm text-anufish-navy
+    shadow-sm
+    outline-none
+    transition
+
+    file:mr-4
+    file:rounded-md
+    file:border-0
+    file:bg-anufish-pale
+    file:px-4
+    file:py-2
+    file:text-sm
+    file:font-semibold
+    file:text-anufish-teal
+
+    hover:border-anufish-cyan
+
+    focus:border-anufish-teal
+    focus:ring-4
+    focus:ring-anufish-pale
+"
                     >
 
                     <p class="mt-2 text-sm leading-6 text-anufish-muted">
@@ -150,16 +176,16 @@
                         class="w-full sm:w-auto"
                         x-bind:disabled="submitting"
                     >
-                        <span x-show="!submitting">
-                            Simpan Perubahan
-                        </span>
+    <span x-show="!submitting">
+        Simpan Perubahan
+    </span>
 
                         <span
                             x-cloak
                             x-show="submitting"
                         >
-                            Menyimpan...
-                        </span>
+        Menyimpan...
+    </span>
                     </x-ui.button>
                 </div>
             </form>

@@ -11,12 +11,12 @@ use Throwable;
 
 class ProfileController extends Controller
 {
-//    public function show(Request $request): View
-//    {
-//        return view('pages.profile.show', [
-//            'user' => $request->user(),
-//        ]);
-//    }
+    public function show(Request $request): View
+    {
+        return view('pages.profile.show', [
+            'user' => $request->user(),
+        ]);
+    }
 
     public function update(ProfileRequest $request): RedirectResponse
     {
