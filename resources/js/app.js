@@ -15,7 +15,6 @@ Alpine.data('profileForm', () => ({
         }
 
         this.clearPreview();
-
         this.previewUrl = URL.createObjectURL(file);
     },
 
@@ -34,6 +33,5 @@ Alpine.data('profileForm', () => ({
         this.clearPreview();
     },
 }));
-
 
 Alpine.start();

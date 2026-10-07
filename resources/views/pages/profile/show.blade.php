@@ -30,6 +30,7 @@
 
         {{-- Card profil --}}
         <div class="rounded-2xl border border-anufish-border bg-white p-6 shadow-sm sm:p-8">
+
             {{-- Ringkasan profil --}}
             <div class="mb-8 flex flex-col items-center gap-4 sm:flex-row">
 
@@ -46,7 +47,7 @@
                         >
                     </template>
 
-                    {{-- Foto tersimpan --}}
+                    {{-- Foto profil tersimpan --}}
                     <template x-if="!previewUrl">
                         <div class="size-full">
                             @if ($user->profile_photo_path)
@@ -67,7 +68,7 @@
                     </template>
                 </div>
 
-                {{-- Data profil --}}
+                {{-- Informasi profil --}}
                 <div class="text-center sm:text-left">
                     <h2 class="text-xl font-bold text-anufish-navy">
                         {{ $user->name }}
@@ -87,15 +88,10 @@
 
             {{-- Form edit profil --}}
             <form
-                action="{{ route('profile.update') }}"
-                method="POST"
-                enctype="multipart/form-data"
                 class="space-y-5"
-                x-on:submit="startSubmitting"
+                enctype="multipart/form-data"
+                x-on:submit.prevent="startSubmitting()"
             >
-                @csrf
-                @method('PUT')
-
                 {{-- Nama --}}
                 <x-ui.form-field
                     label="Nama"
