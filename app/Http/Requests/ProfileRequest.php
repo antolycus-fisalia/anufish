@@ -26,15 +26,14 @@ class ProfileRequest extends FormRequest
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')
-                    ->ignore($this->user()->id),
+                    ->ignore($this->user()),
             ],
 
             'profile_photo' => [
                 'nullable',
-                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
                 'max:5120',
-                'extensions:jpg,jpeg,png,webp',
-                'mimetypes:image/jpeg,image/png,image/webp',
             ],
         ];
     }
@@ -43,18 +42,17 @@ class ProfileRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama wajib diisi.',
+            'name.string' => 'Nama harus berupa teks.',
+            'name.max' => 'Nama maksimal 255 karakter.',
+
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
             'email.unique' => 'Email sudah digunakan.',
 
-            'profile_photo.max' =>
-                'Ukuran foto maksimal 5 MB.',
-
-            'profile_photo.extensions' =>
-                'Ekstensi foto harus JPG, JPEG, PNG, atau WEBP.',
-
-            'profile_photo.mimetypes' =>
-                'File harus berupa gambar JPEG, PNG, atau WEBP.',
+            'profile_photo.image' => 'File harus berupa gambar.',
+            'profile_photo.mimes' => 'Foto harus berformat JPG, JPEG, PNG, atau WebP.',
+            'profile_photo.max' => 'Ukuran foto maksimal 5 MB.',
         ];
     }
 }

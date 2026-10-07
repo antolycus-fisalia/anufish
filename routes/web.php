@@ -8,35 +8,35 @@ use Illuminate\Support\Facades\Route;
 
 // User harus login untuk mengakses halaman di bawah ini
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
-        return view('pages.index');
-    })->name('homepage');
+    Route::view('/', 'pages.index')
+        ->name('homepage');
+//
+//    Route::get('/profile', [ProfileController::class, 'show'])
+//        ->name('profile.show');
+
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
 
     Route::get('/admin', function (Request $request) {
         abort_unless($request->user()->role === 'admin', 403);
 
         return 'Dashboard Admin';
     })->name('admin.dashboard');
-
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->name('logout');
-
-    Route::put('/profile', [ProfileController::class, 'update'])
-    ->name('profile.update');
 });
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', function () {
-        return view('pages.auth.login');
-    })->name('login');
+    Route::view('/login', 'pages.auth.login')
+        ->name('login');
 
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:login')
         ->name('login.store');
 
-    Route::get('/register', function () {
-        return view('pages.auth.register');
-    })->name('register');
+    Route::view('/register', 'pages.auth.register')
+        ->name('register');
 
     Route::post('/register', [AuthController::class, 'register'])
         ->middleware('throttle:register')
