@@ -5,12 +5,14 @@ use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
+// User harus login untuk mengakses halaman di bawah ini
 Route::middleware('auth')->group(function () {
     Route::view('/', 'pages.index')
         ->name('homepage');
-//
-//    Route::get('/profile', [ProfileController::class, 'show'])
-//        ->name('profile.show');
+
+    Route::get('/profile', [ProfileController::class, 'show'])
+        ->name('profile.show');
 
     Route::put('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
