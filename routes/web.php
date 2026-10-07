@@ -1,8 +1,10 @@
 <?php
 
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\AuthController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 // User harus login untuk mengakses halaman di bawah ini
 Route::middleware('auth')->group(function () {
@@ -10,22 +12,35 @@ Route::middleware('auth')->group(function () {
         return view('pages.index');
     })->name('homepage');
 
-    Route::get('/profile', function () {
-        return view('pages.profile.show', [
-            'user' => Auth::user(),
-        ]);
-    })->name('profile');
+    Route::get('/admin', function (Request $request) {
+        abort_unless($request->user()->role === 'admin', 403);
+
+        return 'Dashboard Admin';
+    })->name('admin.dashboard');
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
+
+    Route::put('/profile', [ProfileController::class, 'update'])
+    ->name('profile.update');
 });
 
-// Hanya untuk user yang belum login
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return view('pages.auth.login');
     })->name('login');
 
-    // Route::get('/register', function () {
-    //     return view('pages.auth.register');
-    // })->name('register');
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login.store');
+
+    Route::get('/register', function () {
+        return view('pages.auth.register');
+    })->name('register');
+
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:register')
+        ->name('register.store');
 });
 
 // Hanya untuk preview Profile UI di local development
