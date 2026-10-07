@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'gbif' => [
+    'base_url' => env(
+        'GBIF_BASE_URL',
+        'https://api.gbif.org/v1'
+        ),
+    ],
+
 ];
