@@ -36,10 +36,8 @@ return [
     ],
 
     'gbif' => [
-    'base_url' => env(
-        'GBIF_BASE_URL',
-        'https://api.gbif.org/v1'
-        ),
+        'base_url' => env('GBIF_BASE_URL', 'https://api.gbif.org/v1'),
+        'timeout' => (int)env('GBIF_TIMEOUT', 10),
     ],
 
 ];

@@ -19,10 +19,46 @@ class GbifServiceTest extends TestCase
         app(GbifService::class)->searchSpecies('tuna');
 
         Http::assertSent(function ($request) {
-            return str_contains($request->url(), '/species/search')
-                && str_contains($request->url(), 'q=tuna')
-                && str_contains($request->url(), 'rank=SPECIES');
+            parse_str(
+                parse_url($request->url(), PHP_URL_QUERY) ?? '',
+                $query
+            );
+
+            return $request->method() === 'GET'
+                && parse_url($request->url(), PHP_URL_PATH)
+                === '/v1/species/search'
+                && ($query['q'] ?? null) === 'tuna'
+                && ($query['rank'] ?? null) === 'SPECIES'
+                && ($query['limit'] ?? null) === '20';
         });
+    }
+
+    public function test_empty_results_are_handled(): void
+    {
+        Http::fake([
+            '*' => Http::response(['results' => []], 200),
+        ]);
+
+        $result = app(GbifService::class)
+            ->searchSpecies('unknownfish');
+
+        $this->assertTrue($result['success']);
+        $this->assertSame([], $result['data']);
+        $this->assertNotEmpty($result['message']);
+    }
+
+    public function test_connection_failure_is_handled(): void
+    {
+        Http::fake([
+            '*' => Http::failedConnection(),
+        ]);
+
+        $result = app(GbifService::class)
+            ->searchSpecies('tuna');
+
+        $this->assertFalse($result['success']);
+        $this->assertSame([], $result['data']);
+        $this->assertNotEmpty($result['message']);
     }
 
     public function test_successful_response_is_mapped(): void
@@ -52,18 +88,5 @@ class GbifServiceTest extends TestCase
             'Thunnus albacares',
             $result['data'][0]['scientific_name']
         );
-    }
-
-    public function test_api_failure_is_handled(): void
-    {
-        Http::fake([
-            '*' => Http::response([], 500),
-        ]);
-
-        $result = app(GbifService::class)
-            ->searchSpecies('tuna');
-
-        $this->assertFalse($result['success']);
-        $this->assertSame([], $result['data']);
     }
 }
