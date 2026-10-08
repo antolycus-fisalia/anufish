@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FishController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
 
         return 'Dashboard Admin';
     })->name('admin.dashboard');
+
+    Route::get('/fish/search', [FishController::class, 'search'])
+        ->name('fish.search');
 });
 
 Route::middleware('guest')->group(function () {
