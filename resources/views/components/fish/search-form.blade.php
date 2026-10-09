@@ -16,6 +16,9 @@
                 :value="$query"
                 placeholder="Contoh: Tuna, Salmon, Clownfish"
                 autocomplete="off"
+                required
+                minlength="2"
+                maxlength="150"
             />
         </div>
 
