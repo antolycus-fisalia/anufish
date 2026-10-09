@@ -34,4 +34,12 @@ Alpine.data('profileForm', () => ({
     },
 }));
 
+Alpine.data('fishSearch', () => ({
+    loading: false,
+
+    startSearch() {
+        this.loading = true;
+    },
+}));
+
 Alpine.start();
