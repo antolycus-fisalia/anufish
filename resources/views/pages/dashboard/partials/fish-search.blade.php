@@ -48,12 +48,6 @@
                 @endforeach
             </div>
 
-            @if ($pagination)
-                <x-fish.pagination
-                    :pagination="$pagination"
-                    :query="$query"
-                />
-            @endif
 
         @elseif ($query)
             <div
@@ -81,6 +75,10 @@
                     Masukkan nama ikan pada kolom pencarian untuk melihat informasi yang tersedia.
                 </p>
             </div>
+        @endif
+
+        @if ($pagination)
+            <x-fish.pagination :pagination="$pagination" :query="$query" />
         @endif
     </div>
 </div>

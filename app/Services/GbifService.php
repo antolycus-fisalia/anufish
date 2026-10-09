@@ -11,7 +11,7 @@ use Throwable;
 
 class GbifService
 {
-    public function searchSpecies(string $keyword, int $limit = 20): array
+    public function searchSpecies(string $keyword, int $limit = 20, int $page = 1): array
     {
         $keyword = trim($keyword);
 
@@ -24,6 +24,8 @@ class GbifService
 
         // Batasi jumlah hasil dan timeout
         $limit = max(1, min($limit, 100));
+        $page = max(1, $page);
+        $offset = ($page - 1) * $limit;
         $timeout = max(1, (int)config('services.gbif.timeout', 10));
 
         try {
@@ -56,7 +58,8 @@ class GbifService
                     'status' => 'ACCEPTED',
                     'highertaxon_key' => 1,
                     'extended' => true,
-                    'limit' => 10,
+                    'limit' => $limit,
+                    'offset' => $offset,
                 ]);
 
             // Tangani kesalahan HTTP
@@ -98,6 +101,15 @@ class GbifService
                     ? 'Data ikan tidak ditemukan, coba kata kunci lain.'
                     : null,
                 'data' => $results,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $limit,
+                    'has_more' => isset($payload['endOfRecords'])
+                        ? !$payload['endOfRecords']
+                        : (isset($payload['count'])
+                            ? $offset + $limit < (int) $payload['count']
+                            : count($payload['results']) === $limit),
+                ],
             ];
         } catch (ConnectionException $exception) {
             report($exception);

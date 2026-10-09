@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 // User harus login untuk mengakses halaman di bawah ini
 Route::middleware('auth')->group(function () {
-    Route::view('/', 'pages.dashboard.index')
+    Route::get('/', [FishController::class, 'index'])
         ->name('homepage');
 
     Route::get('/profile', [ProfileController::class, 'show'])
