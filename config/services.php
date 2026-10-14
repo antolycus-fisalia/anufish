@@ -35,9 +35,12 @@ return [
         ],
     ],
 
-    'gbif' => [
-        'base_url' => env('GBIF_BASE_URL', 'https://api.gbif.org/v1'),
-        'timeout' => (int)env('GBIF_TIMEOUT', 10),
+    'inaturalist' => [
+        'base_url' => env('INATURALIST_BASE_URL', 'https://api.inaturalist.org/v1'),
+        'timeout' => (float) env('INATURALIST_TIMEOUT', 4),
+        'ca_bundle' => env('INATURALIST_CA_BUNDLE', base_path('resources/certificates/cacert.pem')),
+        'cache_minutes' => (int) env('INATURALIST_CACHE_MINUTES', 15),
+        'search_cache_minutes' => (int) env('INATURALIST_SEARCH_CACHE_MINUTES', 30),
     ],
 
 ];

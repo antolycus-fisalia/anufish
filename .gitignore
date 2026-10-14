@@ -59,3 +59,5 @@ Thumbs.db
 /.github/instructions/
 /.github/prompts/
 /.github/agents/
+
+/tmp

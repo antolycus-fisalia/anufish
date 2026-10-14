@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ app()->getLocale() }}" class="@yield('document-class')">
 
 <head>
     <meta charset="UTF-8">
@@ -11,7 +11,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-gray-50 text-gray-900 antialiased">
+<body class="@yield('body-class', 'min-h-screen') bg-gray-50 text-gray-900 antialiased">
 
     @yield('content')
 

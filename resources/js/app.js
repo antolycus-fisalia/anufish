@@ -1,45 +1,9 @@
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.data('profileForm', () => ({
-    previewUrl: null,
-    submitting: false,
-
-    previewPhoto(event) {
-        const file = event.target.files?.[0];
-
-        if (!file) {
-            this.clearPreview();
-            return;
-        }
-
-        this.clearPreview();
-        this.previewUrl = URL.createObjectURL(file);
-    },
-
-    clearPreview() {
-        if (this.previewUrl) {
-            URL.revokeObjectURL(this.previewUrl);
-            this.previewUrl = null;
-        }
-    },
-
-    startSubmitting() {
-        this.submitting = true;
-    },
-
-    destroy() {
-        this.clearPreview();
-    },
-}));
-
-Alpine.data('fishSearch', () => ({
-    loading: false,
-
-    startSearch() {
-        this.loading = true;
-    },
-}));
-
-Alpine.start();
+import { initNavigation, initPasswordFields, initForms, initProfile } from './ui.js';
+import { initFishDetails } from './fish-detail.js';
+import { initAuthLayout } from './auth-layout.js';
+initNavigation();
+initPasswordFields();
+initForms();
+initProfile();
+initFishDetails();
+initAuthLayout();

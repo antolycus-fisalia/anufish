@@ -1,194 +1,71 @@
 @extends('layouts.authenticated')
 
-@section('title', 'Profil - Anufish')
+@section('title', __('Profil - Anufish'))
 
 @section('page-content')
-    <div
-        class="mx-auto max-w-3xl"
-        x-data="profileForm"
-    >
-        {{-- Header halaman --}}
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold tracking-tight text-anufish-navy">
-                Profil Saya
-            </h1>
+    <div data-profile-page>
+        <header class="mb-6">
+            <h1 class="page-title">{{ __('Profil Saya') }}</h1>
+            <p class="mt-2 text-sm leading-[22px] text-anufish-muted">{{ __('Informasi pribadi dan pengaturan akun.') }}</p>
+        </header>
 
-            <p class="mt-2 text-sm leading-6 text-anufish-muted">
-                Lihat dan perbarui informasi profil Anda.
-            </p>
-        </div>
-
-        {{-- Success feedback --}}
         @if (session('success'))
-            <div
-                class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
-                role="status"
-            >
+            <div class="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700"
+                role="status">
                 {{ session('success') }}
             </div>
         @endif
 
-        {{-- Card profil --}}
-        <div class="rounded-2xl border border-anufish-border bg-white p-6 shadow-sm sm:p-8">
+        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="profile-grid"
+            data-profile-form data-submit-form="submitting">
+            @csrf
+            @method('PUT')
 
-            {{-- Ringkasan profil --}}
-            <div class="mb-8 flex flex-col items-center gap-4 sm:flex-row">
-
-                {{-- Foto profil --}}
-                <div
-                    class="size-24 shrink-0 overflow-hidden rounded-full border border-anufish-border bg-anufish-pale"
-                >
-                    {{-- Preview foto baru --}}
-                    <template x-if="previewUrl">
-                        <img
-                            :src="previewUrl"
-                            alt="Preview foto profil"
-                            class="size-full object-cover"
-                        >
-                    </template>
-
-                    {{-- Foto profil tersimpan --}}
-                    <template x-if="!previewUrl">
+            <section class="profile-panel space-y-4" aria-label="{{ __('Ringkasan profil') }}">
+                <div class="size-20 overflow-hidden rounded-2xl bg-anufish-teal">
+                    <img hidden data-profile-preview alt="{{ __('Preview foto profil') }}" class="size-full object-cover">
+                    <div data-profile-original class="size-full">
                         <div class="size-full">
                             @if ($user->profile_photo_path)
-                                <img
-                                    src="{{ asset('storage/' . $user->profile_photo_path) }}"
-                                    alt="Foto profil {{ $user->name }}"
-                                    class="size-full object-cover"
-                                >
+                                <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
+                                    alt="{{ __('Foto profil') }} {{ $user->name }}" class="size-full object-cover">
                             @else
-                                <div
-                                    class="flex size-full items-center justify-center text-2xl font-bold text-anufish-navy"
-                                    aria-label="Inisial pengguna"
-                                >
-                                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                                </div>
+                                <span class="flex size-full items-center justify-center text-2xl font-semibold text-white"
+                                    aria-label="{{ __('Inisial pengguna') }}">{{ mb_strtoupper(mb_substr($user->name, 0, 2)) }}</span>
                             @endif
                         </div>
-                    </template>
+                    </div>
                 </div>
+                <h2 class="break-words text-2xl font-semibold leading-8 text-anufish-navy">{{ $user->name }}</h2>
+                <p class="break-words text-sm text-anufish-muted">{{ $user->email }}</p>
+                <span
+                    class="inline-flex rounded-lg bg-anufish-pale px-2 py-1 text-xs font-medium text-anufish-teal">{{ __(ucfirst($user->status)) }}</span>
 
-                {{-- Informasi profil --}}
-                <div class="text-center sm:text-left">
-                    <h2 class="text-xl font-bold text-anufish-navy">
-                        {{ $user->name }}
-                    </h2>
-
-                    <p class="mt-1 text-sm text-anufish-muted">
-                        {{ $user->email }}
-                    </p>
-
-                    <span
-                        class="mt-2 inline-flex rounded-full bg-anufish-pale px-3 py-1 text-xs font-semibold text-anufish-teal"
-                    >
-                        {{ ucfirst($user->status) }}
-                    </span>
-                </div>
-            </div>
-
-            {{-- Form edit profil --}}
-            <form
-                action="{{ route('profile.update') }}"
-                method="POST"
-                enctype="multipart/form-data"
-                class="space-y-5"
-                @submit="startSubmitting">
-
-                @csrf
-                @method('PUT')
-                {{-- Nama --}}
-                <x-ui.form-field
-                    label="Nama"
-                    name="name"
-                    :value="old('name', $user->name)"
-                    autocomplete="name"
-                    :required="true"
-                />
-
-                {{-- Email --}}
-                <x-ui.form-field
-                    label="Email"
-                    name="email"
-                    type="email"
-                    :value="old('email', $user->email)"
-                    autocomplete="email"
-                    :required="true"
-                />
-
-                {{-- Foto profil --}}
                 <div>
-                    <label
-                        for="profile_photo"
-                        class="mb-2 block text-sm font-semibold text-anufish-navy"
-                    >
-                        Foto Profil
-                    </label>
-
-                    <input
-                        id="profile_photo"
-                        name="profile_photo"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        @change="previewPhoto"
-                        class="
-    block w-full
-    rounded-lg
-    border border-anufish-border
-    bg-white
-    px-4 py-3
-    text-sm text-anufish-navy
-    shadow-sm
-    outline-none
-    transition
-
-    file:mr-4
-    file:rounded-md
-    file:border-0
-    file:bg-anufish-pale
-    file:px-4
-    file:py-2
-    file:text-sm
-    file:font-semibold
-    file:text-anufish-teal
-
-    hover:border-anufish-cyan
-
-    focus:border-anufish-teal
-    focus:ring-4
-    focus:ring-anufish-pale
-"
-                    >
-
-                    <p class="mt-2 text-sm leading-6 text-anufish-muted">
-                        JPG, PNG, atau WebP. Maksimal 5 MB.
-                    </p>
-
-                    <x-ui.validation-error
-                        name="profile_photo"
-                        id="profile_photo"
-                    />
+                    <label for="profile_photo"
+                        class="mb-2 block text-sm font-semibold text-anufish-navy">{{ __('Ubah foto profil') }}</label>
+                    <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp"
+                         aria-invalid="{{ $errors->has('profile_photo') ? 'true' : 'false' }}"
+                        aria-describedby="profile-photo-help{{ $errors->has('profile_photo') ? ' profile_photo-error' : '' }}"
+                        class="block min-h-11 w-full min-w-0 rounded-lg border border-anufish-border bg-white text-sm text-anufish-muted file:mr-2 file:min-h-11 file:border-0 file:bg-anufish-pale file:px-3 file:font-semibold file:text-anufish-teal hover:border-anufish-cyan focus-visible:outline-2 focus-visible:outline-anufish-teal">
+                    <p id="profile-photo-help" class="mt-2 text-xs leading-[18px] text-anufish-muted">
+                        {{ __('JPG, PNG, atau WebP. Maksimal 5 MB.') }}</p>
+                    <x-ui.validation-error name="profile_photo" id="profile_photo" />
                 </div>
+            </section>
 
-                {{-- Tombol simpan --}}
-                <div class="pt-2">
-                    <x-ui.button
-                        type="submit"
-                        class="w-full sm:w-auto"
-                        x-bind:disabled="submitting"
-                    >
-    <span x-show="!submitting">
-        Simpan Perubahan
-    </span>
-
-                        <span
-                            x-cloak
-                            x-show="submitting"
-                        >
-        Menyimpan...
-    </span>
-                    </x-ui.button>
-                </div>
-            </form>
-        </div>
+            <section class="profile-panel space-y-5" aria-labelledby="profile-information">
+                <h2 id="profile-information" class="text-2xl font-semibold leading-8 text-anufish-navy">
+                    {{ __('Informasi pribadi') }}</h2>
+                <x-ui.form-field :label="__('Nama lengkap')" name="name" :value="old('name', $user->name)" autocomplete="name" :required="true" />
+                <x-ui.form-field label="Email" name="email" type="email" :value="old('email', $user->email)" autocomplete="email"
+                    :required="true" />
+                <p class="text-sm leading-[22px] text-anufish-muted">{{ __('Email digunakan untuk masuk ke akunmu.') }}</p>
+                <x-ui.button type="submit" class="w-full" data-submit-button>
+                    <span data-form-state="idle">{{ __('Simpan Perubahan') }}</span>
+                    <span hidden data-form-state="submitting">{{ __('Menyimpan...') }}</span>
+                </x-ui.button>
+            </section>
+        </form>
     </div>
 @endsection

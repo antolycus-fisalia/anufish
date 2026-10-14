@@ -41,18 +41,18 @@ class ProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama wajib diisi.',
-            'name.string' => 'Nama harus berupa teks.',
-            'name.max' => 'Nama maksimal 255 karakter.',
+            'name.required' => __('Nama wajib diisi.'),
+            'name.string' => __('Nama harus berupa teks.'),
+            'name.max' => __('Nama maksimal 255 karakter.'),
 
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.max' => 'Email maksimal 255 karakter.',
-            'email.unique' => 'Email sudah digunakan.',
+            'email.required' => __('Email wajib diisi.'),
+            'email.email' => __('Format email tidak valid.'),
+            'email.max' => __('Email maksimal 255 karakter.'),
+            'email.unique' => __('Email sudah digunakan.'),
 
-            'profile_photo.image' => 'File harus berupa gambar.',
-            'profile_photo.mimes' => 'Foto harus berformat JPG, JPEG, PNG, atau WebP.',
-            'profile_photo.max' => 'Ukuran foto maksimal 5 MB.',
+            'profile_photo.image' => __('File harus berupa gambar.'),
+            'profile_photo.mimes' => __('Foto harus berformat JPG, JPEG, PNG, atau WebP.'),
+            'profile_photo.max' => __('Ukuran foto maksimal 5 MB.'),
         ];
     }
 }
