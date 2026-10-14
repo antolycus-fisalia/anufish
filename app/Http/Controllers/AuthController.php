@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -19,7 +18,7 @@ class AuthController extends Controller
         User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
             'role' => 'user',
             'status' => 'aktif',
             'profile_photo_path' => null,
@@ -27,31 +26,28 @@ class AuthController extends Controller
 
         return redirect()
             ->route('login')
-            ->with('success', 'Registrasi berhasil. Silakan login.');
+            ->with('success', __('Registrasi berhasil. Silakan login.'));
     }
 
-    public function login(Request $request): RedirectResponse
+    public function login(LoginRequest $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $credentials = $request->validated();
 
         // Verifikasi email + password tanpa membuat session terlebih dahulu.
         if (! Auth::validate($credentials)) {
             return back()
                 ->withErrors([
-                    'email' => 'Email atau password salah.',
+                    'email' => __('Email atau password salah.'),
                 ])
                 ->onlyInput('email');
         }
 
         $user = User::where('email', $credentials['email'])->first();
 
-        if (! $user || $user->status !== 'aktif') {
+        if (! $user || ! $user->isActive()) {
             return back()
                 ->withErrors([
-                    'email' => 'Akun tidak aktif atau diblokir.',
+                    'email' => __('Akun tidak aktif atau diblokir.'),
                 ])
                 ->onlyInput('email');
         }
@@ -61,7 +57,7 @@ class AuthController extends Controller
         // Mencegah session fixation.
         $request->session()->regenerate();
 
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -78,5 +74,4 @@ class AuthController extends Controller
 
         return redirect()->route('login');
     }
-
 }

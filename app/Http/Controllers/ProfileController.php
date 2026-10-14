@@ -50,6 +50,6 @@ class ProfileController extends Controller
         }
 
         return to_route('profile.show')
-            ->with('success', 'Profil berhasil diperbarui.');
+            ->with('success', __('Profil berhasil diperbarui.'));
     }
 }

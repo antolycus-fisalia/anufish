@@ -1,6 +1,10 @@
 @import "tailwindcss";
+@import "./guest.css";
+@import "./fish-gallery.css";
+@import "./fish-photo-viewer.css";
 
 @theme {
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
     --color-anufish-navy: #124F7C;
     --color-anufish-teal: #197E8F;
     --color-anufish-cyan: #2AB7CB;
@@ -13,3 +17,32 @@
 @source "../../storage/framework/views/*.php";
 @source "../**/*.blade.php";
 @source "../**/*.js";
+
+@layer components {
+    .password-input { padding-inline-start: calc(var(--spacing) * 3); padding-inline-end: calc(var(--spacing) * 14); }
+    .password-toggle {
+        @apply absolute right-0 inline-flex items-center justify-center rounded-md text-anufish-muted transition-colors hover:bg-anufish-pale hover:text-anufish-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-anufish-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+        width: calc(var(--spacing) * 11 / var(--auth-scale, 1));
+        height: calc(var(--spacing) * 11 / var(--auth-scale, 1));
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .primary-action {
+        @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-anufish-teal px-4 py-3 text-sm font-semibold leading-5 text-white transition-colors hover:bg-anufish-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-anufish-teal focus-visible:ring-offset-2 active:bg-anufish-navy disabled:cursor-not-allowed disabled:bg-anufish-muted;
+    }
+    .hero-title { @apply text-4xl font-semibold leading-[44px] lg:text-5xl lg:leading-[56px]; }
+    .page-title { @apply text-[32px] font-bold leading-10 text-anufish-navy; }
+    .guest-shell { @apply min-h-dvh bg-anufish-pale lg:flex lg:bg-white; }
+    .guest-editorial { @apply hidden shrink-0 flex-col gap-8 bg-anufish-navy p-12 lg:flex lg:w-[39.444%] xl:p-16 max-h-screen; }
+    .guest-form-area { @apply flex min-h-dvh min-w-0 flex-1 items-center justify-center px-4 py-8 sm:px-6 lg:p-12; }
+    .brand-logo { @apply relative block w-40 overflow-hidden; aspect-ratio: 100 / 37; }
+    .brand-logo img { position: absolute; width: 141.791%; max-width: none; height: auto; left: -20.894%; top: -157.315%; }
+    .brand-logo-auth { @apply w-[200px] max-w-full; }
+    .brand-logo-editorial { @apply w-[184px]; }
+    .profile-grid { @apply grid items-start gap-6 xl:grid-cols-[336px_minmax(0,1fr)]; }
+    .profile-panel { @apply min-w-0 rounded-2xl border border-anufish-border bg-white p-6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}
