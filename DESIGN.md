@@ -1,5 +1,108 @@
 # Anufish Design System
 
+## Figma redesign (October 2026)
+
+### Fish detail (FSH-10)
+
+#### Species photo gallery
+
+Keep the existing Anufish palette and authenticated shell. The iNaturalist screenshot
+is a functional reference for a main image with thumbnails, not a new brand or chart layout.
+The reusable `x-fish.photo-gallery` uses a white 16px-radius panel, 24px desktop / 16px
+mobile padding, a contained 4:3 main photo, 80x64 thumbnails in a horizontal rail with
+8px gaps, and 44px previous/next controls. Active thumbnails have a pale teal wash,
+a visible check glyph, and `aria-pressed`; focus retains the teal ring. Credit and
+license change with the selected photo. Show the current position and loaded photo count.
+Curated licensed photos render immediately; additional observation photos load on demand
+through “Muat foto lainnya” using cursor pagination, preserving the main page's sole
+vertical scroll. The thumbnail rail scrolls only horizontally; selecting a photo keeps
+its thumbnail visible without growing the panel as more photos arrive.
+Thumbnail images are lazy-loaded; the main photo is eager. No autoplay,
+no animation requirement, no observation locations. Arrow keys on the gallery select
+photos; buttons remain usable by touch and keyboard. Loading, retry, exhausted and
+broken-image states must preserve existing photos and taxonomy. Indonesian and English
+labels are required. Include only photos with the existing CC0 / CC BY / CC BY-SA policy.
+
+#### Enlarged photo viewer
+
+Clicking the main photo opens a native modal dialog (`x-fish.photo-viewer`) in the
+top layer. The photo is a real button with a labelled expand glyph, a visible focus
+ring, and a 44px minimum target. The dialog uses Anufish white/pale surfaces, navy
+text, 16px panel radius, 24px desktop / 16px phone padding and 16px gaps; its backdrop
+is navy at 70% opacity. Width is at most 1152px and viewport minus 32px. Height is at
+most viewport minus 32px, using a contained image in a flexible central row and a
+scrollable panel only when text or a short viewport requires it. Header and footer
+keep close and previous/next controls reachable, with 44px targets. Show species,
+photo position, credit, source and license. Fetch only the selected large image on
+open/navigation; no original-size downloads or autoplay. Fall back to the existing
+medium image if large fails; show a localized error/retry if both fail. Loading
+overlays hide the previous photo while a new one loads. Left/right keys and buttons
+select the same shared gallery index, including photos already loaded with “Muat
+foto lainnya”. Disable navigation at boundaries. Escape, close button and backdrop
+close the dialog; focus returns to the main-photo button and page scrolling is
+restored. Native dialog provides focus containment; the main page is inert and
+cannot scroll underneath. No opening motion is required. ID/EN labels are mandatory.
+
+Provider migration: use iNaturalist taxon IDs under `/fish/taxa/{taxonId}`.
+Previous `/fish/{id}` links return 404 instead of interpreting an unrelated provider ID.
+Do not show observation locations or fetch observations for location information.
+The interface supports Indonesian and English through a persistent ID/EN toggle.
+Missing Indonesian source descriptions fall back to English with an explicit note.
+Search and detail keep
+distinct 404/429/502 states, a visible retry action, and the existing brand tokens.
+
+The requested detail route extends the existing authenticated shell. Search cards gain
+a 44px primary “Lihat detail ikan” link preserving query and page. Detail uses the same
+brand tokens, white bordered 16px panels, 24px gaps and 32/40 title. A contained 4:3
+photograph with photographer, source and license sits beside species identity and
+taxonomy on desktop; stack on mobile. Source descriptions and Indonesian/English
+names follow below. Optional photos and English fallback descriptions load asynchronously.
+External descriptions are plain text, never executable
+HTML. Missing data and unavailable photographs have localized ID/EN states. A failed
+optional provider leaves core detail readable; core not-found and outage use distinct
+404/429/502 states. Main remains the sole page scroll owner. No fabricated habitat or images.
+
+### Multilingual fish search
+
+Existing search accepts 1–150 Unicode characters, including a single CJK character;
+names use bidirectional isolation (`bdi`) and automatic input direction. Compact white
+cards retain the brand palette, 18/26 headings and 14/22 metadata. A 40px icon replaces
+large empty photo placeholders. Taxonomy is a two-column definition list. Native details
+exposes available Indonesian and English common names with language labels, a visible open/closed indicator,
+and a bounded 256px scroll region specifically for the alias list. Source links and
+summary controls retain 44px hit areas. Actual iNaturalist data determines available languages;
+no names are invented or automatically translated. Match the typed name before preferring
+Indonesian or English. Scientific and available common names are searched through the taxa endpoint.
+
+The approved Figma redesign supersedes the older visual recipes below where they conflict.
+Keep all six brand colors and Instrument Sans (400, 500, 600, 700). Only existing login, registration, homepage/search,
+and profile views are implemented; routes and application behavior stay unchanged.
+
+- Primary buttons: solid `anufish-teal`, white semibold labels, navy hover/pressed,
+  44px minimum height, radius 8px, visible teal focus ring. No gradient or decorative shadow.
+- Typography: page title 32/40 bold; section 24/32 semibold; card 18/26 semibold;
+  body 16/24; labels 14/20; supporting text 14/22; caption 12/18.
+  Hero: 48/56 desktop, 36/44 mobile, semibold.
+- Auth: white desktop canvas, navy editorial rail (568px at 1440px), 64px rail padding,
+  440x320 fish photograph; form card 448px including 40px padding. At mobile sizes,
+  pale canvas, white bordered card with 24px padding and original cropped logo; hide rail.
+- Logo viewport: width 160px sidebar, 200px mobile auth, 184px editorial. Original
+  transparent bitmap stays intact; viewport aspect ratio 100/37, image width 141.791%,
+  left offset -20.894%, top offset -157.315% of viewport height.
+- Authenticated shell: 256px white sidebar, 64px white header, gray-50 canvas,
+  content padding 32px desktop / 16px mobile, 24px section gaps, existing scroll ownership.
+- Hero: pale bordered surface, radius 16px, padding 32px desktop / 24px mobile;
+  two columns at wide desktop, stacked on compact widths; photo 416x264 / 310x190.
+- Profile: summary 336px and flexible form in desktop columns with 24px gap;
+  stacked on compact screens. White bordered panels, radius 16px, padding 24px;
+  80px teal rounded-square avatar, file input remains attached to the existing form.
+- Search: white bordered panel with 16px padding, input and button min-height 44px;
+  results grid 3 desktop / 2 tablet / 1 mobile columns. No invented photos or detail routes.
+- Navigation groups: Eksplorasi and Ruang saya; no duplicate Dashboard destination.
+  Unavailable features retain the existing “Segera” treatment.
+- Photo asset: Nick Hobgood, Amphiprion ocellaris, CC BY-SA 3.0, Wikimedia Commons.
+
+
 ## Purpose
 
 This document describes the visual language already established by Anufish, a fish identification and information application. It is a reference for extending the interface without replacing its current Laravel Blade structure, Tailwind conventions, forms, navigation shell, or responsive behavior.
@@ -210,6 +313,29 @@ Prefer stacking over squeezing. Any future multi-column content should collapse 
 - Do not change responsive behavior by adding arbitrary custom breakpoints.
 
 ## Extension Checklist
+
+## Application Sidebar (FSH-33)
+
+The application-level navigation requirement supersedes the former header-only shell.
+Follow the supplied Anufish screenshot: white left rail, original logo, grouped navigation,
+pale active row with navy text, compact icons, and a bordered profile card at the bottom.
+Use existing brand tokens and Instrument Sans; do not reproduce the screenshot's selection handles.
+
+- Desktop rail: `w-64`, padding `p-4`, logo `w-40`, navigation rows `min-h-11`, `rounded-lg`.
+- Shell: `h-dvh`, desktop `lg` rail, fixed `h-16` header; main owns content scroll.
+- Sidebar middle navigation owns overflow when the viewport is short; profile and logout remain available.
+- Mobile: native modal dialog with the same sidebar component, `w-72 max-w-full`, backdrop,
+  close button, Escape dismissal, trapped focus and focus restored to the menu trigger.
+- Navigation primitive: icon `size-5`, `gap-3`, `text-sm font-semibold`; active pale background
+  and `aria-current`, cyan hover, teal focus-visible ring. Unbuilt destinations show “Segera”.
+- Profile primitive: navy name, muted role, `rounded-lg` border, initials avatar `size-10`.
+- Public group: Beranda, Jelajahi Ikan, Artikel. User group: Dashboard, Scan Ikan,
+  Riwayat Scan, Artikel Saya. Admin group appears only for the admin role.
+- Existing homepage contains fish exploration, so Beranda links to its top and Jelajahi Ikan
+  to its search section. Dashboard is the same existing homepage; no new feature screens are implied.
+- Accessibility: semantic nav/list, skip link, minimum 44px controls, visible focus,
+  native POST logout with CSRF protection. Current project has a light theme only.
+
 
 Before adding a UI surface, confirm:
 
