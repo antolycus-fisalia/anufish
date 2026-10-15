@@ -7,6 +7,18 @@
 @endphp
 
 <article class="min-w-0 rounded-2xl border border-anufish-border bg-white p-5">
+    <div class="fish-card-media" data-fish-card-media>
+        <div class="fish-card-placeholder" data-fish-card-placeholder @if ($fish['image'] ?? null) hidden @endif>
+            <x-navigation.icon name="fish" />
+            <span>{{ __('Gambar belum tersedia') }}</span>
+        </div>
+        @if ($fish['image'] ?? null)
+            <img src="{{ $fish['image']['url'] }}" alt="{{ $displayName }}" width="416" height="260" loading="lazy" decoding="async" referrerpolicy="no-referrer" class="relative bg-anufish-pale" data-fish-card-image>
+        @endif
+    </div>
+    @if ($fish['image'] ?? null)
+        <p class="fish-card-credit">{{ $fish['image']['credit'] }} · <a href="{{ $fish['image']['source_url'] }}" target="_blank" rel="noopener noreferrer">iNaturalist<span class="sr-only">{{ __(' (tab baru)') }}</span></a> · <a href="{{ $fish['image']['license']['url'] }}" target="_blank" rel="noopener noreferrer">{{ $fish['image']['license']['label'] }}<span class="sr-only">{{ __(' (tab baru)') }}</span></a></p>
+    @endif
     <header class="mb-5 flex items-start gap-3">
         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-anufish-pale text-anufish-teal"
             aria-hidden="true"><x-navigation.icon name="fish" /></span>

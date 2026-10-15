@@ -2,11 +2,11 @@
     'query' => null,
 ])
 
-<form action="{{ route('homepage') }}" method="GET" class="mb-6 rounded-2xl border border-anufish-border bg-white p-4"
+<form action="{{ route('fish.index') }}" method="GET" class="mb-6 rounded-2xl border border-anufish-border bg-white p-4"
     data-submit-form="loading">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div class="flex-1">
-            <x-ui.form-field :label="__('Cari ikan')" name="q" :value="$query" :placeholder="__('Tuna, 鯛, atau Thunnus albacares')" autocomplete="off"
+            <x-ui.form-field :label="__('Cari ikan')" name="q" :value="$query" :placeholder="__('Cari nama ikan atau nama ilmiah')" autocomplete="off"
                 required minlength="1" maxlength="150" dir="auto" spellcheck="false"
                 aria-describedby="fish-search-help" />
         </div>

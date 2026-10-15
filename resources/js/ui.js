@@ -3,8 +3,23 @@ function setFormState(scope, state) {
     scope.querySelectorAll('[data-submit-button]').forEach((button) => { button.disabled = state !== 'idle'; });
 }
 
+export function initFishCardImages() {
+    document.querySelectorAll('[data-fish-card-image]').forEach((image) => {
+        const showPlaceholder = () => {
+            image.hidden = true;
+            image.closest('[data-fish-card-media]').querySelector('[data-fish-card-placeholder]').hidden = false;
+        };
+        image.addEventListener('error', showPlaceholder);
+        if (image.complete && !image.naturalWidth) showPlaceholder();
+    });
+}
+
 export function initNavigation() {
     document.querySelectorAll('[data-navigation-shell]').forEach((shell) => {
+        shell.querySelector('a[href="#main-content"]').addEventListener('click', (event) => {
+            event.preventDefault();
+            shell.querySelector('#main-content').focus({ preventScroll: true });
+        });
         const dialog = shell.querySelector('[data-navigation-dialog]');
         const opener = shell.querySelector('[data-navigation-open]');
         opener.addEventListener('click', () => dialog.showModal());
