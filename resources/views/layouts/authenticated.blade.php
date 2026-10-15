@@ -23,8 +23,20 @@
                     aria-label="{{ __('Buka navigasi') }}" aria-haspopup="dialog"
                     class="flex size-11 items-center justify-center rounded-lg text-anufish-navy hover:bg-white focus-visible:outline-2 focus-visible:outline-anufish-teal lg:hidden"><x-navigation.icon
                         name="menu" /></button>
-                <p class="min-w-0 flex-1 truncate text-sm text-anufish-muted"><span
-                        class="hidden sm:inline">{{ __('Ruang eksplorasi / ') }}</span>{{ request()->routeIs('fish.show') ? __('Detail Ikan') : (request()->routeIs('profile.*') ? __('Profil Saya') : (request()->routeIs('fish.*') ? __('Jelajahi Ikan') : __('Beranda'))) }}
+                <p class="min-w-0 flex-1 truncate text-sm text-anufish-muted">
+                <span class="hidden sm:inline">
+                    {{ __('Ruang eksplorasi / ') }}
+                </span>
+
+                {{ request()->routeIs('fish.show')
+                    ? __('Detail Ikan')
+                    : (request()->routeIs('profile.*')
+                        ? __('Profil Saya')
+                        : (request()->routeIs('scan.*')
+                            ? __('Scan Ikan')
+                            : (request()->routeIs('fish.*')
+                                ? __('Jelajahi Ikan')
+                                : __('Beranda')))) }}
                 </p>
                 <a href="{{ route('profile.show') }}"
                     class="inline-flex min-h-11 max-w-40 items-center rounded-lg text-sm font-semibold text-anufish-navy hover:text-anufish-teal focus-visible:outline-2 focus-visible:outline-anufish-teal"><span
