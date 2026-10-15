@@ -14,6 +14,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', HomeController::class)->name('homepage');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::view('/scan', 'pages.scan.index')
+    ->name('scan.index');
+
     Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
         Route::get('/', 'show')->name('show');
         Route::put('/', 'update')->name('update');
