@@ -39,3 +39,4 @@ class ScanController extends Controller
         ], 201);
     }
 }
+

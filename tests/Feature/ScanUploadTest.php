@@ -46,7 +46,9 @@ class ScanUploadTest extends TestCase
         $this->assertStringStartsWith('scans/', $path);
 
         // File actually exists on disk.
-        Storage::disk('local')->assertExists($path);
+        $this->assertTrue(
+            Storage::disk('local')->exists($path)
+        );
     }
 
     public function test_valid_png_is_uploaded_and_stored(): void
@@ -64,7 +66,9 @@ class ScanUploadTest extends TestCase
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
-        Storage::disk('local')->assertExists($response->json('data.path'));
+        $this->assertTrue(
+            Storage::disk('local')->exists($response->json('data.path'))
+        );
     }
 
     public function test_valid_jpeg_is_uploaded_and_stored(): void
@@ -82,7 +86,9 @@ class ScanUploadTest extends TestCase
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
-        Storage::disk('local')->assertExists($response->json('data.path'));
+        $this->assertTrue(
+            Storage::disk('local')->exists($response->json('data.path'))
+        );
     }
 
     // ──────────────────────────────────────────────
@@ -314,3 +320,4 @@ class ScanUploadTest extends TestCase
         $response->assertStatus(401);
     }
 }
+

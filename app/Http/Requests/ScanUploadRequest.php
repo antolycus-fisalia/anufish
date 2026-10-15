@@ -35,3 +35,4 @@ class ScanUploadRequest extends FormRequest
         ];
     }
 }
+
