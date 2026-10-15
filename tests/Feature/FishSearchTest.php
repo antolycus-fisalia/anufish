@@ -16,11 +16,11 @@ class FishSearchTest extends TestCase
         ])]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'tuna', 'page' => 2]))
+            ->get(route('fish.index', ['q' => 'tuna', 'page' => 2]))
             ->assertOk()
             ->assertSee('Halaman 2')
-            ->assertSee(route('homepage', ['q' => 'tuna', 'page' => 1]))
-            ->assertSee(route('homepage', ['q' => 'tuna', 'page' => 3]));
+            ->assertSee(route('fish.index', ['q' => 'tuna', 'page' => 1]))
+            ->assertSee(route('fish.index', ['q' => 'tuna', 'page' => 3]));
 
         Http::assertSent(fn ($request) => parse_url($request->url(), PHP_URL_PATH) === '/v1/taxa' && (string) $request['page'] === '2' && (string) $request['per_page'] === '20');
     }
@@ -30,7 +30,7 @@ class FishSearchTest extends TestCase
         Http::fake(['*' => Http::response(['results' => [], 'total_results' => 0])]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'tuna', 'page' => 2]))
+            ->get(route('fish.index', ['q' => 'tuna', 'page' => 2]))
             ->assertOk()
             ->assertSee('Sebelumnya')
             ->assertDontSee('Selanjutnya');
@@ -66,7 +66,7 @@ class FishSearchTest extends TestCase
         Http::fake();
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage'))
+            ->get(route('fish.index'))
             ->assertOk()
             ->assertSee('Cari ikan favorit Anda');
 
@@ -82,7 +82,7 @@ class FishSearchTest extends TestCase
         ]]])]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'tuna']))
+            ->get(route('fish.index', ['q' => 'tuna']))
             ->assertOk()
             ->assertSee('Thunnus albacares')
             ->assertSee('Scombridae');
@@ -95,7 +95,7 @@ class FishSearchTest extends TestCase
         Http::fake(['*' => Http::response(['results' => []])]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'unknownfish']))
+            ->get(route('fish.index', ['q' => 'unknownfish']))
             ->assertOk()
             ->assertSee('Ikan tidak ditemukan');
     }
@@ -105,7 +105,7 @@ class FishSearchTest extends TestCase
         Http::fake(['*' => Http::response([], 400)]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'tuna']))
+            ->get(route('fish.index', ['q' => 'tuna']))
             ->assertOk()
             ->assertSee('Gagal mengambil data ikan');
     }
@@ -115,9 +115,9 @@ class FishSearchTest extends TestCase
         Http::fake();
 
         $this->actingAs(User::factory()->make())
-            ->from(route('homepage'))
-            ->get(route('homepage', ['q' => str_repeat('a', 151)]))
-            ->assertRedirect(route('homepage'))
+            ->from(route('fish.index'))
+            ->get(route('fish.index', ['q' => str_repeat('a', 151)]))
+            ->assertRedirect(route('fish.index'))
             ->assertSessionHasErrors('q');
 
         Http::assertNothingSent();
@@ -146,7 +146,7 @@ class FishSearchTest extends TestCase
         ]]])]);
 
         $this->actingAs(User::factory()->make())
-            ->get(route('homepage', ['q' => 'Pagrus']))
+            ->get(route('fish.index', ['q' => 'Pagrus']))
             ->assertOk()
             ->assertDontSee('鯛')
             ->assertDontSee('سمك')

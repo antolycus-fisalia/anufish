@@ -46,8 +46,8 @@ class FishController extends Controller
         return response()->view('pages.fish.show', [
             'fish' => $result['fish'],
             'status' => $result['status'],
-            'returnUrl' => route('homepage', $returnParameters),
-            'returnLabel' => $returnParameters ? __('Kembali ke hasil pencarian') : __('Kembali ke Beranda'),
+            'returnUrl' => route('fish.index', $returnParameters),
+            'returnLabel' => $returnParameters ? __('Kembali ke hasil pencarian') : __('Kembali ke Jelajahi Ikan'),
         ], $result['status']);
     }
 
@@ -59,7 +59,7 @@ class FishController extends Controller
             ? $inaturalist->searchSpecies($validated['q'], 20, (int) ($validated['page'] ?? 1))
             : ['success' => true, 'data' => [], 'message' => null];
 
-        return view('pages.dashboard.index', [
+        return view('pages.fish.index', [
             'fishes' => $result['data'],
             'error' => $result['success'] ? null : $result['message'],
             'pagination' => $result['pagination'] ?? null,

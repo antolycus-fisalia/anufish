@@ -1,4 +1,4 @@
-import { initNavigation, initPasswordFields, initForms, initProfile } from './ui.js';
+import { initNavigation, initPasswordFields, initForms, initProfile, initFishCardImages } from './ui.js';
 import { initFishDetails } from './fish-detail.js';
 import { initAuthLayout } from './auth-layout.js';
 initNavigation();
@@ -7,3 +7,4 @@ initForms();
 initProfile();
 initFishDetails();
 initAuthLayout();
+initFishCardImages();

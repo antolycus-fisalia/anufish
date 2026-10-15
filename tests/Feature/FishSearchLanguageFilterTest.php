@@ -31,7 +31,7 @@ class FishSearchLanguageFilterTest extends TestCase
             $this->withSession(['locale' => $locale])->getJson('/fish/search?q=tuna')
                 ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.taxon_id', 69675)
                 ->assertJsonPath('pagination.has_more', true);
-            $this->get('/?q=tuna')->assertOk()->assertSee('Thunnus albacares')
+            $this->get('/fish?q=tuna')->assertOk()->assertSee('Thunnus albacares')
                 ->assertDontSee('Anguilla dieffenbachii')->assertDontSee('New Zealand Longfin Eel');
         }
     }

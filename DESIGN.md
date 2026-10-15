@@ -1,5 +1,30 @@
 # Anufish Design System
 
+## Home and exploration separation (15 October 2026)
+
+The supplied home/exploration screenshots supersede the combined dashboard below.
+`/` is Beranda: page title and supporting text, a pale split hero, three shortcut
+panels, then Bacaan untukmu. `/fish` is Jelajahi Ikan: its own heading, search form,
+results and pagination. Legacy `/?q=...` redirects to `/fish` preserving q/page.
+Sidebar active state and header breadcrumb follow the route, including empty search.
+Home performs no external fish request. Keep iNaturalist copy rather than the old
+GBIF reference. Do not invent articles, habitat metadata or implemented scan routes.
+Unavailable scan/history/article shortcuts show Segera; article area has an honest
+empty state. Habitat filter chips are omitted until trustworthy habitat data exists.
+
+Reuse the existing 256px sidebar, 64px header, 1280px content maximum, 32px desktop
+and 16px mobile gutters, Instrument Sans, six brand colors, 16px panel radius,
+24px section gaps and 44px targets. Hero uses 32px desktop / 24px mobile padding,
+48/56 desktop / 36/44 mobile title and a 416x264 contained media column on wide
+screens; stack at compact widths. Shortcut panels use 24px padding, 20px icons,
+18/26 headings and 16/24 body; three columns on desktop and one on phone.
+Explore results add a 16:10 photo frame, contained imagery, pale empty/error state,
+and visible source/photographer/license. Keep genuine taxonomy and alias controls.
+Use one main vertical scroll owner, with no page-level document scroll. ID/EN,
+keyboard focus, empty/error/loading and image-failure states are required. CSS/JS
+remain external. Responsive captures extrapolate from the desktop references;
+the app remains light themed under either system preference.
+
 ## Figma redesign (October 2026)
 
 ### Fish detail (FSH-10)

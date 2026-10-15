@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('document-class', 'h-dvh overflow-hidden')
-@section('body-class', 'h-dvh min-h-0 overflow-hidden')
+@section('document-class', 'h-dvh overflow-clip')
+@section('body-class', 'h-dvh min-h-0 overflow-clip')
 @section('content')
     <div data-navigation-shell
         class="flex h-dvh overflow-hidden bg-gray-50">
@@ -24,14 +24,14 @@
                     class="flex size-11 items-center justify-center rounded-lg text-anufish-navy hover:bg-white focus-visible:outline-2 focus-visible:outline-anufish-teal lg:hidden"><x-navigation.icon
                         name="menu" /></button>
                 <p class="min-w-0 flex-1 truncate text-sm text-anufish-muted"><span
-                        class="hidden sm:inline">{{ __('Ruang eksplorasi / ') }}</span>{{ request()->routeIs('fish.show') ? __('Detail Ikan') : (request()->routeIs('profile.*') ? __('Profil Saya') : (request()->filled('q') ? __('Jelajahi Ikan') : __('Beranda'))) }}
+                        class="hidden sm:inline">{{ __('Ruang eksplorasi / ') }}</span>{{ request()->routeIs('fish.show') ? __('Detail Ikan') : (request()->routeIs('profile.*') ? __('Profil Saya') : (request()->routeIs('fish.*') ? __('Jelajahi Ikan') : __('Beranda'))) }}
                 </p>
                 <a href="{{ route('profile.show') }}"
                     class="inline-flex min-h-11 max-w-40 items-center rounded-lg text-sm font-semibold text-anufish-navy hover:text-anufish-teal focus-visible:outline-2 focus-visible:outline-anufish-teal"><span
                         class="truncate">{{ auth()->user()->name }}</span></a>
                 <x-language-switch />
             </header>
-            <main id="main-content" tabindex="-1" class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
+            <main id="main-content" tabindex="-1" class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-anufish-teal">
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:p-8">@yield('page-content')</div>
             </main>
         </div>

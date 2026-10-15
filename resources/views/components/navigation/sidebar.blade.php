@@ -10,10 +10,9 @@
         <h2 class="mb-2 px-3 text-xs font-medium text-anufish-muted">{{ __('Eksplorasi') }}</h2>
         <ul class="space-y-1">
             <x-navigation.item icon="home" :href="route('homepage')"
-                :active="request()->routeIs('homepage') && !request()->filled('q')">{{ __('Beranda') }}</x-navigation.item>
-            <x-navigation.item icon="fish" :href="route('homepage') . '#fish-search'"
-                :active="request()->routeIs('fish.show') ||
-                    (request()->routeIs('homepage') && request()->filled('q'))">{{ __('Jelajahi Ikan') }}</x-navigation.item>
+                :active="request()->routeIs('homepage')">{{ __('Beranda') }}</x-navigation.item>
+            <x-navigation.item icon="fish" :href="route('fish.index')"
+                :active="request()->routeIs('fish.*')">{{ __('Jelajahi Ikan') }}</x-navigation.item>
             <x-navigation.item icon="article">{{ __('Artikel') }}</x-navigation.item>
         </ul>
         <h2 class="mb-2 mt-6 px-3 text-xs font-medium text-anufish-muted">{{ __('Ruang saya') }}</h2>

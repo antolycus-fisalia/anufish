@@ -37,7 +37,7 @@ class FishDetailTest extends TestCase
             ->assertOk()->assertSee('Tuna sirip kuning')->assertSee('Scombridae')->assertSee('Ringkasan ikan pelagis.')
             ->assertDontSee('Lokasi pengamatan')->assertSee('Fotografer QA')->assertSee('CC BY-SA 4.0')
             ->assertSee('https://www.inaturalist.org/photos/123')
-            ->assertSee(route('homepage', ['q' => 'キハダ', 'page' => 2]));
+            ->assertSee(route('fish.index', ['q' => 'キハダ', 'page' => 2]));
         Http::assertSent(fn ($request) => parse_url($request->url(), PHP_URL_PATH) === '/v1/taxa/69675');
         Http::assertNotSent(fn ($request) => str_contains($request->url(), '/observations'));
         Http::assertSentCount(1);

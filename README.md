@@ -59,6 +59,11 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Pencarian dan detail ikan iNaturalist
 
+Beranda (`/`) menampilkan hero, pintasan dan bagian bacaan. Jelajahi Ikan (`/fish`)
+menjadi halaman pencarian tersendiri; tautan lama `/?q=...&page=...` diarahkan ke
+`/fish` dengan query dan halaman yang sama. Endpoint JSON `/fish/search` tetap
+tersedia. Scan, riwayat dan artikel masih ditandai Segera sampai fiturnya selesai.
+
 `InaturalistService` memakai API publik iNaturalist sebagai satu-satunya sumber
 referensi takson dan foto. Input nama ilmiah/umum menerima Unicode 1–150 karakter,
 termasuk CJK dan RTL. Nama yang ditampilkan hanya Indonesia dan Inggris. Nama yang
