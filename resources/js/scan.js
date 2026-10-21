@@ -8,6 +8,7 @@ export function scanUpload() {
         hasFile: false,
         errorMessage: '',
         processing: false,
+        selectionGeneration: 0,
 
         openCamera() {
             const input = this.$refs.fileInput;
@@ -24,6 +25,10 @@ export function scanUpload() {
         },
 
         async handleFile(event) {
+            // Setiap pilihan file mempunyai generation sendiri.
+            // Hasil async dari pilihan lama tidak boleh mengubah state terbaru.
+            const generation = ++this.selectionGeneration;
+
             const input = event.target;
             const file = input.files?.[0];
 
@@ -39,12 +44,17 @@ export function scanUpload() {
                 return;
             }
 
-            // Kosongkan pilihan sebelumnya selama file baru diperiksa.
             this.resetSelection();
             this.errorMessage = '';
 
             const imageUrl = URL.createObjectURL(file);
             const imageIsValid = await this.canDecodeImage(imageUrl);
+
+            // User sudah memilih file lain ketika decode masih berjalan.
+            if (generation !== this.selectionGeneration) {
+                URL.revokeObjectURL(imageUrl);
+                return;
+            }
 
             if (!imageIsValid) {
                 URL.revokeObjectURL(imageUrl);
@@ -57,7 +67,6 @@ export function scanUpload() {
                 return;
             }
 
-            // File baru dianggap valid setelah berhasil dibaca browser.
             this.previewUrl = imageUrl;
             this.selectedFileName = file.name;
             this.hasFile = true;
@@ -117,7 +126,7 @@ export function scanUpload() {
 
             this.processing = true;
 
-            // Fixture sementara sampai endpoint FSH-13 tersedia.
+            // Fixture sementara sampai endpoint identifikasi tersedia.
             window.setTimeout(() => {
                 this.processing = false;
             }, 1000);
@@ -133,6 +142,8 @@ export function scanUpload() {
         },
 
         destroy() {
+            // Decode yang masih berjalan menjadi stale setelah component dihancurkan.
+            this.selectionGeneration += 1;
             this.clearPreviewUrl();
         },
     };
