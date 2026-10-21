@@ -189,5 +189,12 @@
   "Cari spesies berdasarkan nama umum atau nama ilmiahnya.": "Search species by common or scientific name.",
   "Cari nama ikan atau nama ilmiah": "Search a fish or scientific name",
   "Gambar belum tersedia": "Image not available",
-  "Kembali ke Jelajahi Ikan": "Back to Explore Fish"
+  "Kembali ke Jelajahi Ikan": "Back to Explore Fish",
+  "Foto ikan wajib diunggah.": "Fish photo is required.",
+  "File yang diunggah tidak valid.": "The uploaded file is invalid.",
+  "Format gambar harus JPG, JPEG, atau PNG.": "Image format must be JPG, JPEG, or PNG.",
+  "Tipe MIME gambar tidak valid.": "Invalid image MIME type.",
+  "Ukuran gambar maksimal adalah 5 MB.": "Maximum image size is 5 MB.",
+  "Foto ikan berhasil diunggah.": "Fish photo uploaded successfully.",
+  "Gagal menyimpan foto ikan.": "Failed to save fish photo."
 }

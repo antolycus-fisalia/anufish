@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ScanUploadRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class ScanController extends Controller
 {
@@ -21,10 +21,20 @@ class ScanController extends Controller
         $file = $request->file('fish_image');
 
         $extension = $file->guessExtension() ?? $file->getClientOriginalExtension();
-
         $filename = Str::uuid() . '.' . $extension;
 
-        $path = $file->storeAs('scans', $filename, 'local');
+        try {
+            $path = $file->storeAs('scans', $filename, 'local');
+        } catch (Throwable) {
+            $path = false;
+        }
+
+        if (! is_string($path) || $path === '') {
+            return response()->json([
+                'success' => false,
+                'message' => __('Gagal menyimpan foto ikan.'),
+            ], 500);
+        }
 
         return response()->json([
             'success' => true,
@@ -39,4 +49,3 @@ class ScanController extends Controller
         ], 201);
     }
 }
-

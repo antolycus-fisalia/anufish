@@ -18,8 +18,10 @@ class ScanUploadRequest extends FormRequest
                 'required',
                 'file',
                 'image',
+                'extensions:jpg,jpeg,png',
                 'mimes:jpg,jpeg,png',
-                'max:5120', // 5 MB in kilobytes
+                'mimetypes:image/jpeg,image/png',
+                'max:5120',
             ],
         ];
     }
@@ -27,12 +29,13 @@ class ScanUploadRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'fish_image.required' => __('Foto ikan wajib diunggah.'),
-            'fish_image.file'     => __('Unggahan harus berupa file.'),
-            'fish_image.image'    => __('File harus berupa gambar.'),
-            'fish_image.mimes'    => __('Foto harus berformat JPG, JPEG, atau PNG.'),
-            'fish_image.max'      => __('Ukuran foto maksimal 5 MB.'),
+            'fish_image.required'   => __('Foto ikan wajib diunggah.'),
+            'fish_image.file'       => __('File yang diunggah tidak valid.'),
+            'fish_image.image'      => __('File harus berupa gambar.'),
+            'fish_image.extensions' => __('Format gambar harus JPG, JPEG, atau PNG.'),
+            'fish_image.mimes'      => __('Format gambar harus JPG, JPEG, atau PNG.'),
+            'fish_image.mimetypes'  => __('Tipe MIME gambar tidak valid.'),
+            'fish_image.max'        => __('Ukuran gambar maksimal adalah 5 MB.'),
         ];
     }
 }
-

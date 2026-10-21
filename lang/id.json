@@ -170,5 +170,12 @@
   "Memuat foto...": "Memuat foto...",
   "Foto tambahan belum dapat dimuat. Silakan coba lagi.": "Foto tambahan belum dapat dimuat. Silakan coba lagi.",
   "Semua foto yang tersedia sudah dimuat.": "Semua foto yang tersedia sudah dimuat.",
-  "Hanya foto dengan lisensi penggunaan yang sesuai yang ditampilkan.": "Hanya foto dengan lisensi penggunaan yang sesuai yang ditampilkan."
+  "Hanya foto dengan lisensi penggunaan yang sesuai yang ditampilkan.": "Hanya foto dengan lisensi penggunaan yang sesuai yang ditampilkan.",
+  "Foto ikan wajib diunggah.": "Foto ikan wajib diunggah.",
+  "File yang diunggah tidak valid.": "File yang diunggah tidak valid.",
+  "Format gambar harus JPG, JPEG, atau PNG.": "Format gambar harus JPG, JPEG, atau PNG.",
+  "Tipe MIME gambar tidak valid.": "Tipe MIME gambar tidak valid.",
+  "Ukuran gambar maksimal adalah 5 MB.": "Ukuran gambar maksimal adalah 5 MB.",
+  "Foto ikan berhasil diunggah.": "Foto ikan berhasil diunggah.",
+  "Gagal menyimpan foto ikan.": "Gagal menyimpan foto ikan."
 }
