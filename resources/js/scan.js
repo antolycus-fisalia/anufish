@@ -1,155 +1,99 @@
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
-export function initScan() {
-    document.querySelectorAll('[data-scan]').forEach((scope) => {
-        const input = scope.querySelector('[data-scan-input]');
-        const cameraButton = scope.querySelector('[data-scan-camera]');
-        const uploadButton = scope.querySelector('[data-scan-upload]');
-        const preview = scope.querySelector('[data-scan-preview]');
-        const placeholder = scope.querySelector('[data-scan-placeholder]');
-        const error = scope.querySelector('[data-scan-error]');
-        const fileName = scope.querySelector('[data-scan-file-name]');
-        const processButton = scope.querySelector('[data-scan-process]');
-        const states = scope.querySelectorAll('[data-scan-state]');
+export function scanUpload() {
+    return {
+        previewUrl: null,
+        selectedFileName: '',
+        hasFile: false,
+        errorMessage: '',
+        processing: false,
 
-        if (
-            !input ||
-            !cameraButton ||
-            !uploadButton ||
-            !preview ||
-            !placeholder ||
-            !error ||
-            !fileName ||
-            !processButton
-        ) {
-            return;
-        }
+        openCamera() {
+            const input = this.$refs.fileInput;
 
-        let previewUrl = null;
-        let selectedFile = null;
-        let processing = false;
+            input.setAttribute('capture', 'environment');
+            input.click();
+        },
 
-        const clearPreviewUrl = () => {
-            if (!previewUrl) {
-                return;
-            }
+        openUpload() {
+            const input = this.$refs.fileInput;
 
-            URL.revokeObjectURL(previewUrl);
-            previewUrl = null;
-        };
+            input.removeAttribute('capture');
+            input.click();
+        },
 
-        const setProcessState = (state) => {
-            states.forEach((element) => {
-                element.hidden = element.dataset.scanState !== state;
-            });
-        };
-
-        const setError = (message = '') => {
-            error.textContent = message;
-            error.hidden = message === '';
-        };
-
-        const resetPreview = () => {
-            clearPreviewUrl();
-
-            preview.hidden = true;
-            preview.removeAttribute('src');
-
-            placeholder.hidden = false;
-
-            fileName.hidden = true;
-            fileName.textContent = '';
-
-            selectedFile = null;
-            processButton.disabled = true;
-        };
-
-        const showPreview = (file) => {
-            clearPreviewUrl();
-
-            previewUrl = URL.createObjectURL(file);
-            preview.src = previewUrl;
-            preview.hidden = false;
-
-            placeholder.hidden = true;
-
-            fileName.textContent = file.name;
-            fileName.hidden = false;
-
-            selectedFile = file;
-            processButton.disabled = false;
-
-            setError();
-        };
-
-        const validateFile = (file) => {
-            if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-                return scope.dataset.errorFormat;
-            }
-
-            if (file.size > MAX_IMAGE_SIZE) {
-                return scope.dataset.errorSize;
-            }
-
-            return null;
-        };
-
-        const handleFile = () => {
+        handleFile(event) {
+            const input = event.target;
             const file = input.files?.[0];
 
             if (!file) {
                 return;
             }
 
-            const validationError = validateFile(file);
+            const root = input.closest('[data-scan]');
+            const validationError = this.validateFile(file, root);
 
             if (validationError) {
-                resetPreview();
+                this.resetSelection();
                 input.value = '';
-                setError(validationError);
+                this.errorMessage = validationError;
+
                 return;
             }
 
-            showPreview(file);
-        };
+            this.clearPreviewUrl();
 
-        cameraButton.addEventListener('click', () => {
-            input.setAttribute('capture', 'environment');
-            input.click();
-        });
+            this.previewUrl = URL.createObjectURL(file);
+            this.selectedFileName = file.name;
+            this.hasFile = true;
+            this.errorMessage = '';
+        },
 
-        uploadButton.addEventListener('click', () => {
-            input.removeAttribute('capture');
-            input.click();
-        });
+        validateFile(file, root) {
+            if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                return root?.dataset.errorFormat ?? '';
+            }
 
-        input.addEventListener('change', handleFile);
+            if (file.size > MAX_IMAGE_SIZE) {
+                return root?.dataset.errorSize ?? '';
+            }
 
-        processButton.addEventListener('click', () => {
-            if (!selectedFile || processing) {
+            return null;
+        },
+
+        resetSelection() {
+            this.clearPreviewUrl();
+
+            this.previewUrl = null;
+            this.selectedFileName = '';
+            this.hasFile = false;
+        },
+
+        processImage() {
+            if (!this.hasFile || this.processing) {
                 return;
             }
 
-            processing = true;
-            processButton.disabled = true;
-            cameraButton.disabled = true;
-            uploadButton.disabled = true;
+            this.processing = true;
 
-            setProcessState('loading');
-
-            // Fixture sementara sampai endpoint identifikasi dari backend tersedia.
+            // Fixture sementara sampai endpoint FSH-13 tersedia.
             window.setTimeout(() => {
-                processing = false;
-
-                processButton.disabled = false;
-                cameraButton.disabled = false;
-                uploadButton.disabled = false;
-
-                setProcessState('idle');
+                this.processing = false;
             }, 1000);
-        });
+        },
 
-        window.addEventListener('pagehide', clearPreviewUrl);
-    });
+        clearPreviewUrl() {
+            if (!this.previewUrl) {
+                return;
+            }
+
+            URL.revokeObjectURL(this.previewUrl);
+            this.previewUrl = null;
+        },
+
+        destroy() {
+            this.clearPreviewUrl();
+        },
+    };
 }
