@@ -23,7 +23,7 @@ export function scanUpload() {
             input.click();
         },
 
-        handleFile(event) {
+        async handleFile(event) {
             const input = event.target;
             const file = input.files?.[0];
 
@@ -35,16 +35,30 @@ export function scanUpload() {
             const validationError = this.validateFile(file, root);
 
             if (validationError) {
-                this.resetSelection();
-                input.value = '';
-                this.errorMessage = validationError;
+                this.rejectFile(input, validationError);
+                return;
+            }
+
+            // Kosongkan pilihan sebelumnya selama file baru diperiksa.
+            this.resetSelection();
+            this.errorMessage = '';
+
+            const imageUrl = URL.createObjectURL(file);
+            const imageIsValid = await this.canDecodeImage(imageUrl);
+
+            if (!imageIsValid) {
+                URL.revokeObjectURL(imageUrl);
+
+                this.rejectFile(
+                    input,
+                    root?.dataset.errorImage ?? ''
+                );
 
                 return;
             }
 
-            this.clearPreviewUrl();
-
-            this.previewUrl = URL.createObjectURL(file);
+            // File baru dianggap valid setelah berhasil dibaca browser.
+            this.previewUrl = imageUrl;
             this.selectedFileName = file.name;
             this.hasFile = true;
             this.errorMessage = '';
@@ -60,6 +74,32 @@ export function scanUpload() {
             }
 
             return null;
+        },
+
+        canDecodeImage(imageUrl) {
+            return new Promise((resolve) => {
+                const image = new Image();
+
+                image.onload = () => {
+                    resolve(
+                        image.naturalWidth > 0 &&
+                        image.naturalHeight > 0
+                    );
+                };
+
+                image.onerror = () => {
+                    resolve(false);
+                };
+
+                image.src = imageUrl;
+            });
+        },
+
+        rejectFile(input, message) {
+            this.resetSelection();
+
+            input.value = '';
+            this.errorMessage = message;
         },
 
         resetSelection() {

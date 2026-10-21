@@ -201,5 +201,6 @@
     "Preview foto akan tampil di sini.": "The photo preview will appear here.",
     "Preview foto ikan": "Fish photo preview",
     "Proses Identifikasi": "Identify Fish",
-    "Foto harus berformat JPG, JPEG, atau PNG.": "The photo must be JPG, JPEG, or PNG."
+    "Foto harus berformat JPG, JPEG, atau PNG.": "The photo must be JPG, JPEG, or PNG.",
+    "File gambar tidak dapat dibaca. Pilih gambar lain yang valid.": "The image file could not be read. Please choose another valid image."
 }
