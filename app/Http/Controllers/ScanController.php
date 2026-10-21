@@ -38,7 +38,7 @@ class ScanController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => __('Foto berhasil diunggah.'),
+            'message' => __('Foto ikan berhasil diunggah.'),
             'data'    => [
                 'path'          => $path,
                 'disk'          => 'local',
