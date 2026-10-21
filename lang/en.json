@@ -202,5 +202,12 @@
     "Preview foto ikan": "Fish photo preview",
     "Proses Identifikasi": "Identify Fish",
     "Foto harus berformat JPG, JPEG, atau PNG.": "The photo must be JPG, JPEG, or PNG.",
-    "File gambar tidak dapat dibaca. Pilih gambar lain yang valid.": "The image file could not be read. Please choose another valid image."
+    "File gambar tidak dapat dibaca. Pilih gambar lain yang valid.": "The image file could not be read. Please choose another valid image.",
+    "Foto ikan wajib diunggah.": "Fish photo is required.",
+    "File yang diunggah tidak valid.": "The uploaded file is invalid.",
+    "Format gambar harus JPG, JPEG, atau PNG.": "Image format must be JPG, JPEG, or PNG.",
+    "Tipe MIME gambar tidak valid.": "Invalid image MIME type.",
+    "Ukuran gambar maksimal adalah 5 MB.": "Maximum image size is 5 MB.",
+    "Foto ikan berhasil diunggah.": "Fish photo uploaded successfully.",
+    "Gagal menyimpan foto ikan.": "Failed to save fish photo."
 }
