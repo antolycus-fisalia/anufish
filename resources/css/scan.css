@@ -1,0 +1,74 @@
+@layer components {
+    .scan-page {
+        @apply space-y-6;
+    }
+
+    .scan-header p {
+        @apply mt-2 max-w-2xl text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .scan-panel {
+        @apply rounded-2xl border border-anufish-border bg-white p-4 sm:p-6;
+    }
+
+    .scan-grid {
+        @apply grid gap-6 lg:grid-cols-2;
+    }
+
+    .scan-input-section {
+        @apply space-y-5;
+    }
+
+    .scan-input-section h2 {
+        @apply text-2xl font-semibold leading-8 text-anufish-navy;
+    }
+
+    .scan-input-section > div > p {
+        @apply mt-2 text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .scan-source-actions {
+        @apply grid gap-3 sm:grid-cols-2;
+    }
+
+    .scan-secondary-action {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-anufish-border bg-white px-4 py-3 text-sm font-semibold text-anufish-navy transition-colors hover:border-anufish-cyan hover:bg-anufish-pale focus-visible:outline-2 focus-visible:outline-anufish-teal;
+    }
+
+    .scan-file-info {
+        @apply rounded-lg bg-anufish-pale p-4 text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .scan-error {
+        @apply rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600;
+    }
+
+    .scan-preview-section {
+        @apply overflow-hidden rounded-2xl border border-anufish-border bg-anufish-pale;
+        aspect-ratio: 4 / 3;
+    }
+
+    .scan-preview-placeholder {
+        @apply flex size-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-anufish-muted;
+    }
+
+    .scan-preview-placeholder svg {
+        @apply size-8 text-anufish-teal;
+    }
+
+    .scan-preview-image {
+        @apply size-full object-contain;
+    }
+
+    .scan-footer {
+        @apply mt-6 flex flex-col gap-4 border-t border-anufish-border pt-6 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .scan-selected-file {
+        @apply break-all text-sm font-medium text-anufish-navy;
+    }
+
+    .scan-footer .primary-action {
+        @apply w-full sm:w-auto;
+    }
+}

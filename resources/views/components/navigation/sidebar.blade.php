@@ -17,7 +17,13 @@
         </ul>
         <h2 class="mb-2 mt-6 px-3 text-xs font-medium text-anufish-muted">{{ __('Ruang saya') }}</h2>
         <ul class="space-y-1">
-            <x-navigation.item icon="scan">{{ __('Scan Ikan') }}</x-navigation.item>
+            <x-navigation.item
+            icon="scan"
+            :href="route('scan.index')"
+            :active="request()->routeIs('scan.*')"
+>
+            {{ __('Scan Ikan') }}
+            </x-navigation.item>
             <x-navigation.item icon="history">{{ __('Riwayat Scan') }}</x-navigation.item>
             <x-navigation.item icon="edit">{{ __('Artikel Saya') }}</x-navigation.item>
         </ul>
