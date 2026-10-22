@@ -10,24 +10,31 @@ export function scanUpload() {
         processing: false,
         selectionGeneration: 0,
 
+        resultStatus: 'idle',
+        candidates: [],
+        selectedCandidateIndex: null,
+        reference: null,
+        referenceStatus: 'idle',
+        referenceImageFailed: false,
+        resultError: '',
+
         openCamera() {
             const input = this.$refs.fileInput;
-
             input.setAttribute('capture', 'environment');
             input.click();
         },
 
         openUpload() {
             const input = this.$refs.fileInput;
-
             input.removeAttribute('capture');
             input.click();
         },
 
         async handleFile(event) {
-            // Setiap pilihan file mempunyai generation sendiri.
-            // Hasil async dari pilihan lama tidak boleh mengubah state terbaru.
+            // Mencegah hasil decode file lama menimpa file terbaru
             const generation = ++this.selectionGeneration;
+
+            this.resetResult();
 
             const input = event.target;
             const file = input.files?.[0];
@@ -50,7 +57,6 @@ export function scanUpload() {
             const imageUrl = URL.createObjectURL(file);
             const imageIsValid = await this.canDecodeImage(imageUrl);
 
-            // User sudah memilih file lain ketika decode masih berjalan.
             if (generation !== this.selectionGeneration) {
                 URL.revokeObjectURL(imageUrl);
                 return;
@@ -58,19 +64,13 @@ export function scanUpload() {
 
             if (!imageIsValid) {
                 URL.revokeObjectURL(imageUrl);
-
-                this.rejectFile(
-                    input,
-                    root?.dataset.errorImage ?? ''
-                );
-
+                this.rejectFile(input, root?.dataset.errorImage ?? '');
                 return;
             }
 
             this.previewUrl = imageUrl;
             this.selectedFileName = file.name;
             this.hasFile = true;
-            this.errorMessage = '';
         },
 
         validateFile(file, root) {
@@ -90,10 +90,7 @@ export function scanUpload() {
                 const image = new Image();
 
                 image.onload = () => {
-                    resolve(
-                        image.naturalWidth > 0 &&
-                        image.naturalHeight > 0
-                    );
+                    resolve(image.naturalWidth > 0 && image.naturalHeight > 0);
                 };
 
                 image.onerror = () => {
@@ -106,30 +103,149 @@ export function scanUpload() {
 
         rejectFile(input, message) {
             this.resetSelection();
-
             input.value = '';
             this.errorMessage = message;
         },
 
         resetSelection() {
             this.clearPreviewUrl();
-
-            this.previewUrl = null;
             this.selectedFileName = '';
             this.hasFile = false;
         },
 
-        processImage() {
+        resetResult() {
+            this.resultStatus = 'idle';
+            this.candidates = [];
+            this.selectedCandidateIndex = null;
+            this.reference = null;
+            this.referenceStatus = 'idle';
+            this.referenceImageFailed = false;
+            this.resultError = '';
+        },
+
+        formatConfidence(confidence) {
+            if (
+                confidence === null ||
+                confidence === undefined ||
+                !Number.isFinite(Number(confidence))
+            ) {
+                return '';
+            }
+
+            return `${Math.round(Number(confidence) * 100)}%`;
+        },
+
+        selectCandidate(index) {
+            if (
+                !Number.isInteger(index) ||
+                index < 0 ||
+                index >= this.candidates.length
+            ) {
+                return;
+            }
+
+            this.selectedCandidateIndex = index;
+        },
+
+        chooseAnotherImage() {
+            this.resetSelection();
+            this.resetResult();
+
+            const input = this.$refs.fileInput;
+
+            if (!input) {
+                return;
+            }
+
+            input.value = '';
+            input.removeAttribute('capture');
+            input.click();
+        },
+
+        async processImage() {
+            // Mencegah double click
             if (!this.hasFile || this.processing) {
                 return;
             }
 
-            this.processing = true;
+            const input = this.$refs.fileInput;
+            const file = input?.files?.[0];
 
-            // Fixture sementara sampai endpoint identifikasi tersedia.
-            window.setTimeout(() => {
+            if (!file) {
+                return;
+            }
+
+            const root = input.closest('[data-scan]');
+            const csrfToken = document.querySelector(
+                'meta[name="csrf-token"]'
+            )?.content;
+
+            this.resetResult();
+            this.processing = true;
+            this.resultStatus = 'loading';
+
+            try {
+                const formData = new FormData();
+                formData.append('fish_image', file);
+
+                const response = await fetch('/scan/upload', {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        ...(csrfToken
+                            ? { 'X-CSRF-TOKEN': csrfToken }
+                            : {}),
+                    },
+                    body: formData,
+                });
+
+                const payload = await response.json();
+
+                if (!response.ok || payload.success === false) {
+                    throw new Error(
+                        payload.message ||
+                        root?.dataset.errorRequest ||
+                        ''
+                    );
+                }
+
+                const candidates = payload.data?.candidates;
+
+                // Endpoint lama belum mengembalikan hasil Gemini
+                if (!Array.isArray(candidates)) {
+                    this.resultStatus = 'failure';
+                    this.resultError =
+                        root?.dataset.errorResult ?? '';
+                    return;
+                }
+
+                this.candidates = candidates;
+
+                // Gemini tidak menemukan kandidat
+                if (candidates.length === 0) {
+                    this.resultStatus = 'unknown';
+                    return;
+                }
+
+                // Lebih dari satu kandidat harus dipilih user
+                if (candidates.length > 1) {
+                    this.resultStatus = 'ambiguous';
+                    return;
+                }
+
+                // Satu kandidat Gemini berhasil
+                // Detail iNaturalist masih menunggu FSH-15
+                this.selectedCandidateIndex = 0;
+                this.resultStatus = 'partial';
+            } catch (error) {
+                this.resultStatus = 'failure';
+                this.resultError =
+                    error instanceof Error && error.message
+                        ? error.message
+                        : root?.dataset.errorRequest ?? '';
+            } finally {
                 this.processing = false;
-            }, 1000);
+            }
         },
 
         clearPreviewUrl() {
@@ -142,7 +258,6 @@ export function scanUpload() {
         },
 
         destroy() {
-            // Decode yang masih berjalan menjadi stale setelah component dihancurkan.
             this.selectionGeneration += 1;
             this.clearPreviewUrl();
         },

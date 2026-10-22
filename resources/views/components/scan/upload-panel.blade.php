@@ -105,4 +105,5 @@
             </span>
         </x-ui.button>
     </div>
+    <x-scan.result-panel />
 </section>
