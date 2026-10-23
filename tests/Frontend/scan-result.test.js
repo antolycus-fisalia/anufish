@@ -207,4 +207,33 @@ test('double click does not start duplicate identification request', async () =>
     assert.equal(requestCount, 1);
     assert.equal(component.processing, false);
     assert.equal(component.resultStatus, 'partial');
+
+
+});
+
+test('upload response without candidates shows fallback result error', async () => {
+    const component = createComponent();
+
+    globalThis.fetch = async () => ({
+        ok: true,
+        json: async () => ({
+            success: true,
+            data: {
+                path: 'scans/test.jpg',
+                disk: 'local',
+                original_name: 'test.jpg',
+                size: 1000,
+                mime_type: 'image/jpeg',
+            },
+        }),
+    });
+
+    await component.processImage();
+
+    assert.equal(component.resultStatus, 'failure');
+    assert.equal(
+        component.resultError,
+        'Hasil identifikasi belum tersedia.'
+    );
+    assert.equal(component.processing, false);
 });

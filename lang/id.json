@@ -214,5 +214,7 @@
     "Nama umum": "Nama umum",
     "Taxon ID iNaturalist": "Taxon ID iNaturalist",
     "Atribusi foto": "Atribusi foto",
-    "Lisensi": "Lisensi"
+    "Lisensi": "Lisensi",
+    "Identifikasi gagal. Silakan coba lagi.": "Identifikasi gagal. Silakan coba lagi.",
+    "Hasil identifikasi belum tersedia.": "Hasil identifikasi belum tersedia."
 }

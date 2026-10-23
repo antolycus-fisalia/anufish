@@ -5,6 +5,8 @@
     data-error-format="{{ __('Foto harus berformat JPG, JPEG, atau PNG.') }}"
     data-error-size="{{ __('Ukuran foto maksimal 5 MB.') }}"
     data-error-image="{{ __('File gambar tidak dapat dibaca. Pilih gambar lain yang valid.') }}"
+    data-error-request="{{ __('Identifikasi gagal. Silakan coba lagi.') }}"
+    data-error-result="{{ __('Hasil identifikasi belum tersedia.') }}"
 >
     <div class="scan-grid">
         <div class="scan-input-section">

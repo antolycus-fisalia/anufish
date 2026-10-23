@@ -233,5 +233,7 @@
     "Nama umum": "Common name",
     "Taxon ID iNaturalist": "iNaturalist Taxon ID",
     "Atribusi foto": "Photo attribution",
-    "Lisensi": "License"
+    "Lisensi": "License",
+    "Identifikasi gagal. Silakan coba lagi.": "Identification failed. Please try again.",
+    "Hasil identifikasi belum tersedia.": "Identification result is not available yet."
 }

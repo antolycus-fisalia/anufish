@@ -33,7 +33,7 @@
                 x-show="reference?.image?.url && !referenceImageFailed"
                 :src="reference?.image?.url ?? ''"
                 :alt="reference?.scientific_name ?? ''"
-                @error="referenceImageFailed = true"
+                x-on:error="referenceImageFailed = true"
             >
 
             <div
