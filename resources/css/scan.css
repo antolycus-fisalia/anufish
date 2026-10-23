@@ -71,4 +71,118 @@
     .scan-footer .primary-action {
         @apply w-full sm:w-auto;
     }
+    .scan-result-panel {
+    @apply mt-6 border-t border-anufish-border pt-6;
+    }
+
+    .scan-result-state {
+        @apply space-y-3 rounded-2xl bg-anufish-pale p-4 sm:p-6;
+    }
+
+    .scan-result-state h2,
+    .scan-result-header h2 {
+        @apply text-2xl font-semibold leading-8 text-anufish-navy;
+    }
+
+    .scan-result-state p,
+    .scan-result-note {
+        @apply text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .scan-result-state-error {
+        @apply border border-rose-200 bg-rose-50;
+    }
+
+    .scan-result-content {
+        @apply space-y-5;
+    }
+
+    .scan-result-header {
+        @apply space-y-2;
+    }
+
+    .scan-result-eyebrow {
+        @apply text-xs font-semibold text-anufish-teal;
+    }
+
+    .scan-candidate-list {
+        @apply grid gap-3;
+    }
+
+    .scan-candidate-card {
+        @apply flex flex-col gap-4 rounded-xl border border-anufish-border bg-white p-4 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .scan-candidate-card-selected {
+        @apply border-anufish-teal bg-anufish-pale;
+    }
+
+    .scan-candidate-name {
+        @apply break-words text-lg font-semibold italic leading-[26px] text-anufish-navy;
+    }
+
+    .scan-candidate-confidence {
+        @apply mt-1 text-sm text-anufish-muted;
+    }
+
+    .scan-result-notice {
+        @apply rounded-xl border border-anufish-border bg-anufish-pale p-4;
+    }
+
+    .scan-result-notice h3 {
+        @apply font-semibold text-anufish-navy;
+    }
+
+    .scan-result-notice p {
+        @apply mt-1 text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .scan-reference-panel {
+        @apply rounded-2xl border border-anufish-border bg-white p-4 sm:p-6;
+    }
+
+    .scan-reference-header {
+        @apply mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .scan-reference-header h3 {
+        @apply text-xl font-semibold text-anufish-navy;
+    }
+
+    .scan-reference-grid {
+        @apply grid gap-5 md:grid-cols-[minmax(0,320px)_1fr];
+    }
+
+    .scan-reference-photo {
+        @apply overflow-hidden rounded-xl bg-anufish-pale;
+        aspect-ratio: 4 / 3;
+    }
+
+    .scan-reference-photo img {
+        @apply size-full object-contain;
+    }
+
+    .scan-reference-placeholder {
+        @apply flex size-full flex-col items-center justify-center gap-2 p-4 text-center text-sm text-anufish-muted;
+    }
+
+    .scan-reference-placeholder svg {
+        @apply size-8 text-anufish-teal;
+    }
+
+    .scan-reference-content {
+        @apply grid content-start gap-4;
+    }
+
+    .scan-reference-label {
+        @apply text-xs font-medium text-anufish-muted;
+    }
+
+    .scan-reference-value {
+        @apply mt-1 break-words text-sm font-medium text-anufish-navy;
+    }
+
+    .scan-reference-link {
+        @apply inline-flex min-h-11 items-center text-sm font-semibold text-anufish-teal hover:text-anufish-navy focus-visible:outline-2 focus-visible:outline-anufish-teal;
+    }
 }
