@@ -16,6 +16,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::view('/scan', 'pages.scan.index')->name('scan.index');
+
+    Route::view('/scan/history', 'pages.scan.history.index')
+    ->name('scan.history.index');
+
     Route::post('/scan/upload', [ScanController::class, 'upload'])->name('scan.upload');
 
     Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {

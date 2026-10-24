@@ -20,11 +20,16 @@
             <x-navigation.item
             icon="scan"
             :href="route('scan.index')"
-            :active="request()->routeIs('scan.*')"
->
+            :active="request()->routeIs('scan.index')"
+            >
             {{ __('Scan Ikan') }}
             </x-navigation.item>
-            <x-navigation.item icon="history">{{ __('Riwayat Scan') }}</x-navigation.item>
+            <x-navigation.item
+            icon="history"
+            :href="route('scan.history.index')"
+            :active="request()->routeIs('scan.history.*')">
+            {{ __('Riwayat Scan') }}
+            </x-navigation.item>
             <x-navigation.item icon="edit">{{ __('Artikel Saya') }}</x-navigation.item>
         </ul>
         @if ($user->isAdmin())
