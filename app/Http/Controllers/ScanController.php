@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ScanUploadRequest;
+use App\Services\RuvicodeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\FilesystemException;
 use Throwable;
 
 class ScanController extends Controller
@@ -14,14 +17,14 @@ class ScanController extends Controller
      *
      * The file is stored with a UUID-based name so it never depends on
      * the user's original filename. The path is returned so downstream
-     * services (Gemini AI, iNaturalist, riwayat) can reference it.
+     * services (Ruvicode, iNaturalist, riwayat) can reference it.
      */
-    public function upload(ScanUploadRequest $request): JsonResponse
+    public function upload(ScanUploadRequest $request, RuvicodeService $identifier): JsonResponse
     {
         $file = $request->file('fish_image');
 
         $extension = $file->guessExtension() ?? $file->getClientOriginalExtension();
-        $filename = Str::uuid() . '.' . $extension;
+        $filename = Str::uuid().'.'.$extension;
 
         try {
             $path = $file->storeAs('scans', $filename, 'local');
@@ -36,15 +39,27 @@ class ScanController extends Controller
             ], 500);
         }
 
+        $result = $identifier->identify($path);
+        if (! $result['success']) {
+            try {
+                Storage::disk('local')->delete($path);
+            } catch (FilesystemException) {
+                // Cleanup failure must not hide the controlled identification error.
+            }
+
+            return response()->json(['success' => false, 'message' => $result['error']], 502);
+        }
+
         return response()->json([
             'success' => true,
             'message' => __('Foto ikan berhasil diunggah.'),
-            'data'    => [
-                'path'          => $path,
-                'disk'          => 'local',
+            'data' => [
+                'path' => $path,
+                'disk' => 'local',
                 'original_name' => $file->getClientOriginalName(),
-                'size'          => $file->getSize(),
-                'mime_type'     => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'candidates' => $result['candidates'],
             ],
         ], 201);
     }

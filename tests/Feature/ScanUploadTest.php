@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\RuvicodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -11,6 +12,14 @@ use Tests\TestCase;
 class ScanUploadTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->mock(RuvicodeService::class, function ($mock) {
+            $mock->shouldReceive('identify')->andReturn(['success' => true, 'candidates' => [], 'error' => null]);
+        });
+    }
 
     // ──────────────────────────────────────────────
     // Success scenarios
@@ -320,4 +329,3 @@ class ScanUploadTest extends TestCase
         $response->assertStatus(401);
     }
 }
-

@@ -35,6 +35,14 @@ return [
         ],
     ],
 
+    'ruvicode' => [
+        'base_url' => env('RUVICODE_BASE_URL', 'https://api.ruvicode.com/v1'),
+        'api_key' => env('RUVICODE_API_KEY'),
+        'model' => env('RUVICODE_MODEL', 'gemini-3-5-flash'),
+        'timeout' => (float) env('RUVICODE_TIMEOUT', 45),
+        'ca_bundle' => env('RUVICODE_CA_BUNDLE', base_path('resources/certificates/cacert.pem')),
+    ],
+
     'inaturalist' => [
         'base_url' => env('INATURALIST_BASE_URL', 'https://api.inaturalist.org/v1'),
         'timeout' => (float) env('INATURALIST_TIMEOUT', 4),
