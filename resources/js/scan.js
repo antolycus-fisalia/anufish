@@ -211,7 +211,7 @@ export function scanUpload() {
 
                 const candidates = payload.data?.candidates;
 
-                // Endpoint lama belum mengembalikan hasil Gemini
+                // Reject responses that do not contain the identification contract.
                 if (!Array.isArray(candidates)) {
                     this.resultStatus = 'failure';
                     this.resultError =
@@ -221,7 +221,7 @@ export function scanUpload() {
 
                 this.candidates = candidates;
 
-                // Gemini tidak menemukan kandidat
+                // The model could not identify a fish.
                 if (candidates.length === 0) {
                     this.resultStatus = 'unknown';
                     return;
@@ -233,7 +233,7 @@ export function scanUpload() {
                     return;
                 }
 
-                // Satu kandidat Gemini berhasil
+                // One AI candidate was identified.
                 // Detail iNaturalist masih menunggu FSH-15
                 this.selectedCandidateIndex = 0;
                 this.resultStatus = 'partial';

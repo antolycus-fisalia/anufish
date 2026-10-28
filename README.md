@@ -170,6 +170,47 @@ menampilkan pesan gagal dan tindakan coba lagi tanpa menyembunyikan detail utama
 `User::isAdmin()` dan `User::isActive()` menyatukan pemeriksaan role/status;
 password registrasi di-hash oleh cast `hashed` pada model.
 
+### Identifikasi foto melalui Ruvicode
+
+Endpoint `POST /scan/upload` menyimpan foto pada disk privat, kemudian mengirim
+gambar JPEG/PNG sebagai base64 ke API chat completions Ruvicode. Konfigurasi server:
+
+```dotenv
+RUVICODE_BASE_URL=https://api.ruvicode.com/v1
+RUVICODE_API_KEY=
+RUVICODE_MODEL=gemini-3-5-flash
+RUVICODE_TIMEOUT=45
+```
+
+Isi key pribadi di `.env`; jangan masukkan ke variabel `VITE_*` atau repository.
+Pilih ID model yang mendukung **vision** dari katalog Ruvicode. `gemini-3-5-flash`
+sudah diuji melalui Ruvicode pada foto ikan. Model `kimi-k3` yang semula dipakai
+berhasil pada foto contoh tetapi timeout pada foto hiu yang sama dengan laporan
+pengguna. Ketersediaan model dan akses key perlu diverifikasi pada akun yang
+digunakan; hasil waktu respons dapat berubah. Setelah mengubah `.env`,
+jalankan `php artisan config:clear`. Jika aplikasi dijalankan dengan `composer run dev`
+atau `php artisan dev`, hentikan seluruh proses dev tersebut dengan Ctrl+C lalu
+jalankan ulang `composer run dev`. Launcher dev dapat mewariskan nilai `.env` lama
+ke server anak; membersihkan config cache saja tidak mengganti environment proses
+yang sudah berjalan. Tidak ada request berbayar otomatis saat setup.
+
+Respons sukses mempertahankan status **201** dan metadata upload sebelumnya,
+ditambah `data.candidates` berisi `scientific_name` dan `confidence` (0–1 atau null).
+Daftar kosong berarti ikan tidak dikenali. Skor AI bukan verifikasi identitas ikan.
+Kegagalan konfigurasi, provider, timeout, file, atau respons malformed menghasilkan
+**502** dengan pesan ID/EN; aplikasi mencoba menghapus foto upload saat identifikasi gagal.
+Tidak ada retry provider otomatis agar satu upload tidak menimbulkan tagihan ganda.
+Foto di atas 256 KB dikirim sebagai salinan JPEG kualitas 80 dengan sisi terpanjang
+maksimal 1024 px; foto asli tidak diubah. Pemrosesan ini membutuhkan ekstensi GD.
+Foto besar dengan lebih dari 16 juta piksel ditolak sebelum decoding untuk membatasi
+penggunaan memori. Timeout Ruvicode dapat diatur 1–60 detik; nilai awal 45 detik
+karena pengujian foto live melampaui 10 detik. Ini menggantikan batas lama integrasi
+Gemini langsung. Request yang timeout tidak berarti provider pasti berhenti memproses.
+Referensi spesies/foto tetap menggunakan iNaturalist; pencocokan hasil identifikasi
+ke takson masih menunggu integrasi FSH-15.
+
+Dokumentasi API: https://ruvicode.com/docs/chat-completions.
+
 ### Seed admin
 
 Tambahkan `ADMIN_NAME`, `ADMIN_EMAIL`, dan `ADMIN_PASSWORD` ke `.env` sesuai

@@ -3,29 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ScanUploadRequest;
-use App\Services\GeminiService;
+use App\Services\RuvicodeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\FilesystemException;
 use Throwable;
 
 class ScanController extends Controller
 {
     /**
-     * Validate, store, and identify the uploaded fish scan image.
+     * Validate and store the uploaded fish scan image.
      *
-     * Pipeline:
-     *   1. ScanUploadRequest validates the file (MIME, size, extension).
-     *   2. File is saved with a UUID-based name on the private 'local' disk.
-     *   3. GeminiService analyses the image and returns candidate species.
-     *   4. Structured JSON is returned for the frontend / FSH-15 matcher.
+     * The file is stored with a UUID-based name so it never depends on
+     * the user's original filename. The path is returned so downstream
+     * services (Ruvicode, iNaturalist, riwayat) can reference it.
      */
-    public function upload(ScanUploadRequest $request, GeminiService $gemini): JsonResponse
+    public function upload(ScanUploadRequest $request, RuvicodeService $identifier): JsonResponse
     {
-        // ── Step 1: Store file safely ────────────────────────────────────────
-        $file      = $request->file('fish_image');
+        $file = $request->file('fish_image');
+
         $extension = $file->guessExtension() ?? $file->getClientOriginalExtension();
-        $filename  = Str::uuid() . '.' . $extension;
+        $filename = Str::uuid().'.'.$extension;
 
         try {
             $path = $file->storeAs('scans', $filename, 'local');
@@ -40,30 +39,28 @@ class ScanController extends Controller
             ], 500);
         }
 
-        // ── Step 2: Identify species via Gemini ──────────────────────────────
-        $result = $gemini->identify($path);
-
+        $result = $identifier->identify($path);
         if (! $result['success']) {
-            // File is stored but identification failed — clean up and report.
-            Storage::disk('local')->delete($path);
+            try {
+                Storage::disk('local')->delete($path);
+            } catch (FilesystemException) {
+                // Cleanup failure must not hide the controlled identification error.
+            }
 
-            return response()->json([
-                'success' => false,
-                'message' => $result['error'] ?? __('Identifikasi ikan gagal.'),
-            ], 502);
+            return response()->json(['success' => false, 'message' => $result['error']], 502);
         }
 
-        // ── Step 3: Return structured result ─────────────────────────────────
         return response()->json([
             'success' => true,
             'message' => __('Foto ikan berhasil diunggah.'),
-            'data'    => [
-                'path'          => $path,
-                'disk'          => 'local',
+            'data' => [
+                'path' => $path,
+                'disk' => 'local',
                 'original_name' => $file->getClientOriginalName(),
-                'mime_type'     => $file->getMimeType(),
-                'candidates'    => $result['candidates'],
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'candidates' => $result['candidates'],
             ],
-        ], 200);
+        ], 201);
     }
 }

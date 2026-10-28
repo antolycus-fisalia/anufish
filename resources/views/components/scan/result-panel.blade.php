@@ -12,7 +12,7 @@
         <h2>{{ __('Mengidentifikasi ikan...') }}</h2>
 
         <p>
-            {{ __('Gemini sedang menganalisis foto ikan yang dipilih.') }}
+            {{ __('AI sedang menganalisis foto ikan yang dipilih.') }}
         </p>
     </div>
 
@@ -44,7 +44,7 @@
         <h2>{{ __('Gambar belum dapat diidentifikasi') }}</h2>
 
         <p>
-            {{ __('Gemini tidak menemukan kandidat ikan dari gambar ini.') }}
+            {{ __('AI tidak menemukan kandidat ikan dari gambar ini.') }}
         </p>
 
         <button
@@ -56,7 +56,7 @@
         </button>
     </div>
 
-    {{-- Gemini result --}}
+    {{-- AI result --}}
     <div
         x-show="
             resultStatus === 'success' ||
@@ -67,13 +67,13 @@
     >
         <header class="scan-result-header">
             <p class="scan-result-eyebrow">
-                {{ __('Hasil Gemini') }}
+                {{ __('Hasil identifikasi AI') }}
             </p>
 
             <h2>{{ __('Kandidat hasil identifikasi') }}</h2>
 
             <p class="scan-result-note">
-                {{ __('Confidence merupakan skor keluaran Gemini dan bukan verifikasi dari iNaturalist.') }}
+                {{ __('Confidence merupakan skor keluaran AI dan bukan verifikasi dari iNaturalist.') }}
             </p>
         </header>
 
@@ -106,7 +106,7 @@
             <h3>{{ __('Detail referensi belum tersedia') }}</h3>
 
             <p>
-                {{ __('Hasil Gemini tetap ditampilkan, tetapi detail iNaturalist belum tersedia.') }}
+                {{ __('Hasil identifikasi AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.') }}
             </p>
         </div>
 

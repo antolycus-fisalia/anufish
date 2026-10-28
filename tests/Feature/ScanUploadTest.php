@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\RuvicodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -13,31 +13,12 @@ class ScanUploadTest extends TestCase
 {
     use RefreshDatabase;
 
-    // ── Helper ───────────────────────────────────────────────────────────────
-
-    /**
-     * Return a faked Gemini HTTP response so storage tests do not
-     * depend on the live Gemini API.
-     */
-    private function fakeGeminiSuccess(): void
+    protected function setUp(): void
     {
-        Http::fake([
-            '*' => Http::response([
-                'candidates' => [
-                    [
-                        'content' => [
-                            'parts' => [[
-                                'text' => json_encode([
-                                    'candidates' => [
-                                        ['scientific_name' => 'Channa striata', 'confidence' => 0.9],
-                                    ],
-                                ]),
-                            ]],
-                        ],
-                    ],
-                ],
-            ], 200),
-        ]);
+        parent::setUp();
+        $this->mock(RuvicodeService::class, function ($mock) {
+            $mock->shouldReceive('identify')->andReturn(['success' => true, 'candidates' => [], 'error' => null]);
+        });
     }
 
     // ──────────────────────────────────────────────
@@ -47,7 +28,6 @@ class ScanUploadTest extends TestCase
     public function test_valid_jpg_is_uploaded_and_stored(): void
     {
         Storage::fake('local');
-        $this->fakeGeminiSuccess();
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('foto-ikan.jpg')->size(1000);
@@ -59,12 +39,14 @@ class ScanUploadTest extends TestCase
             ]);
 
         $response
-            ->assertStatus(200)
-            ->assertJson(['success' => true])
+            ->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+            ])
             ->assertJsonStructure([
                 'success',
                 'message',
-                'data' => ['path', 'disk', 'original_name', 'mime_type', 'candidates'],
+                'data' => ['path', 'disk', 'original_name', 'size', 'mime_type'],
             ]);
 
         $path = $response->json('data.path');
@@ -81,7 +63,6 @@ class ScanUploadTest extends TestCase
     public function test_valid_png_is_uploaded_and_stored(): void
     {
         Storage::fake('local');
-        $this->fakeGeminiSuccess();
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('foto-ikan.png')->size(2000);
@@ -92,7 +73,7 @@ class ScanUploadTest extends TestCase
                 'fish_image' => $file,
             ]);
 
-        $response->assertStatus(200)->assertJson(['success' => true]);
+        $response->assertStatus(201)->assertJson(['success' => true]);
 
         $this->assertTrue(
             Storage::disk('local')->exists($response->json('data.path'))
@@ -102,7 +83,6 @@ class ScanUploadTest extends TestCase
     public function test_valid_jpeg_is_uploaded_and_stored(): void
     {
         Storage::fake('local');
-        $this->fakeGeminiSuccess();
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('foto-ikan.jpeg')->size(500);
@@ -113,7 +93,7 @@ class ScanUploadTest extends TestCase
                 'fish_image' => $file,
             ]);
 
-        $response->assertStatus(200)->assertJson(['success' => true]);
+        $response->assertStatus(201)->assertJson(['success' => true]);
 
         $this->assertTrue(
             Storage::disk('local')->exists($response->json('data.path'))
@@ -127,7 +107,6 @@ class ScanUploadTest extends TestCase
     public function test_stored_filename_does_not_match_original_name(): void
     {
         Storage::fake('local');
-        $this->fakeGeminiSuccess();
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('my-secret-name.jpg')->size(500);
@@ -138,7 +117,7 @@ class ScanUploadTest extends TestCase
                 'fish_image' => $file,
             ]);
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
 
         $path = $response->json('data.path');
         $storedFilename = basename($path);
@@ -182,7 +161,6 @@ class ScanUploadTest extends TestCase
     public function test_file_at_exactly_5_mb_is_accepted(): void
     {
         Storage::fake('local');
-        $this->fakeGeminiSuccess();
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('exact-limit.jpg')->size(5120);
@@ -193,7 +171,7 @@ class ScanUploadTest extends TestCase
                 'fish_image' => $file,
             ]);
 
-        $response->assertStatus(200)->assertJson(['success' => true]);
+        $response->assertStatus(201)->assertJson(['success' => true]);
     }
 
     // ──────────────────────────────────────────────

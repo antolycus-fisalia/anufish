@@ -12,7 +12,7 @@
             x-show="candidate.confidence !== null"
             class="scan-candidate-confidence"
         >
-            {{ __('Confidence Gemini:') }}
+            {{ __('Confidence AI:') }}
             <span x-text="formatConfidence(candidate.confidence)"></span>
         </p>
 

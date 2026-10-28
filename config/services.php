@@ -35,12 +35,12 @@ return [
         ],
     ],
 
-    'gemini' => [
-        'base_url'       => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
-        'api_key'        => env('GEMINI_API_KEY'),
-        'model'          => env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
-        'timeout'        => (float) env('GEMINI_TIMEOUT', 10),
-        'max_candidates' => (int) env('GEMINI_MAX_CANDIDATES', 3),
+    'ruvicode' => [
+        'base_url' => env('RUVICODE_BASE_URL', 'https://api.ruvicode.com/v1'),
+        'api_key' => env('RUVICODE_API_KEY'),
+        'model' => env('RUVICODE_MODEL', 'gemini-3-5-flash'),
+        'timeout' => (float) env('RUVICODE_TIMEOUT', 45),
+        'ca_bundle' => env('RUVICODE_CA_BUNDLE', base_path('resources/certificates/cacert.pem')),
     ],
 
     'inaturalist' => [
