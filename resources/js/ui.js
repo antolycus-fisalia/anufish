@@ -66,6 +66,16 @@ export function initProfile() {
         const input = form.querySelector('[name="profile_photo"]');
         const preview = form.querySelector('[data-profile-preview]');
         const original = form.querySelector('[data-profile-original]');
+        const photo = form.querySelector('[data-profile-photo]');
+        if (photo) {
+            const showInitials = () => { photo.hidden = true; };
+            photo.addEventListener('error', showInitials);
+            if (photo.complete && !photo.naturalWidth) showInitials();
+        }
+        preview.addEventListener('error', () => {
+            preview.hidden = true;
+            original.hidden = false;
+        });
         const clearPreview = () => { if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null; };
         const updatePreview = () => {
             clearPreview();

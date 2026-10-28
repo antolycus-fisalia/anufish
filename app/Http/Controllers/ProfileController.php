@@ -13,8 +13,19 @@ class ProfileController extends Controller
 {
     public function show(Request $request): View
     {
+        $user = $request->user();
+        $photoUrl = null;
+        if ($user->profile_photo_path) {
+            $disk = Storage::disk('public');
+            $dimensions = @getimagesize($disk->path($user->profile_photo_path));
+            if ($dimensions && $dimensions[0] >= 32 && $dimensions[1] >= 32) {
+                $photoUrl = $disk->url($user->profile_photo_path);
+            }
+        }
+
         return view('pages.profile.show', [
-            'user' => $request->user(),
+            'user' => $user,
+            'photoUrl' => $photoUrl,
         ]);
     }
 

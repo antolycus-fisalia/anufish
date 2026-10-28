@@ -25,13 +25,12 @@
                 <div class="size-20 overflow-hidden rounded-2xl bg-anufish-teal">
                     <img hidden data-profile-preview alt="{{ __('Preview foto profil') }}" class="size-full object-cover">
                     <div data-profile-original class="size-full">
-                        <div class="size-full">
-                            @if ($user->profile_photo_path)
-                                <img src="{{ asset('storage/' . $user->profile_photo_path) }}"
-                                    alt="{{ __('Foto profil') }} {{ $user->name }}" class="size-full object-cover">
-                            @else
-                                <span class="flex size-full items-center justify-center text-2xl font-semibold text-white"
-                                    aria-label="{{ __('Inisial pengguna') }}">{{ mb_strtoupper(mb_substr($user->name, 0, 2)) }}</span>
+                        <div class="relative size-full">
+                            <span class="flex size-full items-center justify-center text-2xl font-semibold text-white"
+                                aria-label="{{ __('Inisial pengguna') }}">{{ mb_strtoupper(mb_substr($user->name, 0, 2)) }}</span>
+                            @if ($photoUrl)
+                                <img data-profile-photo src="{{ $photoUrl }}"
+                                    alt="{{ __('Foto profil') }} {{ $user->name }}" class="absolute inset-0 size-full object-cover">
                             @endif
                         </div>
                     </div>
@@ -49,7 +48,7 @@
                         aria-describedby="profile-photo-help{{ $errors->has('profile_photo') ? ' profile_photo-error' : '' }}"
                         class="block min-h-11 w-full min-w-0 rounded-lg border border-anufish-border bg-white text-sm text-anufish-muted file:mr-2 file:min-h-11 file:border-0 file:bg-anufish-pale file:px-3 file:font-semibold file:text-anufish-teal hover:border-anufish-cyan focus-visible:outline-2 focus-visible:outline-anufish-teal">
                     <p id="profile-photo-help" class="mt-2 text-xs leading-[18px] text-anufish-muted">
-                        {{ __('JPG, PNG, atau WebP. Maksimal 5 MB.') }}</p>
+                        {{ __('JPG, PNG, atau WebP. Maksimal 5 MB. Minimal 32 × 32 piksel.') }}</p>
                     <x-ui.validation-error name="profile_photo" id="profile_photo" />
                 </div>
             </section>

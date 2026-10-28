@@ -34,6 +34,7 @@ class ProfileRequest extends FormRequest
                 'image',
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
+                'dimensions:min_width=32,min_height=32',
             ],
         ];
     }
@@ -53,6 +54,7 @@ class ProfileRequest extends FormRequest
             'profile_photo.image' => __('File harus berupa gambar.'),
             'profile_photo.mimes' => __('Foto harus berformat JPG, JPEG, PNG, atau WebP.'),
             'profile_photo.max' => __('Ukuran foto maksimal 5 MB.'),
+            'profile_photo.dimensions' => __('Foto minimal berukuran 32 × 32 piksel.'),
         ];
     }
 }

@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "test:scan": "node --test tests/Frontend/scan.test.js"
+        "test:scan": "node --test tests/Frontend/scan.test.js tests/Frontend/scan-result.test.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.3",
