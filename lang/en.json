@@ -235,5 +235,11 @@
     "Atribusi foto": "Photo attribution",
     "Lisensi": "License",
     "Identifikasi gagal. Silakan coba lagi.": "Identification failed. Please try again.",
-    "Hasil identifikasi belum tersedia.": "Identification result is not available yet."
+    "Hasil identifikasi belum tersedia.": "Identification result is not available yet.",
+    "Riwayat Scan - Anufish": "Scan History - Anufish",
+    "Lihat kembali hasil identifikasi ikan yang pernah kamu lakukan.": "Review your previous fish identification results.",
+    "Scan Ikan Baru": "New Fish Scan",
+    "Belum ada riwayat scan": "No scan history yet",
+    "Riwayat hasil identifikasi ikan akan muncul di sini setelah kamu melakukan scan.": "Your fish identification history will appear here after you perform a scan.",
+    "Mulai Scan": "Start Scan"
 }
