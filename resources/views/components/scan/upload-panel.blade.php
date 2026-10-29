@@ -3,6 +3,7 @@
     x-data="scanUpload"
     data-scan
     data-reference-url="{{ route('scan.reference') }}"
+    data-fish-detail-url="{{ route('fish.show', ['taxonId' => '__TAXON_ID__']) }}"
     data-reference-failure="{{ __('scan.reference.failure') }}"
     data-reference-network="{{ __('scan.reference.network') }}"
     data-reference-rate-limit="{{ __('scan.reference.request_limit') }}"

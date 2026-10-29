@@ -91,10 +91,10 @@
             x-show="resultStatus === 'ambiguous' && selectedCandidateIndex === null"
             class="scan-result-notice"
         >
-            <h3>{{ __('Pilih kandidat yang sesuai') }}</h3>
+            <h3>{{ __('scan.reference.select_title') }}</h3>
 
             <p>
-                {{ __('Beberapa kandidat ditemukan. Anufish tidak memilih kandidat secara otomatis.') }}
+                {{ __('scan.reference.select_body') }}
             </p>
         </div>
 

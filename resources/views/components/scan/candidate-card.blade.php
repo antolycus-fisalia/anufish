@@ -25,7 +25,6 @@
     </div>
 
     <button
-        x-show="candidates.length > 1"
         type="button"
         class="scan-secondary-action"
         :aria-pressed="selectedCandidateIndex === index"

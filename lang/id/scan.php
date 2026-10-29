@@ -24,4 +24,6 @@ return ['errors' => [
     'session' => 'Sesi berakhir. Silakan masuk kembali.',
     'retry' => 'Coba ambil referensi lagi',
     'loading' => 'Mengambil referensi iNaturalist untuk kandidat yang dipilih...',
+    'select_title' => 'Pilih kandidat untuk melihat detail ikan',
+    'select_body' => 'Referensi iNaturalist dicari setelah kamu memilih kandidat. Halaman detail akan terbuka jika identitas ikan berhasil ditemukan.',
 ]];

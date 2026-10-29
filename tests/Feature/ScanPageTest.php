@@ -15,7 +15,9 @@ class ScanPageTest extends TestCase
         $this->actingAs(User::factory()->create());
         foreach (['id' => 'Coba ambil referensi lagi', 'en' => 'Retry fetching the reference'] as $locale => $retry) {
             $this->withSession(['locale' => $locale])->get('/scan')
-                ->assertOk()->assertSee($retry)->assertDontSee('scan.reference.retry');
+                ->assertOk()->assertSee($retry)->assertDontSee('scan.reference.retry')
+                ->assertSee('data-fish-detail-url="'.route('fish.show', ['taxonId' => '__TAXON_ID__']).'"', false)
+                ->assertDontSee('x-show="candidates.length > 1"', false);
         }
         $this->assertSame(array_keys(require lang_path('id/scan.php')),
             array_keys(require lang_path('en/scan.php')));

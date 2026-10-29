@@ -211,7 +211,7 @@ class ScanReferenceResolverTest extends TestCase
         Http::assertSentCount(3);
     }
 
-    public function test_upload_retains_ai_result_when_reference_is_unavailable(): void
+    public function test_upload_returns_ai_candidates_without_contacting_inaturalist(): void
     {
         Storage::fake('local');
         $this->mock(RuvicodeService::class, fn ($mock) => $mock->shouldReceive('identify')->andReturn([
@@ -219,9 +219,10 @@ class ScanReferenceResolverTest extends TestCase
         ]));
         Http::fake(['*' => Http::response([], 503)]);
         $response = $this->actingAs(User::factory()->make())->postJson('/scan/upload', ['fish_image' => UploadedFile::fake()->image('fish.jpg')]);
-        $response->assertCreated()->assertJsonPath('data.candidates.0.match_status', 'unavailable')
-            ->assertJsonPath('data.candidates.0.taxon_id', null)->assertJsonPath('data.candidates.0.scientific_name', 'Channa striata')
+        $response->assertCreated()->assertJsonMissingPath('data.candidates.0.match_status')
+            ->assertJsonPath('data.candidates.0.scientific_name', 'Channa striata')
             ->assertJsonPath('data.candidates.0.confidence', null);
+        Http::assertNothingSent();
         Storage::disk('local')->assertExists($response->json('data.path'));
     }
 }
