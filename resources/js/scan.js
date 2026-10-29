@@ -2,6 +2,8 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 export function scanUpload() {
+    let pendingDetailTab = null;
+
     return {
         previewUrl: null,
         selectedFileName: '',
@@ -19,6 +21,7 @@ export function scanUpload() {
         referenceOptions: [],
         referenceError: '',
         referenceGeneration: 0,
+        detailTabStatus: 'idle',
         resultError: '',
 
         openCamera() {
@@ -117,6 +120,8 @@ export function scanUpload() {
         },
 
         resetResult() {
+            this.closePendingDetailTab();
+            this.detailTabStatus = 'idle';
             this.referenceGeneration += 1;
             this.resultStatus = 'idle';
             this.candidates = [];
@@ -149,6 +154,9 @@ export function scanUpload() {
             ) {
                 return;
             }
+            if (this.referenceStatus === 'loading' && this.selectedCandidateIndex === index) return;
+
+            this.prepareDetailTab();
 
             this.selectedCandidateIndex = index;
             const generation = ++this.referenceGeneration;
@@ -179,9 +187,12 @@ export function scanUpload() {
                 this.applyReference(candidate);
                 if (this.referenceStatus === 'ready') {
                     this.openFishDetail(this.reference.taxon_id);
+                } else {
+                    this.closePendingDetailTab();
                 }
             } catch (error) {
                 if (generation !== this.referenceGeneration) return;
+                this.closePendingDetailTab();
                 this.referenceStatus = 'unavailable';
                 this.resultStatus = 'partial';
                 this.referenceError = error instanceof TypeError
@@ -203,6 +214,7 @@ export function scanUpload() {
         selectReference(taxonId) {
             const option = this.referenceOptions.find((reference) => reference.taxon_id === taxonId);
             if (!option || this.selectedCandidateIndex === null) return;
+            this.prepareDetailTab();
             this.reference = option;
             this.referenceStatus = 'ready';
             this.referenceImageFailed = false;
@@ -214,7 +226,31 @@ export function scanUpload() {
             if (!Number.isSafeInteger(taxonId) || taxonId < 1) return;
             const root = this.$refs.fileInput.closest('[data-scan]');
             const template = root?.dataset.fishDetailUrl ?? '/fish/taxa/__TAXON_ID__';
-            window.location.assign(template.replace('__TAXON_ID__', String(taxonId)));
+            if (pendingDetailTab && !pendingDetailTab.closed) {
+                pendingDetailTab.location.replace(template.replace('__TAXON_ID__', String(taxonId)));
+                pendingDetailTab = null;
+                this.detailTabStatus = 'opened';
+            } else {
+                pendingDetailTab = null;
+                this.detailTabStatus = 'blocked';
+            }
+        },
+
+        prepareDetailTab() {
+            this.closePendingDetailTab();
+            const root = this.$refs.fileInput.closest('[data-scan]');
+            pendingDetailTab = window.open(root?.dataset.detailLoadingUrl ?? '/scan/detail-loading', '_blank');
+            if (pendingDetailTab) {
+                pendingDetailTab.opener = null;
+                this.detailTabStatus = 'opening';
+            } else {
+                this.detailTabStatus = 'blocked';
+            }
+        },
+
+        closePendingDetailTab() {
+            if (pendingDetailTab && !pendingDetailTab.closed) pendingDetailTab.close();
+            pendingDetailTab = null;
         },
 
         chooseAnotherImage() {
@@ -319,6 +355,7 @@ export function scanUpload() {
         },
 
         destroy() {
+            this.closePendingDetailTab();
             this.referenceGeneration += 1;
             this.selectionGeneration += 1;
             this.clearPreviewUrl();

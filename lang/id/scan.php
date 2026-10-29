@@ -25,5 +25,9 @@ return ['errors' => [
     'retry' => 'Coba ambil referensi lagi',
     'loading' => 'Mengambil referensi iNaturalist untuk kandidat yang dipilih...',
     'select_title' => 'Pilih kandidat untuk melihat detail ikan',
-    'select_body' => 'Referensi iNaturalist dicari setelah kamu memilih kandidat. Halaman detail akan terbuka jika identitas ikan berhasil ditemukan.',
+    'select_body' => 'Referensi iNaturalist dicari setelah kamu memilih kandidat. Detail ikan akan terbuka di tab baru jika identitas ikan berhasil ditemukan.',
+    'opening_title' => 'Menyiapkan detail ikan...',
+    'opening_body' => 'Sedang mengambil referensi dan membuka halaman detail. Tunggu sebentar; hasil scan tetap tersedia di tab sebelumnya.',
+    'tab_opened' => 'Detail ikan dibuka di tab baru. Jika masih memuat, tunggu sebentar. Hasil scan tetap tersedia di sini.',
+    'tab_blocked' => 'Tab baru diblokir browser atau sudah ditutup. Klik Lihat detail ikan di bawah untuk membukanya.',
 ]];

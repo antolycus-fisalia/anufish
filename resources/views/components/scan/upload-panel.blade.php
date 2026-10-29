@@ -2,6 +2,7 @@
     class="scan-panel"
     x-data="scanUpload"
     data-scan
+    data-detail-loading-url="{{ route('scan.detail-loading') }}"
     data-reference-url="{{ route('scan.reference') }}"
     data-fish-detail-url="{{ route('fish.show', ['taxonId' => '__TAXON_ID__']) }}"
     data-reference-failure="{{ __('scan.reference.failure') }}"

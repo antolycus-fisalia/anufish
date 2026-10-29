@@ -25,5 +25,9 @@ return ['errors' => [
     'retry' => 'Retry fetching the reference',
     'loading' => 'Fetching the iNaturalist reference for the selected candidate...',
     'select_title' => 'Choose a candidate to view fish details',
-    'select_body' => 'The iNaturalist reference is fetched after you choose a candidate. The detail page opens once the fish identity is matched.',
+    'select_body' => 'The iNaturalist reference is fetched after you choose a candidate. Fish details open in a new tab once the identity is matched.',
+    'opening_title' => 'Preparing fish details...',
+    'opening_body' => 'Fetching the reference and opening the detail page. Please wait; your scan results remain available in the previous tab.',
+    'tab_opened' => 'Fish details opened in a new tab. If it is still loading, please wait. Your scan results remain available here.',
+    'tab_blocked' => 'The new tab was blocked by your browser or closed. Click View fish details below to open it.',
 ]];

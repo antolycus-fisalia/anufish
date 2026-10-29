@@ -16,6 +16,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::view('/scan', 'pages.scan.index')->name('scan.index');
+    Route::view('/scan/detail-loading', 'pages.scan.detail-loading')->name('scan.detail-loading');
 
     Route::view('/scan/history', 'pages.scan.history.index')
         ->name('scan.history.index');

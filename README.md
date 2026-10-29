@@ -231,9 +231,13 @@ di atas tanpa confidence baru. `unavailable` menyertakan `reference_error` ID/EN
 dan `reference_http_status` (404 tidak cocok, 429 limiter, 502 timeout/koneksi/data
 provider gagal). HTTP endpoint: 401 guest, 422 input tidak valid, 429 throttle.
 Tombol retry tidak mengulang analisis Ruvicode. Respons pilihan lama diabaikan.
-Jika matched, UI langsung membuka route `fish.show` untuk taxon ID yang sudah
-tervalidasi. Jika ambiguous, pengguna memilih salah satu opsi referensi sebelum
-halaman detail dibuka. Kegagalan tetap berada di halaman scan.
+Klik kandidat membuka tab baru pada `/scan/detail-loading`, dengan indikator
+memuat ID/EN; halaman scan tetap tersedia. Jika matched, tab tunggu dialihkan ke
+route `fish.show` untuk taxon ID yang sudah tervalidasi. Jika ambiguous atau gagal,
+tab tunggu ditutup dan pilihan/pesan ditampilkan di scan. Pilihan referensi ambigu
+membuka detail di tab baru. Popup yang diblokir/ditutup memiliki tautan manual
+`Lihat detail ikan` dengan `target="_blank"` dan `rel="noopener noreferrer"`.
+Klik kandidat yang sama saat loading tidak membuka tab tambahan.
 Tidak ada migrasi. FSH-17 tetap wajib memvalidasi ulang identitas sebelum menyimpan.
 
 Dokumentasi API: https://ruvicode.com/docs/chat-completions.
