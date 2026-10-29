@@ -206,8 +206,29 @@ Foto besar dengan lebih dari 16 juta piksel ditolak sebelum decoding untuk memba
 penggunaan memori. Timeout Ruvicode dapat diatur 1–60 detik; nilai awal 45 detik
 karena pengujian foto live melampaui 10 detik. Ini menggantikan batas lama integrasi
 Gemini langsung. Request yang timeout tidak berarti provider pasti berhenti memproses.
-Referensi spesies/foto tetap menggunakan iNaturalist; pencocokan hasil identifikasi
-ke takson masih menunggu integrasi FSH-15.
+Referensi spesies/foto menggunakan iNaturalist melalui FSH-15. Setiap kandidat
+mempertahankan `scientific_name` dan `confidence` asli, ditambah `match_status`
+(`matched`, `ambiguous`, `unavailable`), `taxon_id`, `reference`,
+`reference_options`, dan `reference_http_status`.
+Pencocokan hanya menerima nama ilmiah tepat pada spesies aktif dalam kelompok
+ikan, termasuk hiu. Nama mirip tidak dipilih otomatis. Hasil ambigu memiliki
+`taxon_id: null`; pengguna memilih referensi dari opsi tervalidasi. Pilihan UI
+belum disimpan: konsumen riwayat harus memvalidasi kembali pilihan di server.
+Jika iNaturalist gagal atau membatasi request, upload tetap mengembalikan 201
+dengan kandidat AI dan referensi tidak tersedia. Seluruh kandidat berbagi batas
+waktu iNaturalist dan limiter/cache yang sama dengan pencarian. Foto hanya
+ditampilkan bila lisensi dan atribusinya sesuai. Tidak ada master ikan permanen
+atau penyimpanan riwayat baru dalam FSH-15.
+
+Saat kandidat dipilih ulang, UI memanggil `GET /scan/reference?scientific_name=...`
+(auth, throttle 30/menit). Endpoint memvalidasi nama wajib/string/maksimal 200
+karakter dan mengambil satu referensi dengan deadline tersendiri; cache dan
+limiter provider tetap berlaku. Respons 200 berisi `data` dengan kontrak kandidat
+di atas tanpa confidence baru. `unavailable` menyertakan `reference_error` ID/EN
+dan `reference_http_status` (404 tidak cocok, 429 limiter, 502 timeout/koneksi/data
+provider gagal). HTTP endpoint: 401 guest, 422 input tidak valid, 429 throttle.
+Tombol retry tidak mengulang analisis Ruvicode. Respons pilihan lama diabaikan.
+Tidak ada migrasi. FSH-17 tetap wajib memvalidasi ulang identitas sebelum menyimpan.
 
 Dokumentasi API: https://ruvicode.com/docs/chat-completions.
 

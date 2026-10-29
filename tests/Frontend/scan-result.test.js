@@ -237,3 +237,97 @@ test('upload response without candidates shows fallback result error', async () 
     );
     assert.equal(component.processing, false);
 });
+
+test('validated reference is shown separately from unchanged AI confidence', async () => {
+    const component = createComponent();
+    const reference = {taxon_id: 10, scientific_name: 'Channa striata', image: null};
+    globalThis.fetch = async () => successfulResponse([{
+        scientific_name: 'Channa striata', confidence: null,
+        match_status: 'matched', taxon_id: 10, reference, reference_options: [],
+    }]);
+    await component.processImage();
+    assert.equal(component.resultStatus, 'success');
+    assert.equal(component.referenceStatus, 'ready');
+    assert.equal(component.reference.taxon_id, 10);
+    assert.equal(component.candidates[0].confidence, null);
+});
+
+test('ambiguous taxa require explicit selection and reject unknown ids', async () => {
+    const component = createComponent();
+    globalThis.fetch = async () => successfulResponse([{
+        scientific_name: 'Channa striata', confidence: 0.8,
+        match_status: 'ambiguous', taxon_id: null, reference: null,
+        reference_options: [{taxon_id: 10}, {taxon_id: 11}],
+    }]);
+    await component.processImage();
+    assert.equal(component.referenceStatus, 'ambiguous');
+    assert.equal(component.reference, null);
+    component.selectReference(999);
+    assert.equal(component.reference, null);
+    component.selectReference(11);
+    assert.equal(component.reference.taxon_id, 11);
+    assert.equal(component.resultStatus, 'success');
+    assert.equal(component.candidates[0].taxon_id, null);
+});
+
+test('switching candidate clears stale reference and broken image state', async () => {
+    const component = createComponent();
+    globalThis.fetch = async () => successfulResponse([
+        {scientific_name: 'Channa striata', confidence: 0.9, match_status: 'matched', reference: {taxon_id: 10}},
+        {scientific_name: 'Channa micropeltes', confidence: 0.1, match_status: 'unavailable', reference: null},
+    ]);
+    await component.processImage();
+    assert.equal(component.selectedCandidateIndex, null);
+    await component.selectCandidate(0, false);
+    assert.equal(component.referenceStatus, 'ready');
+    component.referenceImageFailed = true;
+    await component.selectCandidate(1, false);
+    assert.equal(component.resultStatus, 'partial');
+    assert.equal(component.reference, null);
+    assert.equal(component.referenceImageFailed, false);
+    assert.equal(component.candidates[1].confidence, 0.1);
+    component.resetResult();
+    assert.deepEqual(component.referenceOptions, []);
+});
+
+test('selecting and retrying a candidate fetches its reference and displays provider errors', async () => {
+    const component = createComponent();
+    component.candidates = [{scientific_name: 'Isurus oxyrinchus', confidence: 0.3}];
+    const requests = [];
+    globalThis.fetch = async (url) => {
+        requests.push(url);
+        return {ok: true, json: async () => ({data: requests.length === 1
+            ? {match_status: 'unavailable', reference_error: 'Waktu pengambilan habis.'}
+            : {match_status: 'matched', reference: {taxon_id: 42}}})};
+    };
+    await component.selectCandidate(0);
+    assert.equal(component.referenceError, 'Waktu pengambilan habis.');
+    assert.equal(component.resultStatus, 'partial');
+    await component.selectCandidate(0);
+    assert.equal(requests.length, 2);
+    assert.match(requests[0], /scientific_name=Isurus\+oxyrinchus/);
+    assert.equal(component.reference.taxon_id, 42);
+    assert.equal(component.resultStatus, 'success');
+    assert.equal(component.candidates[0].confidence, 0.3);
+});
+
+test('late reference responses cannot overwrite a newer candidate or a reset scan', async () => {
+    const component = createComponent();
+    component.candidates = [{scientific_name: 'First'}, {scientific_name: 'Second'}];
+    const pending = [];
+    globalThis.fetch = () => new Promise(resolve => pending.push(resolve));
+    const first = component.selectCandidate(0);
+    const second = component.selectCandidate(1);
+    assert.equal(component.referenceStatus, 'loading');
+    pending[1]({ok: true, json: async () => ({data: {match_status: 'matched', reference: {taxon_id: 2}}})});
+    await second;
+    pending[0]({ok: true, json: async () => ({data: {match_status: 'matched', reference: {taxon_id: 1}}})});
+    await first;
+    assert.equal(component.reference.taxon_id, 2);
+    const third = component.selectCandidate(0);
+    component.resetResult();
+    pending[2]({ok: true, json: async () => ({data: {match_status: 'matched', reference: {taxon_id: 1}}})});
+    await third;
+    assert.equal(component.reference, null);
+    assert.equal(component.resultStatus, 'idle');
+});

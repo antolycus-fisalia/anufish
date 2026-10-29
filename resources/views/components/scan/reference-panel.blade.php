@@ -47,6 +47,9 @@
         </div>
 
         <div class="scan-reference-content">
+            <a :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'" class="scan-reference-link">
+                {{ __('Lihat detail ikan') }}
+            </a>
             <div>
                 <p class="scan-reference-label">
                     {{ __('Nama ilmiah') }}
@@ -93,6 +96,11 @@
                 ></p>
             </div>
 
+            <a x-show="reference?.image?.source_url && !referenceImageFailed"
+                :href="reference?.image?.source_url ?? '#'" target="_blank" rel="noopener noreferrer" class="scan-reference-link">
+                {{ __('scan.reference.photo_source') }}
+            </a>
+
             <div
                 x-show="reference?.image?.license?.label && !referenceImageFailed"
             >
@@ -110,4 +118,12 @@
             </div>
         </div>
     </div>
+    <dl class="grid grid-cols-2 gap-4">
+        @foreach (['kingdom' => 'Kingdom', 'phylum' => 'Filum', 'class' => 'Kelas', 'order' => 'Ordo', 'family' => 'Famili', 'genus' => 'Genus'] as $rank => $label)
+            <div>
+                <dt class="scan-reference-label">{{ __($label) }}</dt>
+                <dd class="scan-reference-value" x-text="reference?.taxonomy?.{{ $rank }} ?? '—'"></dd>
+            </div>
+        @endforeach
+    </dl>
 </section>

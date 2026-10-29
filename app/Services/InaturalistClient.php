@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use GuzzleHttp\Exception\ConnectTimeoutException;
+use GuzzleHttp\Exception\NetworkTimeoutException;
+use GuzzleHttp\Exception\ResponseTimeoutException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -16,7 +19,7 @@ class InaturalistClient
         }
         $deadline ??= microtime(true) + $this->timeout();
         if ($deadline - microtime(true) < 0.05) {
-            return ['status' => 502, 'payload' => null];
+            return ['status' => 502, 'payload' => null, 'reason' => 'timeout'];
         }
         if (! $this->reserveRequest()) {
             return ['status' => 429, 'payload' => null];
@@ -26,8 +29,14 @@ class InaturalistClient
             $response = Http::acceptJson()->withOptions(['verify' => config('services.inaturalist.ca_bundle') ?: true])
                 ->connectTimeout(min(2, $remaining))->timeout($remaining)
                 ->get(rtrim(config('services.inaturalist.base_url'), '/').$path, $query);
-        } catch (ConnectionException) {
-            return ['status' => 502, 'payload' => null];
+        } catch (ConnectionException $exception) {
+            $previous = $exception->getPrevious();
+            $timedOut = $previous instanceof ConnectTimeoutException
+                || $previous instanceof NetworkTimeoutException
+                || $previous instanceof ResponseTimeoutException;
+
+            return ['status' => 502, 'payload' => null,
+                'reason' => $timedOut ? 'timeout' : 'connection'];
         }
         if ($response->status() === 429) {
             $retry = $response->header('Retry-After');

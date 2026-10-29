@@ -37,12 +37,18 @@ class RuvicodeServiceTest extends TestCase
 
     public function test_upload_sends_private_image_with_configured_model_and_preserves_contract(): void
     {
-        Http::fake(['*' => Http::response($this->reply([['scientific_name' => 'Channa striata', 'confidence' => 0.9]]))]);
+        Http::fake([
+            'api.ruvicode.com/*' => Http::response($this->reply([['scientific_name' => 'Channa striata', 'confidence' => 0.9]])),
+            'api.inaturalist.org/*' => Http::response(['results' => []]),
+        ]);
         $response = $this->actingAs(User::factory()->create())->postJson('/scan/upload', ['fish_image' => UploadedFile::fake()->image('fish.png')]);
         $response->assertCreated()->assertJsonPath('data.candidates.0.scientific_name', 'Channa striata')
             ->assertJsonStructure(['data' => ['path', 'disk', 'size', 'mime_type', 'original_name', 'candidates']]);
         Storage::disk('local')->assertExists($response->json('data.path'));
         Http::assertSent(function ($request) {
+            if (! str_contains($request->url(), 'api.ruvicode.com/')) {
+                return false;
+            }
             $this->assertSame('https://api.ruvicode.com/v1/chat/completions', $request->url());
             $this->assertTrue($request->hasHeader('Authorization', 'Bearer test-only-key'));
             $this->assertSame('test-vision', $request['model']);

@@ -16,6 +16,9 @@ export function scanUpload() {
         reference: null,
         referenceStatus: 'idle',
         referenceImageFailed: false,
+        referenceOptions: [],
+        referenceError: '',
+        referenceGeneration: 0,
         resultError: '',
 
         openCamera() {
@@ -114,12 +117,15 @@ export function scanUpload() {
         },
 
         resetResult() {
+            this.referenceGeneration += 1;
             this.resultStatus = 'idle';
             this.candidates = [];
             this.selectedCandidateIndex = null;
             this.reference = null;
             this.referenceStatus = 'idle';
             this.referenceImageFailed = false;
+            this.referenceOptions = [];
+            this.referenceError = '';
             this.resultError = '';
         },
 
@@ -135,7 +141,7 @@ export function scanUpload() {
             return `${Math.round(Number(confidence) * 100)}%`;
         },
 
-        selectCandidate(index) {
+        async selectCandidate(index, reload = true) {
             if (
                 !Number.isInteger(index) ||
                 index < 0 ||
@@ -145,6 +151,62 @@ export function scanUpload() {
             }
 
             this.selectedCandidateIndex = index;
+            const generation = ++this.referenceGeneration;
+            this.referenceImageFailed = false;
+            const candidate = this.candidates[index];
+            this.applyReference(candidate);
+            if (!reload) return;
+
+            this.reference = null;
+            this.referenceOptions = [];
+            this.referenceError = '';
+            this.referenceStatus = 'loading';
+            this.resultStatus = 'partial';
+            const root = this.$refs.fileInput.closest('[data-scan]');
+            try {
+                const query = new URLSearchParams({ scientific_name: candidate.scientific_name });
+                const response = await fetch(`${root?.dataset.referenceUrl ?? '/scan/reference'}?${query}`, {
+                    headers: { Accept: 'application/json' },
+                });
+                const payload = await response.json();
+                if (generation !== this.referenceGeneration) return;
+                if (!response.ok) {
+                    const message = response.status === 429 ? root?.dataset.referenceRateLimit
+                        : response.status === 401 ? root?.dataset.referenceSession : payload.message;
+                    throw new Error(message || root?.dataset.referenceFailure || 'Referensi iNaturalist gagal diambil.');
+                }
+                if (!['matched', 'ambiguous', 'unavailable'].includes(payload.data?.match_status)) {
+                    throw new Error(root?.dataset.referenceFailure || 'Respons referensi tidak valid.');
+                }
+                Object.assign(candidate, payload.data);
+                this.applyReference(candidate);
+            } catch (error) {
+                if (generation !== this.referenceGeneration) return;
+                this.referenceStatus = 'unavailable';
+                this.resultStatus = 'partial';
+                this.referenceError = error instanceof TypeError
+                    ? (root?.dataset.referenceNetwork || 'Koneksi ke server gagal. Periksa koneksi lalu coba lagi.')
+                    : error instanceof SyntaxError
+                        ? (root?.dataset.referenceFailure || 'Respons referensi tidak valid. Silakan coba lagi.')
+                        : (error instanceof Error ? error.message : root?.dataset.referenceFailure);
+            }
+        },
+
+        applyReference(candidate) {
+            this.referenceOptions = candidate.reference_options ?? [];
+            this.reference = candidate.match_status === 'matched' ? candidate.reference : null;
+            this.referenceError = candidate.reference_error ?? '';
+            this.referenceStatus = this.reference ? 'ready' : (candidate.match_status === 'ambiguous' ? 'ambiguous' : 'unavailable');
+            this.resultStatus = this.reference ? 'success' : (this.referenceStatus === 'ambiguous' ? 'ambiguous' : 'partial');
+        },
+
+        selectReference(taxonId) {
+            const option = this.referenceOptions.find((reference) => reference.taxon_id === taxonId);
+            if (!option || this.selectedCandidateIndex === null) return;
+            this.reference = option;
+            this.referenceStatus = 'ready';
+            this.referenceImageFailed = false;
+            this.resultStatus = 'success';
         },
 
         chooseAnotherImage() {
@@ -233,10 +295,7 @@ export function scanUpload() {
                     return;
                 }
 
-                // One AI candidate was identified.
-                // Detail iNaturalist masih menunggu FSH-15
-                this.selectedCandidateIndex = 0;
-                this.resultStatus = 'partial';
+                await this.selectCandidate(0, false);
             } catch (error) {
                 this.resultStatus = 'failure';
                 this.resultError =
@@ -258,6 +317,7 @@ export function scanUpload() {
         },
 
         destroy() {
+            this.referenceGeneration += 1;
             this.selectionGeneration += 1;
             this.clearPreviewUrl();
         },
