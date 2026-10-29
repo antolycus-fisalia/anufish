@@ -206,6 +206,10 @@ Foto besar dengan lebih dari 16 juta piksel ditolak sebelum decoding untuk memba
 penggunaan memori. Timeout Ruvicode dapat diatur 1–60 detik; nilai awal 45 detik
 karena pengujian foto live melampaui 10 detik. Ini menggantikan batas lama integrasi
 Gemini langsung. Request yang timeout tidak berarti provider pasti berhenti memproses.
+Selama request AI, batas eksekusi PHP yang lebih pendek dinaikkan sementara
+menjadi timeout provider + 10 detik agar PHP tidak menghentikan request sebelum
+pesan timeout terkontrol dapat dikembalikan (terutama di Windows). Setelah request,
+batas sebelumnya dipulihkan; batas unlimited atau yang sudah lebih tinggi tetap dipertahankan.
 Upload hanya mengembalikan `scientific_name` dan `confidence` asli dari AI;
 tidak ada pencarian iNaturalist saat upload. Semua hasil, termasuk satu kandidat,
 menunggu pengguna menekan Pilih kandidat.

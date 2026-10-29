@@ -38,6 +38,13 @@ class RuvicodeService
         [$bytes, $mime] = $photo;
 
         $timeout = max(1, min(60, (float) config('services.ruvicode.timeout', 45)));
+        $executionLimit = (int) ini_get('max_execution_time');
+        $requestBudget = (int) ceil($timeout) + 10;
+        $extendExecutionLimit = $executionLimit > 0 && $executionLimit < $requestBudget;
+        if ($extendExecutionLimit) {
+            // On Windows, PHP counts time waiting for the provider toward this limit.
+            set_time_limit($requestBudget);
+        }
         try {
             $response = Http::acceptJson()->withToken($key)
                 ->withOptions(['verify' => config('services.ruvicode.ca_bundle') ?: true, 'expect' => false])
@@ -57,6 +64,10 @@ class RuvicodeService
                 ]);
         } catch (ConnectionException $exception) {
             return $this->failure(str_contains($exception->getMessage(), 'cURL error 28') ? 'timeout' : 'connection');
+        } finally {
+            if ($extendExecutionLimit) {
+                set_time_limit($executionLimit);
+            }
         }
 
         if (! $response->successful()) {
