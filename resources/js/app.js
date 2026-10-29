@@ -5,12 +5,14 @@ import {
     initForms,
     initProfile,
     initFishCardImages,
+    initInvalidFieldFocus,
 } from './ui.js';
 import { initFishDetails } from './fish-detail.js';
 import { initAuthLayout } from './auth-layout.js';
 import { scanUpload } from './scan.js';
 
 window.Alpine = Alpine;
+
 Alpine.data('scanUpload', scanUpload);
 
 initNavigation();
@@ -20,5 +22,6 @@ initProfile();
 initFishDetails();
 initAuthLayout();
 initFishCardImages();
+initInvalidFieldFocus();
 
 Alpine.start();
