@@ -121,6 +121,32 @@ class RuvicodeServiceTest extends TestCase
         $this->assertFalse($requestOptions['expect']);
     }
 
+    public function test_php_execution_budget_outlasts_provider_timeout_and_is_restored(): void
+    {
+        $original = (int) ini_get('max_execution_time');
+        $path = $this->image();
+        config(['services.ruvicode.timeout' => 45]);
+        try {
+            set_time_limit(30);
+            Http::fake(function () {
+                $this->assertGreaterThan(45, (int) ini_get('max_execution_time'));
+
+                return Http::response($this->reply([]));
+            });
+            $this->assertTrue(app(RuvicodeService::class)->identify($path)['success']);
+            $this->assertSame(30, (int) ini_get('max_execution_time'));
+
+            Http::fake(function () {
+                $this->assertGreaterThan(45, (int) ini_get('max_execution_time'));
+                throw new ConnectionException('cURL error 28: Operation timed out');
+            });
+            $this->assertSame(__('scan.errors.timeout'), app(RuvicodeService::class)->identify($path)['error']);
+            $this->assertSame(30, (int) ini_get('max_execution_time'));
+        } finally {
+            set_time_limit($original);
+        }
+    }
+
     public function test_malformed_responses_are_controlled_failures(): void
     {
         $path = $this->image();

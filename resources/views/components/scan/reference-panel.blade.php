@@ -47,7 +47,7 @@
         </div>
 
         <div class="scan-reference-content">
-            <a :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'" class="scan-reference-link">
+            <a :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'" target="_blank" rel="noopener noreferrer" class="scan-reference-link">
                 {{ __('Lihat detail ikan') }}
             </a>
             <div>

@@ -6,7 +6,14 @@ import { scanUpload } from '../../resources/js/scan.js';
 function createComponent() {
     const component = scanUpload();
     component.navigations = [];
-    globalThis.window = {location: {assign: url => component.navigations.push(url)}};
+    component.openedTabs = [];
+    globalThis.window = {open: (url, target) => {
+        const tab = {url, target, closed: false, opener: {},
+            close() { this.closed = true; },
+            location: {replace: url => component.navigations.push(url)}};
+        component.openedTabs.push(tab);
+        return tab;
+    }};
 
     const root = {
         dataset: {
@@ -348,4 +355,47 @@ test('late reference responses cannot overwrite a newer candidate or a reset sca
     assert.equal(component.reference, null);
     assert.equal(component.resultStatus, 'idle');
     assert.deepEqual(component.navigations, ['/fish/taxa/2']);
+});
+
+test('opens a loading tab synchronously and ignores duplicate clicks while fetching', async () => {
+    const component = createComponent();
+    component.candidates = [{scientific_name: 'Channa striata'}];
+    let finish;
+    globalThis.fetch = () => new Promise(resolve => { finish = resolve; });
+    const request = component.selectCandidate(0);
+    assert.equal(component.openedTabs.length, 1);
+    assert.equal(component.openedTabs[0].url, '/scan/detail-loading');
+    assert.equal(component.openedTabs[0].target, '_blank');
+    assert.equal(component.openedTabs[0].opener, null);
+    assert.equal(component.referenceStatus, 'loading');
+    await component.selectCandidate(0);
+    assert.equal(component.openedTabs.length, 1);
+    finish({ok: true, json: async () => ({data: {match_status: 'matched', reference: {taxon_id: 10}}})});
+    await request;
+    assert.equal(component.detailTabStatus, 'opened');
+    assert.deepEqual(component.navigations, ['/fish/taxa/10']);
+    component.resetResult();
+    assert.equal(component.openedTabs[0].closed, false);
+});
+
+test('blocked popup preserves the reference for the manual new-tab link', async () => {
+    const component = createComponent();
+    component.candidates = [{scientific_name: 'Channa striata'}];
+    globalThis.window.open = () => null;
+    globalThis.fetch = async () => ({ok: true, json: async () => ({data: {match_status: 'matched', reference: {taxon_id: 10}}})});
+    await component.selectCandidate(0);
+    assert.equal(component.detailTabStatus, 'blocked');
+    assert.equal(component.reference.taxon_id, 10);
+    assert.equal(component.resultStatus, 'success');
+    assert.deepEqual(component.navigations, []);
+});
+
+test('failed reference closes the waiting tab and keeps the failure in scan results', async () => {
+    const component = createComponent();
+    component.candidates = [{scientific_name: 'Channa striata'}];
+    globalThis.fetch = async () => ({ok: true, json: async () => ({data: {match_status: 'unavailable', reference_error: 'Timeout'}})});
+    await component.selectCandidate(0);
+    assert.equal(component.openedTabs[0].closed, true);
+    assert.equal(component.referenceError, 'Timeout');
+    assert.deepEqual(component.navigations, []);
 });
