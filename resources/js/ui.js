@@ -1,34 +1,78 @@
 function setFormState(scope, state) {
-    scope.querySelectorAll('[data-form-state]').forEach((element) => { element.hidden = element.dataset.formState !== state; });
-    scope.querySelectorAll('[data-submit-button]').forEach((button) => { button.disabled = state !== 'idle'; });
+    scope.querySelectorAll('[data-form-state]').forEach((element) => {
+        element.hidden = element.dataset.formState !== state;
+    });
+
+    scope.querySelectorAll('[data-submit-button]').forEach((button) => {
+        button.disabled = state !== 'idle';
+    });
 }
 
 export function initFishCardImages() {
     document.querySelectorAll('[data-fish-card-image]').forEach((image) => {
         const showPlaceholder = () => {
             image.hidden = true;
-            image.closest('[data-fish-card-media]').querySelector('[data-fish-card-placeholder]').hidden = false;
+
+            image
+                .closest('[data-fish-card-media]')
+                .querySelector('[data-fish-card-placeholder]')
+                .hidden = false;
         };
+
         image.addEventListener('error', showPlaceholder);
-        if (image.complete && !image.naturalWidth) showPlaceholder();
+
+        if (image.complete && !image.naturalWidth) {
+            showPlaceholder();
+        }
     });
 }
 
 export function initNavigation() {
     document.querySelectorAll('[data-navigation-shell]').forEach((shell) => {
-        shell.querySelector('a[href="#main-content"]').addEventListener('click', (event) => {
-            event.preventDefault();
-            shell.querySelector('#main-content').focus({ preventScroll: true });
-        });
+        shell
+            .querySelector('a[href="#main-content"]')
+            .addEventListener('click', (event) => {
+                event.preventDefault();
+
+                shell
+                    .querySelector('#main-content')
+                    .focus({ preventScroll: true });
+            });
+
         const dialog = shell.querySelector('[data-navigation-dialog]');
         const opener = shell.querySelector('[data-navigation-open]');
-        opener.addEventListener('click', () => dialog.showModal());
-        shell.querySelector('[data-navigation-close]').addEventListener('click', () => dialog.close());
-        dialog.addEventListener('click', (event) => {
-            if (event.target === dialog || event.target.closest('a')) dialog.close();
+
+        opener.addEventListener('click', () => {
+            dialog.showModal();
         });
-        dialog.addEventListener('close', () => opener.focus());
-        window.addEventListener('resize', () => { if (window.innerWidth >= 1024 && dialog.open) dialog.close(); });
+
+        shell
+            .querySelector('[data-navigation-close]')
+            .addEventListener('click', () => {
+                dialog.close();
+            });
+
+        dialog.addEventListener('click', (event) => {
+            if (
+                event.target === dialog ||
+                event.target.closest('a')
+            ) {
+                dialog.close();
+            }
+        });
+
+        dialog.addEventListener('close', () => {
+            opener.focus();
+        });
+
+        window.addEventListener('resize', () => {
+            if (
+                window.innerWidth >= 1024 &&
+                dialog.open
+            ) {
+                dialog.close();
+            }
+        });
     });
 }
 
@@ -36,11 +80,24 @@ export function initPasswordFields() {
     document.querySelectorAll('[data-password-field]').forEach((field) => {
         const input = field.querySelector('input');
         const button = field.querySelector('[data-password-toggle]');
+
         button.addEventListener('click', () => {
             const visible = input.type === 'password';
+
             input.type = visible ? 'text' : 'password';
-            button.setAttribute('aria-pressed', String(visible));
-            button.setAttribute('aria-label', visible ? button.dataset.hideLabel : button.dataset.showLabel);
+
+            button.setAttribute(
+                'aria-pressed',
+                String(visible)
+            );
+
+            button.setAttribute(
+                'aria-label',
+                visible
+                    ? button.dataset.hideLabel
+                    : button.dataset.showLabel
+            );
+
             button.querySelector('[data-password-eye]').hidden = visible;
             button.querySelector('[data-password-eye-off]').hidden = !visible;
         });
@@ -50,43 +107,121 @@ export function initPasswordFields() {
 export function initForms() {
     document.querySelectorAll('[data-submit-form]').forEach((form) => {
         const scope = form.closest('[data-search-scope]') ?? form;
-        form.addEventListener('submit', () => setFormState(scope, form.dataset.submitForm));
+
+        form.addEventListener('submit', () => {
+            setFormState(
+                scope,
+                form.dataset.submitForm
+            );
+        });
+
         scope.querySelectorAll('[data-search-link]').forEach((link) => {
             link.addEventListener('click', (event) => {
-                if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) setFormState(scope, 'loading');
+                if (
+                    event.button === 0 &&
+                    !event.ctrlKey &&
+                    !event.metaKey &&
+                    !event.shiftKey &&
+                    !event.altKey
+                ) {
+                    setFormState(
+                        scope,
+                        'loading'
+                    );
+                }
             });
         });
-        window.addEventListener('pageshow', () => setFormState(scope, 'idle'));
+
+        window.addEventListener('pageshow', () => {
+            setFormState(
+                scope,
+                'idle'
+            );
+        });
     });
+}
+
+export function initInvalidFieldFocus() {
+    const invalidField = document.querySelector(
+        '[aria-invalid="true"]:not([disabled])'
+    );
+
+    if (!invalidField) {
+        return;
+    }
+
+    invalidField.focus();
 }
 
 export function initProfile() {
     document.querySelectorAll('[data-profile-form]').forEach((form) => {
         let previewUrl;
+
         const input = form.querySelector('[name="profile_photo"]');
         const preview = form.querySelector('[data-profile-preview]');
         const original = form.querySelector('[data-profile-original]');
         const photo = form.querySelector('[data-profile-photo]');
+
         if (photo) {
-            const showInitials = () => { photo.hidden = true; };
-            photo.addEventListener('error', showInitials);
-            if (photo.complete && !photo.naturalWidth) showInitials();
+            const showInitials = () => {
+                photo.hidden = true;
+            };
+
+            photo.addEventListener(
+                'error',
+                showInitials
+            );
+
+            if (
+                photo.complete &&
+                !photo.naturalWidth
+            ) {
+                showInitials();
+            }
         }
+
         preview.addEventListener('error', () => {
             preview.hidden = true;
             original.hidden = false;
         });
-        const clearPreview = () => { if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = null; };
+
+        const clearPreview = () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+            }
+
+            previewUrl = null;
+        };
+
         const updatePreview = () => {
             clearPreview();
+
             const file = input.files?.[0];
+
             preview.hidden = !file;
             original.hidden = Boolean(file);
-            if (file) { previewUrl = URL.createObjectURL(file); preview.src = previewUrl; }
-            else preview.removeAttribute('src');
+
+            if (file) {
+                previewUrl = URL.createObjectURL(file);
+                preview.src = previewUrl;
+            } else {
+                preview.removeAttribute('src');
+            }
         };
-        input.addEventListener('change', updatePreview);
-        window.addEventListener('pageshow', updatePreview);
-        window.addEventListener('pagehide', clearPreview);
+
+        input.addEventListener(
+            'change',
+            updatePreview
+        );
+
+        window.addEventListener(
+            'pageshow',
+            updatePreview
+        );
+
+        window.addEventListener(
+            'pagehide',
+            clearPreview
+        );
     });
 }
