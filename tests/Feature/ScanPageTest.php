@@ -10,6 +10,19 @@ class ScanPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_reference_retry_messages_are_translated_in_both_locales(): void
+    {
+        $this->actingAs(User::factory()->create());
+        foreach (['id' => 'Coba ambil referensi lagi', 'en' => 'Retry fetching the reference'] as $locale => $retry) {
+            $this->withSession(['locale' => $locale])->get('/scan')
+                ->assertOk()->assertSee($retry)->assertDontSee('scan.reference.retry');
+        }
+        $this->assertSame(array_keys(require lang_path('id/scan.php')),
+            array_keys(require lang_path('en/scan.php')));
+        $this->assertSame(array_keys((require lang_path('id/scan.php'))['reference']),
+            array_keys((require lang_path('en/scan.php'))['reference']));
+    }
+
     public function test_scan_page_renders_in_indonesian(): void
     {
         $user = User::factory()->create();

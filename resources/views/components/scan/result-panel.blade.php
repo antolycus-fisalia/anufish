@@ -100,15 +100,39 @@
 
         {{-- Partial --}}
         <div
-            x-show="resultStatus === 'partial'"
+            x-show="resultStatus === 'partial' && referenceStatus !== 'loading'"
             class="scan-result-notice"
         >
             <h3>{{ __('Detail referensi belum tersedia') }}</h3>
 
-            <p>
-                {{ __('Hasil identifikasi AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.') }}
-            </p>
+            <p x-text="referenceError || @js(__('Hasil identifikasi AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.'))"></p>
+            <button type="button" class="scan-secondary-action" @click="selectCandidate(selectedCandidateIndex)">
+                {{ __('scan.reference.retry') }}
+            </button>
         </div>
+
+        <div x-show="referenceStatus === 'loading'" class="scan-result-notice" role="status">
+            <p>{{ __('scan.reference.loading') }}</p>
+        </div>
+
+        <section x-show="referenceStatus === 'ambiguous'" class="scan-result-notice">
+            <h3>{{ __('scan.reference.ambiguous_title') }}</h3>
+            <p>{{ __('scan.reference.ambiguous_body') }}</p>
+            <div class="scan-candidate-list">
+                <template x-for="option in referenceOptions" :key="option.taxon_id">
+                    <article class="scan-candidate-card">
+                        <div>
+                            <h3 x-text="option.scientific_name"></h3>
+                            <p x-text="option.common_name ?? ''"></p>
+                            <p>{{ __('Taxon ID iNaturalist') }}: <span x-text="option.taxon_id"></span></p>
+                        </div>
+                        <button type="button" class="scan-secondary-action" @click="selectReference(option.taxon_id)">
+                            {{ __('scan.reference.choose') }}
+                        </button>
+                    </article>
+                </template>
+            </div>
+        </section>
 
         <x-scan.reference-panel />
     </div>

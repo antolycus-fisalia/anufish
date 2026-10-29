@@ -18,9 +18,11 @@ Route::middleware('auth')->group(function () {
     Route::view('/scan', 'pages.scan.index')->name('scan.index');
 
     Route::view('/scan/history', 'pages.scan.history.index')
-    ->name('scan.history.index');
+        ->name('scan.history.index');
 
     Route::post('/scan/upload', [ScanController::class, 'upload'])->name('scan.upload');
+    Route::get('/scan/reference', [ScanController::class, 'reference'])
+        ->middleware('throttle:30,1')->name('scan.reference');
 
     Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
         Route::get('/', 'show')->name('show');
