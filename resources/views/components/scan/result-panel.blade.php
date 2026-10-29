@@ -119,6 +119,10 @@
         <div x-show="referenceStatus === 'ready'" class="scan-result-notice" role="status">
             <p x-show="detailTabStatus === 'opened'">{{ __('scan.reference.tab_opened') }}</p>
             <p x-show="detailTabStatus === 'blocked'">{{ __('scan.reference.tab_blocked') }}</p>
+            <a :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'"
+                target="_blank" rel="noopener noreferrer" class="scan-secondary-action">
+                {{ __('Lihat detail ikan') }}
+            </a>
         </div>
 
         <section x-show="referenceStatus === 'ambiguous'" class="scan-result-notice">
@@ -140,6 +144,5 @@
             </div>
         </section>
 
-        <x-scan.reference-panel />
     </div>
 </section>

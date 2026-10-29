@@ -29,6 +29,8 @@ class ScanPageTest extends TestCase
                 ->assertOk()->assertSee($retry)->assertDontSee('scan.reference.retry')
                 ->assertSee('data-detail-loading-url="'.route('scan.detail-loading').'"', false)
                 ->assertSee('data-fish-detail-url="'.route('fish.show', ['taxonId' => '__TAXON_ID__']).'"', false)
+                ->assertDontSee('class="scan-reference-panel"', false)
+                ->assertSee('target="_blank" rel="noopener noreferrer" class="scan-secondary-action"', false)
                 ->assertDontSee('x-show="candidates.length > 1"', false);
         }
         $this->assertSame(array_keys(require lang_path('id/scan.php')),
