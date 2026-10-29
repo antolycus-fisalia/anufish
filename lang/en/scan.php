@@ -24,4 +24,6 @@ return ['errors' => [
     'session' => 'Your session has expired. Please sign in again.',
     'retry' => 'Retry fetching the reference',
     'loading' => 'Fetching the iNaturalist reference for the selected candidate...',
+    'select_title' => 'Choose a candidate to view fish details',
+    'select_body' => 'The iNaturalist reference is fetched after you choose a candidate. The detail page opens once the fish identity is matched.',
 ]];

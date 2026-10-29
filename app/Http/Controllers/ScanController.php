@@ -32,7 +32,7 @@ class ScanController extends Controller
      * the user's original filename. The path is returned so downstream
      * services (Ruvicode, iNaturalist, riwayat) can reference it.
      */
-    public function upload(ScanUploadRequest $request, RuvicodeService $identifier, ScanReferenceResolver $references): JsonResponse
+    public function upload(ScanUploadRequest $request, RuvicodeService $identifier): JsonResponse
     {
         $file = $request->file('fish_image');
 
@@ -72,7 +72,7 @@ class ScanController extends Controller
                 'original_name' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
-                'candidates' => $references->enrich($result['candidates']),
+                'candidates' => $result['candidates'],
             ],
         ], 201);
     }

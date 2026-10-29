@@ -141,7 +141,7 @@ export function scanUpload() {
             return `${Math.round(Number(confidence) * 100)}%`;
         },
 
-        async selectCandidate(index, reload = true) {
+        async selectCandidate(index) {
             if (
                 !Number.isInteger(index) ||
                 index < 0 ||
@@ -154,9 +154,6 @@ export function scanUpload() {
             const generation = ++this.referenceGeneration;
             this.referenceImageFailed = false;
             const candidate = this.candidates[index];
-            this.applyReference(candidate);
-            if (!reload) return;
-
             this.reference = null;
             this.referenceOptions = [];
             this.referenceError = '';
@@ -180,6 +177,9 @@ export function scanUpload() {
                 }
                 Object.assign(candidate, payload.data);
                 this.applyReference(candidate);
+                if (this.referenceStatus === 'ready') {
+                    this.openFishDetail(this.reference.taxon_id);
+                }
             } catch (error) {
                 if (generation !== this.referenceGeneration) return;
                 this.referenceStatus = 'unavailable';
@@ -207,6 +207,14 @@ export function scanUpload() {
             this.referenceStatus = 'ready';
             this.referenceImageFailed = false;
             this.resultStatus = 'success';
+            this.openFishDetail(taxonId);
+        },
+
+        openFishDetail(taxonId) {
+            if (!Number.isSafeInteger(taxonId) || taxonId < 1) return;
+            const root = this.$refs.fileInput.closest('[data-scan]');
+            const template = root?.dataset.fishDetailUrl ?? '/fish/taxa/__TAXON_ID__';
+            window.location.assign(template.replace('__TAXON_ID__', String(taxonId)));
         },
 
         chooseAnotherImage() {
@@ -289,13 +297,7 @@ export function scanUpload() {
                     return;
                 }
 
-                // Lebih dari satu kandidat harus dipilih user
-                if (candidates.length > 1) {
-                    this.resultStatus = 'ambiguous';
-                    return;
-                }
-
-                await this.selectCandidate(0, false);
+                this.resultStatus = 'ambiguous';
             } catch (error) {
                 this.resultStatus = 'failure';
                 this.resultError =
