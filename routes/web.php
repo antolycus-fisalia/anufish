@@ -1,5 +1,7 @@
+
 <?php
 
+use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FishController;
@@ -9,29 +11,50 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/language', [LocaleController::class, 'update'])->name('locale.update');
+// Language
+Route::post('/language', [LocaleController::class, 'update'])
+    ->name('locale.update');
 
+// Authenticated Routes
 Route::middleware('auth')->group(function () {
-    Route::get('/', HomeController::class)->name('homepage');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // Homepage & Logout
+    Route::get('/', HomeController::class)->name('homepage');
+
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->name('logout');
+
+    // Scan
     Route::view('/scan', 'pages.scan.index')->name('scan.index');
-    Route::view('/scan/detail-loading', 'pages.scan.detail-loading')->name('scan.detail-loading');
+
+    Route::view('/scan/detail-loading', 'pages.scan.detail-loading')
+        ->name('scan.detail-loading');
 
     Route::view('/scan/history', 'pages.scan.history.index')
         ->name('scan.history.index');
 
-    Route::post('/scan/upload', [ScanController::class, 'upload'])->name('scan.upload');
+    Route::post('/scan/upload', [ScanController::class, 'upload'])
+        ->name('scan.upload');
+
     Route::get('/scan/reference', [ScanController::class, 'reference'])
-        ->middleware('throttle:30,1')->name('scan.reference');
+        ->middleware('throttle:30,1')
+        ->name('scan.reference');
 
-    Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
-        Route::get('/', 'show')->name('show');
-        Route::put('/', 'update')->name('update');
-    });
+    // Profile
+    Route::prefix('profile')
+        ->name('profile.')
+        ->controller(ProfileController::class)
+        ->group(function () {
+            Route::get('/', 'show')->name('show');
+            Route::put('/', 'update')->name('update');
+        });
 
-    Route::prefix('fish')->name('fish.')->controller(FishController::class)
-        ->where(['taxonId' => '[1-9][0-9]{0,9}'])->group(function () {
+    // Fish
+    Route::prefix('fish')
+        ->name('fish.')
+        ->controller(FishController::class)
+        ->where(['taxonId' => '[1-9][0-9]{0,9}'])
+        ->group(function () {
             Route::get('/', 'index')->name('index');
             Route::get('/search', 'search')->name('search');
             Route::get('/taxa/{taxonId}', 'show')->name('show');
@@ -39,16 +62,39 @@ Route::middleware('auth')->group(function () {
             Route::get('/taxa/{taxonId}/photos', 'photos')->name('photos');
         });
 
+    // Admin
     Route::get('/admin', [AdminController::class, 'index'])
-        ->middleware('admin')->name('admin.dashboard');
+        ->middleware('admin')
+        ->name('admin.dashboard');
+
+    // FSH-26: Admin Edit User
+    Route::prefix('admin/users')
+        ->name('admin.users.')
+        ->middleware('admin')
+        ->controller(AdminUserEditController::class)
+        ->group(function () {
+            Route::get('/{user}/edit', 'edit')
+                ->name('edit');
+
+            Route::put('/{user}', 'update')
+                ->name('update');
+        });
 });
 
+// Guest Routes
 Route::middleware('guest')->group(function () {
-    Route::view('/login', 'pages.auth.login')->name('login');
-    Route::post('/login', [AuthController::class, 'login'])
-        ->middleware('throttle:login')->name('login.store');
 
+    // Login
+    Route::view('/login', 'pages.auth.login')->name('login');
+
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login')
+        ->name('login.store');
+
+    // Register
     Route::view('/register', 'pages.auth.register')->name('register');
+
     Route::post('/register', [AuthController::class, 'register'])
-        ->middleware('throttle:register')->name('register.store');
+        ->middleware('throttle:register')
+        ->name('register.store');
 });
