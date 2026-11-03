@@ -13,10 +13,19 @@ class ScanPageTest extends TestCase
     public function test_detail_loading_page_requires_login_and_has_localized_status(): void
     {
         $this->get('/scan/detail-loading')->assertRedirect('/login');
+
         $this->actingAs(User::factory()->create());
-        foreach (['id' => 'Menyiapkan detail ikan...', 'en' => 'Preparing fish details...'] as $locale => $title) {
-            $this->withSession(['locale' => $locale])->get('/scan/detail-loading')
-                ->assertOk()->assertSee($title)->assertSee('role="status"', false)
+
+        foreach ([
+            'id' => 'Menyiapkan detail ikan...',
+            'en' => 'Preparing fish details...',
+        ] as $locale => $title) {
+            $this
+                ->withSession(['locale' => $locale])
+                ->get('/scan/detail-loading')
+                ->assertOk()
+                ->assertSee($title)
+                ->assertSee('role="status"', false)
                 ->assertSee('motion-reduce:animate-none', false);
         }
     }
@@ -24,19 +33,58 @@ class ScanPageTest extends TestCase
     public function test_reference_retry_messages_are_translated_in_both_locales(): void
     {
         $this->actingAs(User::factory()->create());
-        foreach (['id' => 'Coba ambil referensi lagi', 'en' => 'Retry fetching the reference'] as $locale => $retry) {
-            $this->withSession(['locale' => $locale])->get('/scan')
-                ->assertOk()->assertSee($retry)->assertDontSee('scan.reference.retry')
-                ->assertSee('data-detail-loading-url="'.route('scan.detail-loading').'"', false)
-                ->assertSee('data-fish-detail-url="'.route('fish.show', ['taxonId' => '__TAXON_ID__']).'"', false)
-                ->assertDontSee('class="scan-reference-panel"', false)
-                ->assertSee('target="_blank" rel="noopener noreferrer" class="scan-secondary-action"', false)
-                ->assertDontSee('x-show="candidates.length > 1"', false);
+
+        foreach ([
+            'id' => 'Coba ambil referensi lagi',
+            'en' => 'Retry fetching the reference',
+        ] as $locale => $retry) {
+            $this
+                ->withSession(['locale' => $locale])
+                ->get('/scan')
+                ->assertOk()
+                ->assertSee($retry)
+                ->assertDontSee('scan.reference.retry')
+                ->assertSee(
+                    'data-detail-loading-url="'.route('scan.detail-loading').'"',
+                    false
+                )
+                ->assertSee(
+                    'data-fish-detail-url="'.route('fish.show', [
+                        'taxonId' => '__TAXON_ID__',
+                    ]).'"',
+                    false
+                )
+                ->assertDontSee(
+                    'class="scan-reference-panel"',
+                    false
+                )
+                ->assertSee(
+                    'target="_blank"',
+                    false
+                )
+                ->assertSee(
+                    'rel="noopener noreferrer"',
+                    false
+                )
+                ->assertSee(
+                    'class="scan-secondary-action"',
+                    false
+                )
+                ->assertDontSee(
+                    'x-show="candidates.length > 1"',
+                    false
+                );
         }
-        $this->assertSame(array_keys(require lang_path('id/scan.php')),
-            array_keys(require lang_path('en/scan.php')));
-        $this->assertSame(array_keys((require lang_path('id/scan.php'))['reference']),
-            array_keys((require lang_path('en/scan.php'))['reference']));
+
+        $this->assertSame(
+            array_keys(require lang_path('id/scan.php')),
+            array_keys(require lang_path('en/scan.php'))
+        );
+
+        $this->assertSame(
+            array_keys((require lang_path('id/scan.php'))['reference']),
+            array_keys((require lang_path('en/scan.php'))['reference'])
+        );
     }
 
     public function test_scan_page_renders_in_indonesian(): void

@@ -399,3 +399,43 @@ test('failed reference closes the waiting tab and keeps the failure in scan resu
     assert.equal(component.referenceError, 'Timeout');
     assert.deepEqual(component.navigations, []);
 });
+
+test('late upload response cannot restore results after reset', async () => {
+    const component = createComponent();
+
+    let resolveUpload;
+
+    globalThis.fetch = () =>
+        new Promise((resolve) => {
+            resolveUpload = resolve;
+        });
+
+    const request = component.processImage();
+
+    assert.equal(component.resultStatus, 'loading');
+    assert.equal(component.processing, true);
+
+    // User mereset scan sebelum response selesai.
+    component.resetResult();
+
+    assert.equal(component.resultStatus, 'idle');
+    assert.equal(component.processing, false);
+    assert.deepEqual(component.candidates, []);
+
+    // Response lama baru datang setelah reset.
+    resolveUpload(
+        successfulResponse([
+            {
+                scientific_name: 'Channa striata',
+                confidence: 0.91,
+            },
+        ])
+    );
+
+    await request;
+
+    // Response lama tidak boleh menghidupkan hasil kembali.
+    assert.equal(component.resultStatus, 'idle');
+    assert.deepEqual(component.candidates, []);
+    assert.equal(component.processing, false);
+});
