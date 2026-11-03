@@ -10,6 +10,7 @@ import {
 import { initFishDetails } from './fish-detail.js';
 import { initAuthLayout } from './auth-layout.js';
 import { scanUpload } from './scan.js';
+import { initHistoryImages } from './scan-history.js';
 
 window.Alpine = Alpine;
 
@@ -23,5 +24,6 @@ initFishDetails();
 initAuthLayout();
 initFishCardImages();
 initInvalidFieldFocus();
+initHistoryImages();
 
 Alpine.start();

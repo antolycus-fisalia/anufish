@@ -8,6 +8,7 @@ use App\Services\RuvicodeService;
 use App\Services\ScanReferenceResolver;
 use GuzzleHttp\Exception\ConnectTimeoutException;
 use GuzzleHttp\Psr7\Request;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +19,8 @@ use Tests\TestCase;
 
 class ScanReferenceResolverTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -218,7 +221,7 @@ class ScanReferenceResolverTest extends TestCase
             'success' => true, 'candidates' => [['scientific_name' => 'Channa striata', 'confidence' => null]], 'error' => null,
         ]));
         Http::fake(['*' => Http::response([], 503)]);
-        $response = $this->actingAs(User::factory()->make())->postJson('/scan/upload', ['fish_image' => UploadedFile::fake()->image('fish.jpg')]);
+        $response = $this->actingAs(User::factory()->create())->postJson('/scan/upload', ['fish_image' => UploadedFile::fake()->image('fish.jpg')]);
         $response->assertCreated()->assertJsonMissingPath('data.candidates.0.match_status')
             ->assertJsonPath('data.candidates.0.scientific_name', 'Channa striata')
             ->assertJsonPath('data.candidates.0.confidence', null);

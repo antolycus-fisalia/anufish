@@ -15,6 +15,10 @@
     data-error-request="{{ __('Identifikasi gagal. Silakan coba lagi.') }}"
     data-error-result="{{ __('Hasil identifikasi belum tersedia.') }}"
 >
+    <p x-cloak x-show="historyUrl" class="scan-result-note" role="status">
+        {{ __('history.saved') }}
+        <a :href="historyUrl" class="scan-reference-link">{{ __('history.view') }}</a>
+    </p>
     <div class="scan-grid">
         <div class="scan-input-section">
             <div>

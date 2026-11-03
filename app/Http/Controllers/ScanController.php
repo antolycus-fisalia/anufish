@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ScanUploadRequest;
+use App\Models\RiwayatScan;
 use App\Services\RuvicodeService;
+use App\Services\ScanHistoryService;
 use App\Services\ScanReferenceResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
-use League\Flysystem\FilesystemException;
 use Throwable;
 
 class ScanController extends Controller
@@ -32,7 +33,31 @@ class ScanController extends Controller
      * the user's original filename. The path is returned so downstream
      * services (Ruvicode, iNaturalist, riwayat) can reference it.
      */
-    public function upload(ScanUploadRequest $request, RuvicodeService $identifier): JsonResponse
+    public function upload(ScanUploadRequest $request, RuvicodeService $identifier, ScanHistoryService $history): JsonResponse
+    {
+        $operationId = $request->validated('operation_id') ?? (string) Str::uuid();
+        $lock = Cache::lock('scan-upload:'.$request->user()->id.':'.$operationId, 180);
+        if (! $lock->get()) {
+            return response()->json(['success' => false, 'message' => __('history.processing')], 409);
+        }
+        try {
+            $hash = hash_file('sha256', $request->file('fish_image')->getRealPath());
+            $existing = RiwayatScan::where('user_id', $request->user()->id)->where('operation_id', $operationId)->first();
+            if ($existing) {
+                if (! hash_equals($existing->image_hash, $hash)) {
+                    return response()->json(['success' => false, 'message' => __('history.conflict')], 409);
+                }
+
+                return $this->uploaded($request, $existing->image_path, $existing->candidates, $existing);
+            }
+
+            return $this->identifyAndSave($request, $identifier, $history, $operationId, $hash);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function identifyAndSave(ScanUploadRequest $request, RuvicodeService $identifier, ScanHistoryService $history, string $operationId, string $hash): JsonResponse
     {
         $file = $request->file('fish_image');
 
@@ -52,27 +77,53 @@ class ScanController extends Controller
             ], 500);
         }
 
-        $result = $identifier->identify($path);
+        try {
+            $result = $identifier->identify($path);
+        } catch (Throwable $exception) {
+            $history->cleanup($path);
+            report($exception);
+
+            return response()->json(['success' => false, 'message' => __('history.identification_failed')], 502);
+        }
         if (! $result['success']) {
-            try {
-                Storage::disk('local')->delete($path);
-            } catch (FilesystemException) {
-                // Cleanup failure must not hide the controlled identification error.
-            }
+            $history->cleanup($path);
 
             return response()->json(['success' => false, 'message' => $result['error']], 502);
         }
 
+        $record = null;
+        if ($result['candidates'] !== []) {
+            try {
+                $record = $history->save($request->user()->id, $operationId, $hash, $path, $result['candidates']);
+            } catch (Throwable $exception) {
+                $history->cleanup($path);
+                report($exception);
+
+                return response()->json(['success' => false, 'message' => __('history.save_failed')], 500);
+            }
+        } else {
+            $history->cleanup($path);
+        }
+
+        return $this->uploaded($request, $path, $result['candidates'], $record);
+    }
+
+    private function uploaded(ScanUploadRequest $request, string $path, array $candidates, ?RiwayatScan $record): JsonResponse
+    {
+        $file = $request->file('fish_image');
+
         return response()->json([
             'success' => true,
-            'message' => __('Foto ikan berhasil diunggah.'),
+            'message' => $record ? __('Foto ikan berhasil diunggah.') : __('history.unknown'),
             'data' => [
-                'path' => $path,
-                'disk' => 'local',
+                'path' => $record ? $path : null,
+                'disk' => $record ? 'local' : null,
                 'original_name' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
-                'candidates' => $result['candidates'],
+                'candidates' => $candidates,
+                'history_id' => $record?->id,
+                'history_url' => $record ? route('scan.history.show', $record) : null,
             ],
         ], 201);
     }
