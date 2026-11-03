@@ -7,6 +7,7 @@ use App\Models\Artikel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class ArtikelController extends Controller
@@ -31,7 +32,13 @@ class ArtikelController extends Controller
 
         // Sementara hanya menerima teks biasa.
         // Sanitasi rich text final ditangani FSH-22.
-        $data['isi'] = strip_tags($data['isi']);
+        $data['isi'] = trim(strip_tags($data['isi']));
+
+        if ($data['isi'] === '') {
+            throw ValidationException::withMessages([
+                'isi' => __('article.validation.content_required'),
+            ]);
+        }
 
         $path = null;
 
@@ -42,7 +49,7 @@ class ArtikelController extends Controller
 
                 if (! $path) {
                     throw new \RuntimeException(
-                        'Gagal menyimpan gambar artikel.'
+                        __('article.messages.create_failed')
                     );
                 }
 
@@ -50,26 +57,23 @@ class ArtikelController extends Controller
             }
 
             $artikel = new Artikel($data);
-
             $artikel->user_id = $request->user()->id;
             $artikel->status = 'menunggu';
-
             $artikel->save();
 
             return response()->json([
-                'message' => 'Artikel berhasil dibuat.',
+                'message' => __('article.messages.created'),
                 'data' => $artikel,
             ], 201);
-
         } catch (Throwable $e) {
-            if ($path) {
-                Storage::disk('public')->delete($path);
-            }
-
             report($e);
 
+            if ($path) {
+                $this->cleanupFile($path);
+            }
+
             return response()->json([
-                'message' => 'Gagal menyimpan artikel.',
+                'message' => __('article.messages.create_failed'),
             ], 500);
         }
     }
@@ -103,7 +107,13 @@ class ArtikelController extends Controller
             'isi',
         ]);
 
-        $data['isi'] = strip_tags($data['isi']);
+        $data['isi'] = trim(strip_tags($data['isi']));
+
+        if ($data['isi'] === '') {
+            throw ValidationException::withMessages([
+                'isi' => __('article.validation.content_required'),
+            ]);
+        }
 
         $oldPath = $artikel->gambar;
         $newPath = null;
@@ -115,7 +125,7 @@ class ArtikelController extends Controller
 
                 if (! $newPath) {
                     throw new \RuntimeException(
-                        'Gagal menyimpan gambar artikel.'
+                        __('article.messages.update_failed')
                     );
                 }
 
@@ -124,34 +134,28 @@ class ArtikelController extends Controller
 
             $artikel->fill($data);
 
-            // Setiap perubahan konten kembali menunggu moderasi.
+            // Perubahan artikel kembali menunggu moderasi.
             $artikel->status = 'menunggu';
-
             $artikel->save();
-
         } catch (Throwable $e) {
-            if ($newPath) {
-                Storage::disk('public')->delete($newPath);
-            }
-
             report($e);
 
+            if ($newPath) {
+                $this->cleanupFile($newPath);
+            }
+
             return response()->json([
-                'message' => 'Gagal memperbarui artikel.',
+                'message' => __('article.messages.update_failed'),
             ], 500);
         }
 
-        // Hapus gambar lama hanya setelah DB berhasil disimpan.
-        if ($newPath && $oldPath) {
-            try {
-                Storage::disk('public')->delete($oldPath);
-            } catch (Throwable $e) {
-                report($e);
-            }
+        // Gambar lama dihapus setelah database berhasil diperbarui.
+        if ($newPath && $oldPath && $newPath !== $oldPath) {
+            $this->cleanupFile($oldPath);
         }
 
         return response()->json([
-            'message' => 'Artikel berhasil diperbarui.',
+            'message' => __('article.messages.updated'),
             'data' => $artikel->fresh(),
         ]);
     }
@@ -173,20 +177,35 @@ class ArtikelController extends Controller
             report($e);
 
             return response()->json([
-                'message' => 'Gagal menghapus artikel.',
+                'message' => __('article.messages.delete_failed'),
             ], 500);
         }
 
+        // Hapus gambar setelah record berhasil dihapus.
         if ($path) {
-            try {
-                Storage::disk('public')->delete($path);
-            } catch (Throwable $e) {
-                report($e);
-            }
+            $this->cleanupFile($path);
         }
 
         return response()->json([
-            'message' => 'Artikel berhasil dihapus.',
+            'message' => __('article.messages.deleted'),
         ]);
+    }
+
+    /**
+     * Cleanup file tanpa menutupi exception utama.
+     */
+    private function cleanupFile(string $path): void
+    {
+        try {
+            $deleted = Storage::disk('public')->delete($path);
+
+            if (! $deleted) {
+                report(new \RuntimeException(
+                    'Article file cleanup failed.'
+                ));
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 }
