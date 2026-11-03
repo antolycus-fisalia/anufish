@@ -14,6 +14,7 @@ class ScanUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'operation_id' => ['sometimes', 'required', 'uuid'],
             'fish_image' => [
                 'required',
                 'file',
@@ -29,13 +30,15 @@ class ScanUploadRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'fish_image.required'   => __('Foto ikan wajib diunggah.'),
-            'fish_image.file'       => __('File yang diunggah tidak valid.'),
-            'fish_image.image'      => __('File harus berupa gambar.'),
+            'operation_id.required' => __('history.operation_invalid'),
+            'operation_id.uuid' => __('history.operation_invalid'),
+            'fish_image.required' => __('Foto ikan wajib diunggah.'),
+            'fish_image.file' => __('File yang diunggah tidak valid.'),
+            'fish_image.image' => __('File harus berupa gambar.'),
             'fish_image.extensions' => __('Format gambar harus JPG, JPEG, atau PNG.'),
-            'fish_image.mimes'      => __('Format gambar harus JPG, JPEG, atau PNG.'),
-            'fish_image.mimetypes'  => __('Tipe MIME gambar tidak valid.'),
-            'fish_image.max'        => __('Ukuran gambar maksimal adalah 5 MB.'),
+            'fish_image.mimes' => __('Format gambar harus JPG, JPEG, atau PNG.'),
+            'fish_image.mimetypes' => __('Tipe MIME gambar tidak valid.'),
+            'fish_image.max' => __('Ukuran gambar maksimal adalah 5 MB.'),
         ];
     }
 }

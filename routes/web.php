@@ -8,6 +8,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\ScanHistoryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -49,8 +50,11 @@ Route::middleware('auth')->group(function () {
         Route::view('/detail-loading', 'pages.scan.detail-loading')
             ->name('detail-loading');
 
-        Route::view('/history', 'pages.scan.history.index')
+        Route::get('/history', [ScanHistoryController::class, 'index'])
             ->name('history.index');
+        Route::get('/history/{history}', [ScanHistoryController::class, 'show'])->whereNumber('history')->name('history.show');
+        Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])->whereNumber('history')->name('history.image');
+        Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])->whereNumber('history')->middleware('throttle:30,1')->name('history.reference');
 
         Route::controller(ScanController::class)->group(function () {
 

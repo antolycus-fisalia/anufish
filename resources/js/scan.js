@@ -8,36 +8,45 @@ export function scanUpload() {
         previewUrl: null,
         selectedFileName: '',
         hasFile: false,
+        operationId: null,
+        historyId: null,
+        historyUrl: null,
         errorMessage: '',
         processing: false,
+
         selectionGeneration: 0,
+        uploadGeneration: 0,
 
         resultStatus: 'idle',
         candidates: [],
         selectedCandidateIndex: null,
+
         reference: null,
         referenceStatus: 'idle',
         referenceImageFailed: false,
         referenceOptions: [],
         referenceError: '',
         referenceGeneration: 0,
+
         detailTabStatus: 'idle',
         resultError: '',
 
         openCamera() {
             const input = this.$refs.fileInput;
+
             input.setAttribute('capture', 'environment');
             input.click();
         },
 
         openUpload() {
             const input = this.$refs.fileInput;
+
             input.removeAttribute('capture');
             input.click();
         },
 
         async handleFile(event) {
-            // Mencegah hasil decode file lama menimpa file terbaru
+            // Mencegah hasil decode file lama menimpa file terbaru.
             const generation = ++this.selectionGeneration;
 
             this.resetResult();
@@ -70,7 +79,12 @@ export function scanUpload() {
 
             if (!imageIsValid) {
                 URL.revokeObjectURL(imageUrl);
-                this.rejectFile(input, root?.dataset.errorImage ?? '');
+
+                this.rejectFile(
+                    input,
+                    root?.dataset.errorImage ?? ''
+                );
+
                 return;
             }
 
@@ -96,7 +110,10 @@ export function scanUpload() {
                 const image = new Image();
 
                 image.onload = () => {
-                    resolve(image.naturalWidth > 0 && image.naturalHeight > 0);
+                    resolve(
+                        image.naturalWidth > 0 &&
+                        image.naturalHeight > 0
+                    );
                 };
 
                 image.onerror = () => {
@@ -109,28 +126,42 @@ export function scanUpload() {
 
         rejectFile(input, message) {
             this.resetSelection();
+
             input.value = '';
             this.errorMessage = message;
         },
 
         resetSelection() {
+            this.operationId = null;
             this.clearPreviewUrl();
+
             this.selectedFileName = '';
             this.hasFile = false;
         },
 
         resetResult() {
+            this.historyId = null;
+            this.historyUrl = null;
+            // Membatalkan response upload lama yang masih berjalan.
+            this.uploadGeneration += 1;
+            this.processing = false;
+
             this.closePendingDetailTab();
+
             this.detailTabStatus = 'idle';
+
             this.referenceGeneration += 1;
+
             this.resultStatus = 'idle';
             this.candidates = [];
             this.selectedCandidateIndex = null;
+
             this.reference = null;
             this.referenceStatus = 'idle';
             this.referenceImageFailed = false;
             this.referenceOptions = [];
             this.referenceError = '';
+
             this.resultError = '';
         },
 
@@ -154,80 +185,207 @@ export function scanUpload() {
             ) {
                 return;
             }
-            if (this.referenceStatus === 'loading' && this.selectedCandidateIndex === index) return;
+
+            if (
+                this.referenceStatus === 'loading' &&
+                this.selectedCandidateIndex === index
+            ) {
+                return;
+            }
 
             this.prepareDetailTab();
 
             this.selectedCandidateIndex = index;
+
             const generation = ++this.referenceGeneration;
+
             this.referenceImageFailed = false;
+
             const candidate = this.candidates[index];
+
             this.reference = null;
             this.referenceOptions = [];
             this.referenceError = '';
             this.referenceStatus = 'loading';
             this.resultStatus = 'partial';
+
             const root = this.$refs.fileInput.closest('[data-scan]');
+
             try {
-                const query = new URLSearchParams({ scientific_name: candidate.scientific_name });
-                const response = await fetch(`${root?.dataset.referenceUrl ?? '/scan/reference'}?${query}`, {
-                    headers: { Accept: 'application/json' },
+                const query = new URLSearchParams({
+                    scientific_name: candidate.scientific_name,
                 });
+
+                const response = await fetch(
+                    this.historyId
+                        ? `/scan/history/${this.historyId}/reference`
+                        : `${root?.dataset.referenceUrl ?? '/scan/reference'}?${query}`,
+                    {
+                        ...(this.historyId ? {
+                            method: 'POST',
+                            body: JSON.stringify({candidate_index: index}),
+                        } : {}),
+                        headers: {
+                            Accept: 'application/json',
+                            ...(this.historyId ? {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                            } : {}),
+                        },
+                    }
+                );
+
                 const payload = await response.json();
-                if (generation !== this.referenceGeneration) return;
+
+                // Response kandidat lama tidak boleh menimpa kandidat terbaru.
+                if (generation !== this.referenceGeneration) {
+                    return;
+                }
+
                 if (!response.ok) {
-                    const message = response.status === 429 ? root?.dataset.referenceRateLimit
-                        : response.status === 401 ? root?.dataset.referenceSession : payload.message;
-                    throw new Error(message || root?.dataset.referenceFailure || 'Referensi iNaturalist gagal diambil.');
+                    const message =
+                        response.status === 429
+                            ? root?.dataset.referenceRateLimit
+                            : response.status === 401
+                                ? root?.dataset.referenceSession
+                                : payload.message;
+
+                    throw new Error(
+                        message ||
+                        root?.dataset.referenceFailure ||
+                        'Referensi iNaturalist gagal diambil.'
+                    );
                 }
-                if (!['matched', 'ambiguous', 'unavailable'].includes(payload.data?.match_status)) {
-                    throw new Error(root?.dataset.referenceFailure || 'Respons referensi tidak valid.');
+
+                if (
+                    ![
+                        'matched',
+                        'ambiguous',
+                        'unavailable',
+                    ].includes(payload.data?.match_status)
+                ) {
+                    throw new Error(
+                        root?.dataset.referenceFailure ||
+                        'Respons referensi tidak valid.'
+                    );
                 }
+
                 Object.assign(candidate, payload.data);
+
                 this.applyReference(candidate);
+
                 if (this.referenceStatus === 'ready') {
-                    this.openFishDetail(this.reference.taxon_id);
+                    this.openFishDetail(
+                        this.reference.taxon_id
+                    );
                 } else {
                     this.closePendingDetailTab();
                 }
             } catch (error) {
-                if (generation !== this.referenceGeneration) return;
+                if (generation !== this.referenceGeneration) {
+                    return;
+                }
+
                 this.closePendingDetailTab();
+
                 this.referenceStatus = 'unavailable';
                 this.resultStatus = 'partial';
-                this.referenceError = error instanceof TypeError
-                    ? (root?.dataset.referenceNetwork || 'Koneksi ke server gagal. Periksa koneksi lalu coba lagi.')
-                    : error instanceof SyntaxError
-                        ? (root?.dataset.referenceFailure || 'Respons referensi tidak valid. Silakan coba lagi.')
-                        : (error instanceof Error ? error.message : root?.dataset.referenceFailure);
+
+                this.referenceError =
+                    error instanceof TypeError
+                        ? (
+                            root?.dataset.referenceNetwork ||
+                            'Koneksi ke server gagal. Periksa koneksi lalu coba lagi.'
+                        )
+                        : error instanceof SyntaxError
+                            ? (
+                                root?.dataset.referenceFailure ||
+                                'Respons referensi tidak valid. Silakan coba lagi.'
+                            )
+                            : (
+                                error instanceof Error
+                                    ? error.message
+                                    : root?.dataset.referenceFailure
+                            );
             }
         },
 
         applyReference(candidate) {
-            this.referenceOptions = candidate.reference_options ?? [];
-            this.reference = candidate.match_status === 'matched' ? candidate.reference : null;
-            this.referenceError = candidate.reference_error ?? '';
-            this.referenceStatus = this.reference ? 'ready' : (candidate.match_status === 'ambiguous' ? 'ambiguous' : 'unavailable');
-            this.resultStatus = this.reference ? 'success' : (this.referenceStatus === 'ambiguous' ? 'ambiguous' : 'partial');
+            this.referenceOptions =
+                candidate.reference_options ?? [];
+
+            this.reference =
+                candidate.match_status === 'matched'
+                    ? candidate.reference
+                    : null;
+
+            this.referenceError =
+                candidate.reference_error ?? '';
+
+            this.referenceStatus =
+                this.reference
+                    ? 'ready'
+                    : candidate.match_status === 'ambiguous'
+                        ? 'ambiguous'
+                        : 'unavailable';
+
+            this.resultStatus =
+                this.reference
+                    ? 'success'
+                    : this.referenceStatus === 'ambiguous'
+                        ? 'ambiguous'
+                        : 'partial';
         },
 
         selectReference(taxonId) {
-            const option = this.referenceOptions.find((reference) => reference.taxon_id === taxonId);
-            if (!option || this.selectedCandidateIndex === null) return;
+            const option = this.referenceOptions.find(
+                (reference) =>
+                    reference.taxon_id === taxonId
+            );
+
+            if (
+                !option ||
+                this.selectedCandidateIndex === null
+            ) {
+                return;
+            }
+
             this.prepareDetailTab();
+
             this.reference = option;
             this.referenceStatus = 'ready';
             this.referenceImageFailed = false;
             this.resultStatus = 'success';
+
             this.openFishDetail(taxonId);
         },
 
         openFishDetail(taxonId) {
-            if (!Number.isSafeInteger(taxonId) || taxonId < 1) return;
-            const root = this.$refs.fileInput.closest('[data-scan]');
-            const template = root?.dataset.fishDetailUrl ?? '/fish/taxa/__TAXON_ID__';
-            if (pendingDetailTab && !pendingDetailTab.closed) {
-                pendingDetailTab.location.replace(template.replace('__TAXON_ID__', String(taxonId)));
+            if (
+                !Number.isSafeInteger(taxonId) ||
+                taxonId < 1
+            ) {
+                return;
+            }
+
+            const root =
+                this.$refs.fileInput.closest('[data-scan]');
+
+            const template =
+                root?.dataset.fishDetailUrl ??
+                '/fish/taxa/__TAXON_ID__';
+
+            if (
+                pendingDetailTab &&
+                !pendingDetailTab.closed
+            ) {
+                pendingDetailTab.location.replace(
+                    template.replace(
+                        '__TAXON_ID__',
+                        String(taxonId)
+                    )
+                );
+
                 pendingDetailTab = null;
                 this.detailTabStatus = 'opened';
             } else {
@@ -238,8 +396,16 @@ export function scanUpload() {
 
         prepareDetailTab() {
             this.closePendingDetailTab();
-            const root = this.$refs.fileInput.closest('[data-scan]');
-            pendingDetailTab = window.open(root?.dataset.detailLoadingUrl ?? '/scan/detail-loading', '_blank');
+
+            const root =
+                this.$refs.fileInput.closest('[data-scan]');
+
+            pendingDetailTab = window.open(
+                root?.dataset.detailLoadingUrl ??
+                    '/scan/detail-loading',
+                '_blank'
+            );
+
             if (pendingDetailTab) {
                 pendingDetailTab.opener = null;
                 this.detailTabStatus = 'opening';
@@ -249,7 +415,13 @@ export function scanUpload() {
         },
 
         closePendingDetailTab() {
-            if (pendingDetailTab && !pendingDetailTab.closed) pendingDetailTab.close();
+            if (
+                pendingDetailTab &&
+                !pendingDetailTab.closed
+            ) {
+                pendingDetailTab.close();
+            }
+
             pendingDetailTab = null;
         },
 
@@ -269,7 +441,7 @@ export function scanUpload() {
         },
 
         async processImage() {
-            // Mencegah double click
+            // Mencegah double click.
             if (!this.hasFile || this.processing) {
                 return;
             }
@@ -282,32 +454,61 @@ export function scanUpload() {
             }
 
             const root = input.closest('[data-scan]');
+
             const csrfToken = document.querySelector(
                 'meta[name="csrf-token"]'
             )?.content;
 
             this.resetResult();
+
+            // Setiap request upload mempunyai generation sendiri.
+            const generation = ++this.uploadGeneration;
+
             this.processing = true;
             this.resultStatus = 'loading';
 
             try {
                 const formData = new FormData();
-                formData.append('fish_image', file);
 
-                const response = await fetch('/scan/upload', {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        ...(csrfToken
-                            ? { 'X-CSRF-TOKEN': csrfToken }
-                            : {}),
-                    },
-                    body: formData,
-                });
+                formData.append(
+                    'fish_image',
+                    file
+                );
+                this.operationId ??= crypto.randomUUID();
+                formData.append('operation_id', this.operationId);
 
-                const payload = await response.json();
+                const response = await fetch(
+                    '/scan/upload',
+                    {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            ...(csrfToken
+                                ? {
+                                    'X-CSRF-TOKEN':
+                                        csrfToken,
+                                }
+                                : {}),
+                        },
+                        body: formData,
+                    }
+                );
 
-                if (!response.ok || payload.success === false) {
+                const payload =
+                    await response.json();
+
+                // Response upload lama tidak boleh mengubah state terbaru.
+                if (
+                    generation !==
+                    this.uploadGeneration
+                ) {
+                    return;
+                }
+
+                if (
+                    !response.ok ||
+                    payload.success === false
+                ) {
                     throw new Error(
                         payload.message ||
                         root?.dataset.errorRequest ||
@@ -315,19 +516,22 @@ export function scanUpload() {
                     );
                 }
 
-                const candidates = payload.data?.candidates;
+                const candidates =
+                    payload.data?.candidates;
 
-                // Reject responses that do not contain the identification contract.
                 if (!Array.isArray(candidates)) {
                     this.resultStatus = 'failure';
+
                     this.resultError =
                         root?.dataset.errorResult ?? '';
+
                     return;
                 }
 
                 this.candidates = candidates;
+                this.historyId = payload.data?.history_id ?? null;
+                this.historyUrl = payload.data?.history_url ?? null;
 
-                // The model could not identify a fish.
                 if (candidates.length === 0) {
                     this.resultStatus = 'unknown';
                     return;
@@ -335,13 +539,29 @@ export function scanUpload() {
 
                 this.resultStatus = 'ambiguous';
             } catch (error) {
+                // Error dari request lama juga harus diabaikan.
+                if (
+                    generation !==
+                    this.uploadGeneration
+                ) {
+                    return;
+                }
+
                 this.resultStatus = 'failure';
+
                 this.resultError =
-                    error instanceof Error && error.message
+                    error instanceof Error &&
+                    error.message
                         ? error.message
                         : root?.dataset.errorRequest ?? '';
             } finally {
-                this.processing = false;
+                // Request lama tidak boleh mengubah loading request terbaru.
+                if (
+                    generation ===
+                    this.uploadGeneration
+                ) {
+                    this.processing = false;
+                }
             }
         },
 
@@ -350,14 +570,23 @@ export function scanUpload() {
                 return;
             }
 
-            URL.revokeObjectURL(this.previewUrl);
+            URL.revokeObjectURL(
+                this.previewUrl
+            );
+
             this.previewUrl = null;
         },
 
         destroy() {
             this.closePendingDetailTab();
+
+            // Membuat seluruh proses async yang masih berjalan menjadi stale.
+            this.uploadGeneration += 1;
             this.referenceGeneration += 1;
             this.selectionGeneration += 1;
+
+            this.processing = false;
+
             this.clearPreviewUrl();
         },
     };

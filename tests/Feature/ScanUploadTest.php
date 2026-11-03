@@ -17,7 +17,7 @@ class ScanUploadTest extends TestCase
     {
         parent::setUp();
         $this->mock(RuvicodeService::class, function ($mock) {
-            $mock->shouldReceive('identify')->andReturn(['success' => true, 'candidates' => [], 'error' => null]);
+            $mock->shouldReceive('identify')->andReturn(['success' => true, 'candidates' => [['scientific_name' => 'Channa striata', 'confidence' => null]], 'error' => null]);
         });
     }
 
