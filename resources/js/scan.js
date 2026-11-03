@@ -8,6 +8,9 @@ export function scanUpload() {
         previewUrl: null,
         selectedFileName: '',
         hasFile: false,
+        operationId: null,
+        historyId: null,
+        historyUrl: null,
         errorMessage: '',
         processing: false,
 
@@ -129,6 +132,7 @@ export function scanUpload() {
         },
 
         resetSelection() {
+            this.operationId = null;
             this.clearPreviewUrl();
 
             this.selectedFileName = '';
@@ -136,6 +140,8 @@ export function scanUpload() {
         },
 
         resetResult() {
+            this.historyId = null;
+            this.historyUrl = null;
             // Membatalkan response upload lama yang masih berjalan.
             this.uploadGeneration += 1;
             this.processing = false;
@@ -211,10 +217,20 @@ export function scanUpload() {
                 });
 
                 const response = await fetch(
-                    `${root?.dataset.referenceUrl ?? '/scan/reference'}?${query}`,
+                    this.historyId
+                        ? `/scan/history/${this.historyId}/reference`
+                        : `${root?.dataset.referenceUrl ?? '/scan/reference'}?${query}`,
                     {
+                        ...(this.historyId ? {
+                            method: 'POST',
+                            body: JSON.stringify({candidate_index: index}),
+                        } : {}),
                         headers: {
                             Accept: 'application/json',
+                            ...(this.historyId ? {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                            } : {}),
                         },
                     }
                 );
@@ -458,6 +474,8 @@ export function scanUpload() {
                     'fish_image',
                     file
                 );
+                this.operationId ??= crypto.randomUUID();
+                formData.append('operation_id', this.operationId);
 
                 const response = await fetch(
                     '/scan/upload',
@@ -511,6 +529,8 @@ export function scanUpload() {
                 }
 
                 this.candidates = candidates;
+                this.historyId = payload.data?.history_id ?? null;
+                this.historyUrl = payload.data?.history_url ?? null;
 
                 if (candidates.length === 0) {
                     this.resultStatus = 'unknown';

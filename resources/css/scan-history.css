@@ -1,4 +1,14 @@
 @layer components {
+    .scan-history-list { @apply grid gap-6; }
+    .scan-history-card { @apply grid gap-4 border-b border-anufish-border pb-6 sm:grid-cols-[160px_minmax(0,1fr)]; }
+    .scan-history-photo { @apply flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-anufish-pale; }
+    .scan-history-photo img { @apply size-full object-contain; }
+    .scan-history-photo p { @apply p-4 text-center text-sm text-anufish-muted; }
+    .scan-history-card h2, .scan-history-detail h2 { @apply break-words text-xl font-semibold text-anufish-navy; }
+    .scan-history-card p, .scan-history-detail p { @apply my-2 text-sm text-anufish-muted; }
+    .scan-history-detail { @apply grid gap-6 md:grid-cols-2; }
+    .scan-history-candidates { @apply my-4 space-y-4; }
+    .scan-history-candidates h3 { @apply break-words font-semibold italic text-anufish-navy; }
     .scan-history-page {
         @apply space-y-6;
     }
