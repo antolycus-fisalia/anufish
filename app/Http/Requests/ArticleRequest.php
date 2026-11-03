@@ -45,17 +45,19 @@ class ArticleRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'judul.required' => 'Judul artikel wajib diisi.',
-            'judul.max' => 'Judul artikel maksimal 255 karakter.',
-
-            'kategori.required' => 'Kategori artikel wajib diisi.',
-
-            'isi.required' => 'Isi artikel wajib diisi.',
-            'isi.max' => 'Isi artikel terlalu panjang.',
-
-            'gambar.max' => 'Ukuran gambar maksimal 5 MB.',
-            'gambar.extensions' => 'Format gambar harus JPG, JPEG, atau PNG.',
-            'gambar.mimetypes' => 'Tipe gambar tidak valid.',
+            'judul.required' => __('article.validation.title_required'),
+            'judul.string' => __('article.validation.title_string'),
+            'judul.max' => __('article.validation.title_max'),
+            'kategori.required' => __('article.validation.category_required'),
+            'kategori.string' => __('article.validation.category_string'),
+            'kategori.max' => __('article.validation.category_max'),
+            'isi.required' => __('article.validation.content_required'),
+            'isi.string' => __('article.validation.content_string'),
+            'isi.max' => __('article.validation.content_max'),
+            'gambar.file' => __('article.validation.image_invalid'),
+            'gambar.max' => __('article.validation.image_max'),
+            'gambar.extensions' => __('article.validation.image_format'),
+            'gambar.mimetypes' => __('article.validation.image_invalid'),
         ];
     }
 }

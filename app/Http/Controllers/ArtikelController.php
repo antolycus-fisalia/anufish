@@ -59,7 +59,9 @@ class ArtikelController extends Controller
             $artikel = new Artikel($data);
             $artikel->user_id = $request->user()->id;
             $artikel->status = 'menunggu';
-            $artikel->save();
+            if (! $artikel->save()) {
+                throw new \RuntimeException('Article was not persisted.');
+            }
 
             return response()->json([
                 'message' => __('article.messages.created'),
@@ -136,7 +138,9 @@ class ArtikelController extends Controller
 
             // Perubahan artikel kembali menunggu moderasi.
             $artikel->status = 'menunggu';
-            $artikel->save();
+            if (! $artikel->save()) {
+                throw new \RuntimeException('Article was not persisted.');
+            }
         } catch (Throwable $e) {
             report($e);
 
@@ -172,7 +176,9 @@ class ArtikelController extends Controller
         $path = $artikel->gambar;
 
         try {
-            $artikel->delete();
+            if (! $artikel->delete()) {
+                throw new \RuntimeException('Article was not deleted.');
+            }
         } catch (Throwable $e) {
             report($e);
 
