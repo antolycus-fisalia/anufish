@@ -2,6 +2,7 @@
 
 return [
     'messages' => [
+        'forbidden' => 'You are not allowed to perform this article action.',
         'created' => 'Article created successfully.',
         'updated' => 'Article updated successfully.',
         'deleted' => 'Article deleted successfully.',
@@ -20,6 +21,8 @@ return [
         'content_string' => 'The article content must be text.',
         'content_max' => 'The article content must not exceed 50000 characters.',
         'image_invalid' => 'The article image must be a valid image file.',
+        'image_dimensions' => 'The article image must not exceed 8 megapixels.',
+        'image_resources' => 'The image is too large to process. Please reduce its resolution.',
         'image_max' => 'The article image must not exceed 5 MB.',
         'image_format' => 'The image must be JPG, JPEG, or PNG.',
     ],

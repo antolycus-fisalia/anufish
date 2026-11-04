@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ArticleRequest;
 use App\Models\Artikel;
+use App\Services\ArticleHtmlSanitizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -14,6 +17,7 @@ class ArtikelController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        Gate::authorize('viewAny', Artikel::class);
         $artikel = Artikel::query()
             ->where('user_id', $request->user()->id)
             ->latest()
@@ -30,11 +34,10 @@ class ArtikelController extends Controller
             'isi',
         ]);
 
-        // Sementara hanya menerima teks biasa.
-        // Sanitasi rich text final ditangani FSH-22.
-        $data['isi'] = trim(strip_tags($data['isi']));
+        $sanitizer = app(ArticleHtmlSanitizer::class);
+        $data['isi'] = $sanitizer->sanitize($data['isi']);
 
-        if ($data['isi'] === '') {
+        if (! $sanitizer->hasText($data['isi'])) {
             throw ValidationException::withMessages([
                 'isi' => __('article.validation.content_required'),
             ]);
@@ -59,9 +62,11 @@ class ArtikelController extends Controller
             $artikel = new Artikel($data);
             $artikel->user_id = $request->user()->id;
             $artikel->status = 'menunggu';
-            if (! $artikel->save()) {
-                throw new \RuntimeException('Article was not persisted.');
-            }
+            DB::transaction(function () use ($artikel) {
+                if (! $artikel->save()) {
+                    throw new \RuntimeException('Article was not persisted.');
+                }
+            });
 
             return response()->json([
                 'message' => __('article.messages.created'),
@@ -84,10 +89,7 @@ class ArtikelController extends Controller
         Request $request,
         Artikel $artikel
     ): JsonResponse {
-        abort_unless(
-            $artikel->user_id === $request->user()->id,
-            403
-        );
+        Gate::authorize('view', $artikel);
 
         return response()->json([
             'data' => $artikel,
@@ -98,10 +100,7 @@ class ArtikelController extends Controller
         ArticleRequest $request,
         Artikel $artikel
     ): JsonResponse {
-        abort_unless(
-            $artikel->user_id === $request->user()->id,
-            403
-        );
+        Gate::authorize('update', $artikel);
 
         $data = $request->safe()->only([
             'judul',
@@ -109,9 +108,10 @@ class ArtikelController extends Controller
             'isi',
         ]);
 
-        $data['isi'] = trim(strip_tags($data['isi']));
+        $sanitizer = app(ArticleHtmlSanitizer::class);
+        $data['isi'] = $sanitizer->sanitize($data['isi']);
 
-        if ($data['isi'] === '') {
+        if (! $sanitizer->hasText($data['isi'])) {
             throw ValidationException::withMessages([
                 'isi' => __('article.validation.content_required'),
             ]);
@@ -138,9 +138,11 @@ class ArtikelController extends Controller
 
             // Perubahan artikel kembali menunggu moderasi.
             $artikel->status = 'menunggu';
-            if (! $artikel->save()) {
-                throw new \RuntimeException('Article was not persisted.');
-            }
+            DB::transaction(function () use ($artikel) {
+                if (! $artikel->save()) {
+                    throw new \RuntimeException('Article was not persisted.');
+                }
+            });
         } catch (Throwable $e) {
             report($e);
 
@@ -168,17 +170,16 @@ class ArtikelController extends Controller
         Request $request,
         Artikel $artikel
     ): JsonResponse {
-        abort_unless(
-            $artikel->user_id === $request->user()->id,
-            403
-        );
+        Gate::authorize('delete', $artikel);
 
         $path = $artikel->gambar;
 
         try {
-            if (! $artikel->delete()) {
-                throw new \RuntimeException('Article was not deleted.');
-            }
+            DB::transaction(function () use ($artikel) {
+                if (! $artikel->delete()) {
+                    throw new \RuntimeException('Article was not deleted.');
+                }
+            });
         } catch (Throwable $e) {
             report($e);
 
