@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'edit_title' => 'Edit user',
+    'edit_description' => 'Update the user account name and email.',
+    'name' => 'User name',
+    'edit_limit' => 'This form only changes name and email. Role, status, and password stay unchanged.',
+    'save' => 'Save changes',
+    'saving' => 'Saving...',
     'updated' => 'User data updated successfully.',
     'update_failed' => 'Failed to update user data.',
 

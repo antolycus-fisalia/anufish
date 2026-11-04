@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'edit_title' => 'Edit pengguna',
+    'edit_description' => 'Perbarui nama dan email akun pengguna.',
+    'name' => 'Nama pengguna',
+    'edit_limit' => 'Form ini hanya mengubah nama dan email. Role, status, dan password tetap.',
+    'save' => 'Simpan perubahan',
+    'saving' => 'Menyimpan...',
     'updated' => 'Data pengguna berhasil diperbarui.',
     'update_failed' => 'Gagal memperbarui data pengguna.',
 
