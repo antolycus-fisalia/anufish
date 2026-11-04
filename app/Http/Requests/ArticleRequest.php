@@ -2,13 +2,26 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Artikel;
+use App\Rules\ArticleImage;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ArticleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $artikel = $this->route('artikel');
+
+        return $artikel instanceof Artikel
+            ? Gate::allows('update', $artikel)
+            : Gate::allows('create', Artikel::class);
+    }
+
+    protected function failedAuthorization(): void
+    {
+        throw new AuthorizationException(__('article.messages.forbidden'));
     }
 
     public function rules(): array
@@ -33,11 +46,15 @@ class ArticleRequest extends FormRequest
             ],
 
             'gambar' => [
+                'bail',
                 'nullable',
                 'file',
                 'max:5120',
+                'image',
+                'mimes:jpg,jpeg,png',
                 'extensions:jpg,jpeg,png',
                 'mimetypes:image/jpeg,image/png',
+                new ArticleImage,
             ],
         ];
     }
@@ -55,6 +72,8 @@ class ArticleRequest extends FormRequest
             'isi.string' => __('article.validation.content_string'),
             'isi.max' => __('article.validation.content_max'),
             'gambar.file' => __('article.validation.image_invalid'),
+            'gambar.image' => __('article.validation.image_invalid'),
+            'gambar.mimes' => __('article.validation.image_invalid'),
             'gambar.max' => __('article.validation.image_max'),
             'gambar.extensions' => __('article.validation.image_format'),
             'gambar.mimetypes' => __('article.validation.image_invalid'),
