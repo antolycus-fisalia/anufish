@@ -57,6 +57,7 @@
 
                     @php
                         $breadcrumb = match (true) {
+                            request()->routeIs('admin.users.*') => __('admin_users.edit_title'),
                             request()->routeIs('fish.show') => __('Detail Ikan'),
                             request()->routeIs('profile.*') => __('Profil Saya'),
                             request()->routeIs('scan.history.*') => __('Riwayat Scan'),

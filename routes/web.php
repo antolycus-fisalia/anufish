@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArtikelController;
 use App\Http\Controllers\AuthController;
@@ -149,6 +150,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])
         ->middleware('admin')
         ->name('admin.dashboard');
+
+    Route::prefix('admin/users')->name('admin.users.')->middleware('admin')
+        ->controller(AdminUserEditController::class)->group(function () {
+            Route::get('/{user}/edit', 'edit')->name('edit');
+            Route::put('/{user}', 'update')->name('update');
+        });
 });
 
 /*
