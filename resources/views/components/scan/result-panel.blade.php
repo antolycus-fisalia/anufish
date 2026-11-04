@@ -2,29 +2,24 @@
     x-cloak
     x-show="resultStatus !== 'idle'"
     class="scan-result-panel"
-    aria-live="polite"
 >
     {{-- Loading --}}
-    <div
+    <x-ui.state
         x-show="resultStatus === 'loading'"
-        class="scan-result-state"
-    >
-        <h2>{{ __('Mengidentifikasi ikan...') }}</h2>
-
-        <p>
-            {{ __('AI sedang menganalisis foto ikan yang dipilih.') }}
-        </p>
-    </div>
+        state="loading"
+        :title="__('Mengidentifikasi ikan...')"
+        :message="__('AI sedang menganalisis foto ikan yang dipilih.')"
+    />
 
     {{-- Failure --}}
-    <div
+    <x-ui.state
         x-show="resultStatus === 'failure'"
-        class="scan-result-state scan-result-state-error"
-        role="alert"
+        state="failure"
+        :title="__('Identifikasi gagal')"
     >
-        <h2>{{ __('Identifikasi gagal') }}</h2>
-
-        <p x-text="resultError"></p>
+        <x-slot:body>
+            <span x-text="resultError"></span>
+        </x-slot:body>
 
         <button
             type="button"
@@ -34,19 +29,15 @@
         >
             {{ __('Coba lagi') }}
         </button>
-    </div>
+    </x-ui.state>
 
     {{-- Unknown --}}
-    <div
+    <x-ui.state
         x-show="resultStatus === 'unknown'"
-        class="scan-result-state"
+        state="unknown"
+        :title="__('Gambar belum dapat diidentifikasi')"
+        :message="__('AI tidak menemukan kandidat ikan dari gambar ini.')"
     >
-        <h2>{{ __('Gambar belum dapat diidentifikasi') }}</h2>
-
-        <p>
-            {{ __('AI tidak menemukan kandidat ikan dari gambar ini.') }}
-        </p>
-
         <button
             type="button"
             class="scan-secondary-action"
@@ -54,7 +45,7 @@
         >
             {{ __('Pilih foto lain') }}
         </button>
-    </div>
+    </x-ui.state>
 
     {{-- AI result --}}
     <div
@@ -86,7 +77,7 @@
             </template>
         </div>
 
-        {{-- Ambiguous --}}
+        {{-- Ambiguous candidate --}}
         <div
             x-show="resultStatus === 'ambiguous' && selectedCandidateIndex === null"
             class="scan-result-notice"
@@ -98,51 +89,99 @@
             </p>
         </div>
 
-        {{-- Partial --}}
-        <div
+        {{-- Partial reference --}}
+        <x-ui.state
             x-show="resultStatus === 'partial' && referenceStatus !== 'loading'"
-            class="scan-result-notice"
+            state="partial"
+            :title="__('Detail referensi belum tersedia')"
+            compact
         >
-            <h3>{{ __('Detail referensi belum tersedia') }}</h3>
+            <x-slot:body>
+                <span
+                    x-text="referenceError || @js(__('Hasil identifikasi AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.'))"
+                ></span>
+            </x-slot:body>
 
-            <p x-text="referenceError || @js(__('Hasil identifikasi AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.'))"></p>
-            <button type="button" class="scan-secondary-action" @click="selectCandidate(selectedCandidateIndex)">
+            <button
+                type="button"
+                class="scan-secondary-action"
+                @click="selectCandidate(selectedCandidateIndex)"
+            >
                 {{ __('scan.reference.retry') }}
             </button>
-        </div>
+        </x-ui.state>
 
-        <div x-show="referenceStatus === 'loading'" class="scan-result-notice" role="status">
-            <span class="mb-3 block size-5 animate-spin rounded-full border-2 border-anufish-border border-t-anufish-teal motion-reduce:animate-none" aria-hidden="true"></span>
-            <p>{{ __('scan.reference.loading') }}</p>
-        </div>
+        {{-- Reference loading --}}
+        <x-ui.state
+            x-show="referenceStatus === 'loading'"
+            state="loading"
+            :title="__('scan.reference.loading')"
+            compact
+        />
 
-        <div x-show="referenceStatus === 'ready'" class="scan-result-notice" role="status">
-            <p x-show="detailTabStatus === 'opened'">{{ __('scan.reference.tab_opened') }}</p>
-            <p x-show="detailTabStatus === 'blocked'">{{ __('scan.reference.tab_blocked') }}</p>
-            <a :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'"
-                target="_blank" rel="noopener noreferrer" class="scan-secondary-action">
+        {{-- Reference success --}}
+        <x-ui.state
+            x-show="referenceStatus === 'ready'"
+            state="success"
+            :title="__('Referensi iNaturalist')"
+            compact
+        >
+            <x-slot:body>
+                <span x-show="detailTabStatus === 'opened'">
+                    {{ __('scan.reference.tab_opened') }}
+                </span>
+
+                <span x-show="detailTabStatus === 'blocked'">
+                    {{ __('scan.reference.tab_blocked') }}
+                </span>
+            </x-slot:body>
+
+            <a
+                :href="reference ? '/fish/taxa/' + reference.taxon_id : '#'"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="scan-secondary-action"
+            >
                 {{ __('Lihat detail ikan') }}
             </a>
-        </div>
+        </x-ui.state>
 
-        <section x-show="referenceStatus === 'ambiguous'" class="scan-result-notice">
+        {{-- Ambiguous reference --}}
+        <section
+            x-show="referenceStatus === 'ambiguous'"
+            class="scan-result-notice"
+        >
             <h3>{{ __('scan.reference.ambiguous_title') }}</h3>
+
             <p>{{ __('scan.reference.ambiguous_body') }}</p>
+
             <div class="scan-candidate-list">
-                <template x-for="option in referenceOptions" :key="option.taxon_id">
+                <template
+                    x-for="option in referenceOptions"
+                    :key="option.taxon_id"
+                >
                     <article class="scan-candidate-card">
                         <div>
                             <h3 x-text="option.scientific_name"></h3>
+
                             <p x-text="option.common_name ?? ''"></p>
-                            <p>{{ __('Taxon ID iNaturalist') }}: <span x-text="option.taxon_id"></span></p>
+
+                            <p>
+                                {{ __('Taxon ID iNaturalist') }}:
+                                <span x-text="option.taxon_id"></span>
+                            </p>
                         </div>
-                        <button type="button" class="scan-secondary-action" @click="selectReference(option.taxon_id)">
+
+                        <button
+                            type="button"
+                            class="scan-secondary-action"
+                            @click="selectReference(option.taxon_id)"
+                        >
                             {{ __('scan.reference.choose') }}
                         </button>
                     </article>
                 </template>
             </div>
         </section>
-
     </div>
 </section>

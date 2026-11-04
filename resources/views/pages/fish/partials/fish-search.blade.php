@@ -12,17 +12,16 @@
     <x-fish.loading-skeleton />
 
     <div data-form-state="idle">
-        @if ($error)
-            <div class="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5" role="alert">
-                <h2 class="font-bold text-rose-700">
-                    {{ __('Gagal mengambil data ikan') }}
-                </h2>
-
-                <p class="mt-1 text-sm leading-6 text-rose-600">
-                    {{ $error }}
-                </p>
-                <a href="{{ request()->fullUrl() }}" class="primary-action mt-4">{{ __('Coba lagi') }}</a>
-            </div>
+       @if ($error)
+        <x-ui.state
+            state="failure"
+            :title="__('Gagal mengambil data ikan')"
+            :message="$error"
+        >
+            <a href="{{ request()->fullUrl() }}" class="primary-action">
+                {{ __('Coba lagi') }}
+            </a>
+        </x-ui.state>
         @elseif (count($fishes) > 0)
             <div class="mb-4">
                 <h2 class="text-lg font-bold text-anufish-navy">
@@ -56,26 +55,17 @@
                 </p>
             </aside>
         @elseif ($hasQuery)
-            <div class="rounded-2xl border border-anufish-border bg-white px-6 py-12 text-center">
-                <h2 class="text-lg font-bold text-anufish-navy">
-                    {{ __('Ikan tidak ditemukan') }}
-                </h2>
-
-                <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-anufish-muted">
-                    {{ __('Tidak ada hasil di halaman ini untuk') }} “<bdi>{{ $query }}</bdi>”.
-                    {{ __('Coba nama ilmiah, nama dalam bahasa lain, atau halaman berikutnya jika tersedia.') }}
-                </p>
-            </div>
+            <x-ui.state
+                state="empty"
+                :title="__('Ikan tidak ditemukan')"
+                :message="__('Tidak ada hasil di halaman ini untuk') . ' “' . $query . '”. ' . __('Coba nama ilmiah, nama dalam bahasa lain, atau halaman berikutnya jika tersedia.')"
+            />
         @else
-            <div class="rounded-2xl border border-anufish-border bg-white px-6 py-12 text-center">
-                <h2 class="text-lg font-bold text-anufish-navy">
-                    {{ __('Cari ikan favorit Anda') }}
-                </h2>
-
-                <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-anufish-muted">
-                    {{ __('Masukkan nama ikan pada kolom pencarian untuk melihat informasi yang tersedia.') }}
-                </p>
-            </div>
+            <x-ui.state
+        state="idle"
+        :title="__('Cari ikan favorit Anda')"
+        :message="__('Masukkan nama ikan pada kolom pencarian untuk melihat informasi yang tersedia.')"
+         />
         @endif
 
         @if ($pagination)

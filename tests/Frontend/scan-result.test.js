@@ -55,6 +55,39 @@ function successfulResponse(candidates) {
     };
 }
 
+test('upload retry reuses operation id and selecting a new file resets it', async () => {
+    const component = createComponent();
+    const operations = [];
+    globalThis.fetch = async (_url, options) => {
+        operations.push(options.body.get('operation_id'));
+        return successfulResponse([{scientific_name: 'Channa striata'}]);
+    };
+    await component.processImage();
+    await component.processImage();
+    assert.ok(operations[0]);
+    assert.equal(operations[0], operations[1]);
+    component.resetSelection();
+    component.hasFile = true;
+    await component.processImage();
+    assert.notEqual(operations[0], operations[2]);
+});
+
+test('persisted scan selection posts only candidate index with CSRF token', async () => {
+    const component = createComponent();
+    component.historyId = 18;
+    component.candidates = [{scientific_name: 'Channa striata', confidence: 0.71}];
+    globalThis.fetch = async (url, options) => {
+        assert.equal(url, '/scan/history/18/reference');
+        assert.equal(options.method, 'POST');
+        assert.equal(options.headers['X-CSRF-TOKEN'], 'test-csrf-token');
+        assert.deepEqual(JSON.parse(options.body), {candidate_index: 0});
+        return {ok: true, json: async () => ({data: {match_status: 'unavailable', reference_error: 'Unavailable'}})};
+    };
+    await component.selectCandidate(0);
+    assert.equal(component.candidates[0].confidence, 0.71);
+    assert.equal(component.referenceStatus, 'unavailable');
+});
+
 test('single AI candidate waits for explicit selection without fetching a reference', async () => {
     const component = createComponent();
     const requests = [];
@@ -398,4 +431,44 @@ test('failed reference closes the waiting tab and keeps the failure in scan resu
     assert.equal(component.openedTabs[0].closed, true);
     assert.equal(component.referenceError, 'Timeout');
     assert.deepEqual(component.navigations, []);
+});
+
+test('late upload response cannot restore results after reset', async () => {
+    const component = createComponent();
+
+    let resolveUpload;
+
+    globalThis.fetch = () =>
+        new Promise((resolve) => {
+            resolveUpload = resolve;
+        });
+
+    const request = component.processImage();
+
+    assert.equal(component.resultStatus, 'loading');
+    assert.equal(component.processing, true);
+
+    // User mereset scan sebelum response selesai.
+    component.resetResult();
+
+    assert.equal(component.resultStatus, 'idle');
+    assert.equal(component.processing, false);
+    assert.deepEqual(component.candidates, []);
+
+    // Response lama baru datang setelah reset.
+    resolveUpload(
+        successfulResponse([
+            {
+                scientific_name: 'Channa striata',
+                confidence: 0.91,
+            },
+        ])
+    );
+
+    await request;
+
+    // Response lama tidak boleh menghidupkan hasil kembali.
+    assert.equal(component.resultStatus, 'idle');
+    assert.deepEqual(component.candidates, []);
+    assert.equal(component.processing, false);
 });

@@ -2,96 +2,181 @@
 
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ArtikelController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FishController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\ScanHistoryController;
 use Illuminate\Support\Facades\Route;
 
-// Language
+/*
+|--------------------------------------------------------------------------
+| Language
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/language', [LocaleController::class, 'update'])
     ->name('locale.update');
 
-// Authenticated Routes
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function () {
 
-    // Homepage & Logout
-    Route::get('/', HomeController::class)->name('homepage');
+    // Homepage
+    Route::get('/', HomeController::class)
+        ->name('homepage');
 
+    // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
-    // Scan
-    Route::view('/scan', 'pages.scan.index')->name('scan.index');
+    /*
+    |--------------------------------------------------------------------------
+    | Scan
+    |--------------------------------------------------------------------------
+    */
 
-    Route::view('/scan/detail-loading', 'pages.scan.detail-loading')
-        ->name('scan.detail-loading');
+    Route::prefix('scan')->name('scan.')->group(function () {
 
-    Route::view('/scan/history', 'pages.scan.history.index')
-        ->name('scan.history.index');
+        Route::view('/', 'pages.scan.index')
+            ->name('index');
 
-    Route::post('/scan/upload', [ScanController::class, 'upload'])
-        ->name('scan.upload');
+        Route::view('/detail-loading', 'pages.scan.detail-loading')
+            ->name('detail-loading');
 
-    Route::get('/scan/reference', [ScanController::class, 'reference'])
-        ->middleware('throttle:30,1')
-        ->name('scan.reference');
+        Route::get('/history', [ScanHistoryController::class, 'index'])
+            ->name('history.index');
+        Route::get('/history/{history}', [ScanHistoryController::class, 'show'])->whereNumber('history')->name('history.show');
+        Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])->whereNumber('history')->name('history.image');
+        Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])->whereNumber('history')->middleware('throttle:30,1')->name('history.reference');
 
-    // Profile
+        Route::controller(ScanController::class)->group(function () {
+
+            Route::post('/upload', 'upload')
+                ->name('upload');
+
+            Route::get('/reference', 'reference')
+                ->middleware('throttle:30,1')
+                ->name('reference');
+        });
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    */
+
     Route::prefix('profile')
         ->name('profile.')
         ->controller(ProfileController::class)
         ->group(function () {
-            Route::get('/', 'show')->name('show');
-            Route::put('/', 'update')->name('update');
+
+            Route::get('/', 'show')
+                ->name('show');
+
+            Route::put('/', 'update')
+                ->name('update');
         });
 
-    // Fish
+    /*
+    |--------------------------------------------------------------------------
+    | Fish
+    |--------------------------------------------------------------------------
+    */
+
     Route::prefix('fish')
         ->name('fish.')
         ->controller(FishController::class)
         ->where(['taxonId' => '[1-9][0-9]{0,9}'])
         ->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/search', 'search')->name('search');
-            Route::get('/taxa/{taxonId}', 'show')->name('show');
-            Route::get('/taxa/{taxonId}/extras', 'extras')->name('extras');
-            Route::get('/taxa/{taxonId}/photos', 'photos')->name('photos');
+
+            Route::get('/', 'index')
+                ->name('index');
+
+            Route::get('/search', 'search')
+                ->name('search');
+
+            Route::get('/taxa/{taxonId}', 'show')
+                ->name('show');
+
+            Route::get('/taxa/{taxonId}/extras', 'extras')
+                ->name('extras');
+
+            Route::get('/taxa/{taxonId}/photos', 'photos')
+                ->name('photos');
         });
 
-    // Admin
+    /*
+    |--------------------------------------------------------------------------
+    | Articles
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('artikel')
+        ->name('artikel.')
+        ->controller(ArtikelController::class)
+        ->group(function () {
+
+            Route::get('/', 'index')
+                ->name('index');
+
+            Route::post('/', 'store')
+                ->name('store');
+
+            Route::get('/{artikel}', 'show')
+                ->name('show');
+
+            Route::put('/{artikel}', 'update')
+                ->name('update');
+
+            Route::delete('/{artikel}', 'destroy')
+                ->name('destroy');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/admin', [AdminController::class, 'index'])
         ->middleware('admin')
         ->name('admin.dashboard');
 
-    // FSH-26: Admin Edit User
-    Route::prefix('admin/users')
-        ->name('admin.users.')
-        ->middleware('admin')
-        ->controller(AdminUserEditController::class)
-        ->group(function () {
-            Route::get('/{user}/edit', 'edit')
-                ->name('edit');
-
-            Route::put('/{user}', 'update')
-                ->name('update');
+    Route::prefix('admin/users')->name('admin.users.')->middleware('admin')
+        ->controller(AdminUserEditController::class)->group(function () {
+            Route::get('/{user}/edit', 'edit')->name('edit');
+            Route::put('/{user}', 'update')->name('update');
         });
 });
 
-// Guest Routes
+/*
+|--------------------------------------------------------------------------
+| Guest Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('guest')->group(function () {
 
     // Login
-    Route::view('/login', 'pages.auth.login')->name('login');
+    Route::view('/login', 'pages.auth.login')
+        ->name('login');
 
     Route::post('/login', [AuthController::class, 'login'])
         ->middleware('throttle:login')
         ->name('login.store');
 
-    // Register
-    Route::view('/register', 'pages.auth.register')->name('register');
+    // Registration
+    Route::view('/register', 'pages.auth.register')
+        ->name('register');
 
     Route::post('/register', [AuthController::class, 'register'])
         ->middleware('throttle:register')
