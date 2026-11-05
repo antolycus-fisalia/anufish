@@ -1,0 +1,97 @@
+@layer components {
+    .article-form-page {
+        @apply mx-auto max-w-4xl space-y-6;
+    }
+
+    .article-form-header {
+        @apply space-y-2;
+    }
+
+    .article-form-header p {
+        @apply max-w-2xl text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .article-form {
+        @apply space-y-6 rounded-2xl border border-anufish-border bg-white p-4 sm:p-6;
+    }
+
+    .article-form-field {
+        @apply space-y-2;
+    }
+
+    .article-form-field label {
+        @apply block text-sm font-semibold text-anufish-navy;
+    }
+
+    .article-form-field input[type="text"],
+    .article-form-field textarea {
+        @apply w-full rounded-lg border border-anufish-border bg-white px-3 py-3
+            text-sm text-gray-900 outline-none transition
+            placeholder:text-anufish-muted
+            focus:border-anufish-teal focus:ring-2 focus:ring-anufish-teal/20;
+    }
+
+    .article-form-field textarea {
+        @apply min-h-64 resize-y leading-6;
+    }
+
+    .article-form-field input[type="file"] {
+        @apply block w-full rounded-lg border border-anufish-border bg-white
+            text-sm text-anufish-muted
+            file:mr-4 file:min-h-11 file:border-0
+            file:bg-anufish-pale file:px-4 file:py-3
+            file:text-sm file:font-semibold file:text-anufish-navy
+            hover:file:bg-anufish-border/40;
+    }
+
+    .article-form-help {
+        @apply text-xs leading-5 text-anufish-muted;
+    }
+
+    .article-field-error {
+        @apply text-sm font-medium text-rose-600;
+    }
+
+    .article-image-preview {
+        @apply mt-3 overflow-hidden rounded-xl border border-anufish-border bg-anufish-pale;
+        max-width: 480px;
+        aspect-ratio: 16 / 9;
+    }
+
+    .article-image-preview img {
+        @apply size-full object-contain;
+    }
+
+    .article-form-message {
+        @apply rounded-xl border px-4 py-3 text-sm font-medium;
+    }
+
+    .article-form-message[data-state="success"] {
+        @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+    }
+
+    .article-form-message[data-state="error"] {
+        @apply border-rose-200 bg-rose-50 text-rose-700;
+    }
+
+    .article-form-actions {
+        @apply flex flex-col-reverse gap-3 border-t border-anufish-border pt-6 sm:flex-row sm:justify-end;
+    }
+
+    .article-secondary-action {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg
+            border border-anufish-border bg-white px-4 py-3
+            text-sm font-semibold text-anufish-navy transition-colors
+            hover:bg-anufish-pale
+            focus-visible:outline-2 focus-visible:outline-anufish-teal;
+    }
+
+    .article-form-actions .primary-action,
+    .article-form-actions .article-secondary-action {
+        @apply w-full sm:w-auto;
+    }
+
+    .article-form-field [aria-invalid="true"] {
+        @apply border-rose-400 focus:border-rose-500 focus:ring-rose-200;
+    }
+}
