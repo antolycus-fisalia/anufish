@@ -241,5 +241,22 @@
     "Scan Ikan Baru": "New Fish Scan",
     "Belum ada riwayat scan": "No scan history yet",
     "Riwayat hasil identifikasi ikan akan muncul di sini setelah kamu melakukan scan.": "Your fish identification history will appear here after you perform a scan.",
-    "Mulai Scan": "Start Scan"
+    "Mulai Scan": "Start Scan",
+    "Kelola artikel yang kamu buat dan lihat status moderasinya.": "Manage your articles and view their moderation status.",
+    "Belum ada artikel": "No articles yet",
+    "Artikel yang kamu buat akan muncul di sini beserta status moderasinya.": "Articles you create will appear here along with their moderation status.",
+    "Buat Artikel": "Create Article",
+    "Buat Artikel Pertama": "Create Your First Article",
+    "Menunggu": "Pending",
+    "Disetujui": "Approved",
+    "Ditolak": "Rejected",
+    "Daftar artikel belum dapat dimuat. Silakan coba lagi.": "The article list could not be loaded. Please try again.",
+    "Artikel belum dapat dihapus. Silakan coba lagi.": "The article could not be deleted. Please try again.",
+    "Hapus artikel ini? Tindakan ini tidak dapat dibatalkan.": "Delete this article? This action cannot be undone.",
+    "Memuat artikel...": "Loading articles...",
+    "Mohon tunggu sementara daftar artikel dimuat.": "Please wait while your articles are being loaded.",
+    "Daftar artikel belum dapat dimuat": "The article list could not be loaded",
+    "Navigasi artikel": "Article navigation",
+    "Edit": "Edit",
+    "Hapus": "Delete"
 }

@@ -29,6 +29,15 @@ Route::post('/language', [LocaleController::class, 'update'])
 
 Route::middleware('auth')->group(function () {
 
+        /*
+    |--------------------------------------------------------------------------
+    | User Articles
+    |--------------------------------------------------------------------------
+    */
+
+    Route::view('/artikel-saya', 'pages.article.mine.index')
+    ->name('artikel-saya.index');
+
     // Homepage
     Route::get('/', HomeController::class)
         ->name('homepage');

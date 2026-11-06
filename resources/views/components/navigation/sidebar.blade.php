@@ -30,7 +30,13 @@
             :active="request()->routeIs('scan.history.*')">
             {{ __('Riwayat Scan') }}
             </x-navigation.item>
-            <x-navigation.item icon="edit">{{ __('Artikel Saya') }}</x-navigation.item>
+           <x-navigation.item
+            icon="edit"
+            :href="route('artikel-saya.index')"
+            :active="request()->routeIs('artikel-saya.*')"
+            >
+            {{ __('Artikel Saya') }}
+            </x-navigation.item>
         </ul>
         @if ($user->isAdmin())
             <h2 class="mb-2 mt-6 px-3 text-xs font-semibold text-anufish-muted">Admin</h2>
