@@ -89,6 +89,19 @@ class AdminUserListTest extends TestCase
             ->assertSee(__('admin_users.empty'));
     }
 
+    public function test_search_treats_like_wildcards_as_literal_characters(): void
+    {
+        $admin = $this->makeAdmin();
+        $matched = $this->makeUser(['name' => 'Fish !_100%']);
+        $this->makeUser(['name' => 'Fish !X1000']);
+
+        $this->actingAs($admin)
+            ->getJson(route('admin.users.index', ['search' => '!_100%']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $matched->id);
+    }
+
     public function test_admin_user_list_is_paginated(): void
     {
         $admin = $this->makeAdmin();

@@ -1,5 +1,6 @@
-
 @extends('layouts.authenticated')
+
+@section('title', __('admin_users.detail_title') . ' - Anufish')
 
 @section('page-content')
 <div class="space-y-6">
@@ -61,6 +62,8 @@
                 </dd>
             </div>
         </dl>
+        <a href="{{ route('admin.users.edit', $user) }}"
+           class="primary-action mt-6">{{ __('admin_users.edit_title') }}</a>
     </section>
 </div>
 @endsection

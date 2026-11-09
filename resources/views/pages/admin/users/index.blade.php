@@ -1,5 +1,7 @@
 @extends('layouts.authenticated')
 
+@section('title', __('admin_users.list_title') . ' - Anufish')
+
 @section('page-content')
 <div class="space-y-6">
     <header>

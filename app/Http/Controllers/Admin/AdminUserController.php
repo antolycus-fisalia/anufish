@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -35,11 +36,11 @@ class AdminUserController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 // Escape wildcard LIKE agar % dan _
                 // tidak menjadi pola pencarian.
-                $term = addcslashes($search, '%_\\');
+                $term = '%'.strtr($search, ['!' => '!!', '%' => '!%', '_' => '!_']).'%';
 
                 $query->where(function ($query) use ($term) {
-                    $query->where('name', 'like', "%{$term}%")
-                        ->orWhere('email', 'like', "%{$term}%");
+                    $query->whereRaw("name LIKE ? ESCAPE '!'", [$term])
+                        ->orWhereRaw("email LIKE ? ESCAPE '!'", [$term]);
                 });
             })
             ->orderByDesc('created_at')
