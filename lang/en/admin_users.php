@@ -1,9 +1,26 @@
+
 <?php
 
 return [
+    // FSH-25: User list and detail
+    'list_title' => 'User Management',
+    'list_description' => 'View and manage registered user accounts.',
+    'detail_title' => 'User Details',
+    'search' => 'Search by name or email',
+    'search_button' => 'Search',
+    'view_detail' => 'View details',
+    'back_to_list' => 'Back to user list',
+    'empty' => 'No users found.',
+    'pagination' => 'User list pagination',
+    'name' => 'User name',
+    'email' => 'Email',
+    'role' => 'Role',
+    'status' => 'Status',
+    'joined_at' => 'Joined on',
+
+    // Existing: User edit
     'edit_title' => 'Edit user',
     'edit_description' => 'Update the user account name and email.',
-    'name' => 'User name',
     'edit_limit' => 'This form only changes name and email. Role, status, and password stay unchanged.',
     'save' => 'Save changes',
     'saving' => 'Saving...',

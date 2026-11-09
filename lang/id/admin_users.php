@@ -1,9 +1,26 @@
+
 <?php
 
 return [
+    // FSH-25: Daftar dan detail pengguna
+    'list_title' => 'Kelola Pengguna',
+    'list_description' => 'Lihat dan kelola akun pengguna yang terdaftar.',
+    'detail_title' => 'Detail Pengguna',
+    'search' => 'Cari berdasarkan nama atau email',
+    'search_button' => 'Cari',
+    'view_detail' => 'Lihat detail',
+    'back_to_list' => 'Kembali ke daftar pengguna',
+    'empty' => 'Pengguna tidak ditemukan.',
+    'pagination' => 'Navigasi halaman daftar pengguna',
+    'name' => 'Nama pengguna',
+    'email' => 'Email',
+    'role' => 'Peran',
+    'status' => 'Status',
+    'joined_at' => 'Tanggal bergabung',
+
+    // Existing: Edit pengguna
     'edit_title' => 'Edit pengguna',
     'edit_description' => 'Perbarui nama dan email akun pengguna.',
-    'name' => 'Nama pengguna',
     'edit_limit' => 'Form ini hanya mengubah nama dan email. Role, status, dan password tetap.',
     'save' => 'Simpan perubahan',
     'saving' => 'Menyimpan...',
