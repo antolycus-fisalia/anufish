@@ -1,0 +1,84 @@
+@layer components {
+    .article-list-page {
+        @apply space-y-6;
+    }
+
+    .article-list-header {
+        @apply flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .article-list-header p {
+        @apply mt-2 max-w-2xl text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .article-list-panel {
+        @apply rounded-2xl border border-anufish-border bg-white p-4 sm:p-6;
+    }
+
+    .article-list {
+        @apply divide-y divide-anufish-border;
+    }
+
+    .article-list-item {
+        @apply py-5 first:pt-0 last:pb-0;
+    }
+
+    .article-list-main {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .article-list-title {
+        @apply text-lg font-semibold text-anufish-navy;
+    }
+
+    .article-list-meta {
+        @apply mt-1 flex flex-wrap items-center gap-2 text-sm text-anufish-muted;
+    }
+
+    .article-status {
+        @apply inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-semibold;
+    }
+
+    .article-status[data-status="menunggu"] {
+        @apply bg-amber-50 text-amber-700;
+    }
+
+    .article-status[data-status="disetujui"] {
+        @apply bg-emerald-50 text-emerald-700;
+    }
+
+    .article-status[data-status="ditolak"] {
+        @apply bg-rose-50 text-rose-700;
+    }
+
+    .article-list-actions {
+        @apply mt-4 flex flex-wrap gap-2;
+    }
+
+    .article-secondary-action {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg
+            border border-anufish-border bg-white px-4 py-2
+            text-sm font-semibold text-anufish-navy
+            transition-colors hover:bg-anufish-pale
+            focus-visible:outline-2 focus-visible:outline-anufish-teal
+            disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .article-danger-action {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg
+            border border-rose-200 bg-white px-4 py-2
+            text-sm font-semibold text-rose-600
+            transition-colors hover:bg-rose-50
+            focus-visible:outline-2 focus-visible:outline-rose-500
+            disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .article-pagination {
+        @apply mt-6 flex flex-col gap-3 border-t border-anufish-border pt-6
+            sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .article-pagination p {
+        @apply text-center text-sm text-anufish-muted;
+    }
+}

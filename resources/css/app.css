@@ -6,6 +6,7 @@
 @import "./ui-states.css";
 @import "./scan.css";
 @import "./scan-history.css";
+@import "./article-list.css";
 @import "./article-form.css";
 
 @theme {

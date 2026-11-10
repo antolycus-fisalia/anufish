@@ -21,6 +21,7 @@ class ArtikelController extends Controller
         $artikel = Artikel::query()
             ->where('user_id', $request->user()->id)
             ->latest()
+            ->orderByDesc('id')
             ->paginate(10);
 
         return response()->json($artikel);

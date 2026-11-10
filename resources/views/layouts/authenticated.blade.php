@@ -66,6 +66,7 @@
                             request()->routeIs('scan.history.*') => __('Riwayat Scan'),
                             request()->routeIs('scan.*') => __('Scan Ikan'),
                             request()->routeIs('fish.*') => __('Jelajahi Ikan'),
+                            request()->routeIs('artikel-saya.*') => __('Artikel Saya'),
                             default => __('Beranda'),
                         };
                     @endphp

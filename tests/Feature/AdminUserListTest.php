@@ -58,7 +58,7 @@ class AdminUserListTest extends TestCase
 
     public function test_admin_can_search_users(): void
     {
-        $admin = $this->makeAdmin();
+        $admin = $this->makeAdmin(['name' => 'Search Admin', 'email' => 'search-admin@example.test']);
 
         $matched = $this->makeUser([
             'name' => 'Nadya',
