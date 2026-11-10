@@ -26,4 +26,17 @@ return [
         'image_max' => 'The article image must not exceed 5 MB.',
         'image_format' => 'The image must be JPG, JPEG, or PNG.',
     ],
+
+
+    'public' => [
+        'title' => 'Articles',
+        'description' => 'Explore published articles.',
+        'empty_title' => 'No articles yet',
+        'empty_description' => 'Approved articles will appear here.',
+        'no_image' => 'Image unavailable',
+        'author' => 'Author',
+        'unknown_author' => 'Unknown author',
+        'pagination' => 'Article pagination',
+    ],
+
 ];

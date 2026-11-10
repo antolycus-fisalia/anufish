@@ -13,7 +13,13 @@
                 :active="request()->routeIs('homepage')">{{ __('Beranda') }}</x-navigation.item>
             <x-navigation.item icon="fish" :href="route('fish.index')"
                 :active="request()->routeIs('fish.*')">{{ __('Jelajahi Ikan') }}</x-navigation.item>
-            <x-navigation.item icon="article">{{ __('Artikel') }}</x-navigation.item>
+            <x-navigation.item
+            icon="article"
+            :href="route('artikel-publik.index')"
+            :active="request()->routeIs('artikel-publik.*')"
+            >
+    {{ __('Artikel') }}
+</x-navigation.item>
         </ul>
         <h2 class="mb-2 mt-6 px-3 text-xs font-medium text-anufish-muted">{{ __('Ruang saya') }}</h2>
         <ul class="space-y-1">
