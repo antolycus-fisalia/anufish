@@ -9,7 +9,6 @@
         data-endpoint="/artikel"
         data-error-load="{{ __('Daftar artikel belum dapat dimuat. Silakan coba lagi.') }}"
         data-error-delete="{{ __('Artikel belum dapat dihapus. Silakan coba lagi.') }}"
-        data-confirm-delete="{{ __('Hapus artikel ini? Tindakan ini tidak dapat dibatalkan.') }}"
         data-status-waiting="{{ __('Menunggu') }}"
         data-status-approved="{{ __('Disetujui') }}"
         data-status-rejected="{{ __('Ditolak') }}"
@@ -159,5 +158,17 @@
                 </div>
             </article>
         </template>
+        <dialog data-article-delete-dialog aria-labelledby="article-delete-title"
+            class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-anufish-border bg-white p-6 backdrop:bg-anufish-navy/40">
+            <form method="dialog" class="space-y-4">
+                <h2 id="article-delete-title" class="font-semibold text-anufish-navy">
+                    {{ __('Hapus artikel ini? Tindakan ini tidak dapat dibatalkan.') }}
+                </h2>
+                <div class="flex flex-wrap justify-end gap-3">
+                    <button value="cancel" autofocus class="secondary-action">{{ __('Batal') }}</button>
+                    <button value="delete" class="primary-action">{{ __('Hapus') }}</button>
+                </div>
+            </form>
+        </dialog>
     </div>
 @endsection

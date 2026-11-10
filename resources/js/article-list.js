@@ -22,8 +22,10 @@ export function initArticleList() {
 
     let currentPage = 1;
     let lastPage = 1;
+    let requestedPage = 1;
     let loadingRequest = false;
     let deletingId = null;
+    const deleteDialog = root.querySelector('[data-article-delete-dialog]');
 
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
@@ -151,6 +153,7 @@ export function initArticleList() {
         }
 
         loadingRequest = true;
+        requestedPage = page;
         showLoading();
 
         try {
@@ -181,10 +184,8 @@ export function initArticleList() {
 
             if (payload.data.length === 0) {
                 if (currentPage > 1) {
-                    currentPage -= 1;
                     loadingRequest = false;
-
-                    await loadArticles(currentPage);
+                    await loadArticles(Math.min(currentPage - 1, lastPage));
 
                     return;
                 }
@@ -211,13 +212,17 @@ export function initArticleList() {
     }
 
     async function deleteArticle(articleId, button) {
-        if (deletingId !== null) {
+        if (deletingId !== null || deleteDialog.open) {
             return;
         }
 
-        const confirmed = window.confirm(
-            root.dataset.confirmDelete,
-        );
+        deleteDialog.returnValue = '';
+        deleteDialog.showModal();
+        const confirmed = await new Promise((resolve) => {
+            deleteDialog.addEventListener('close', () => {
+                resolve(deleteDialog.returnValue === 'delete');
+            }, { once: true });
+        });
 
         if (!confirmed) {
             return;
@@ -268,7 +273,7 @@ export function initArticleList() {
     });
 
     retryButton.addEventListener('click', () => {
-        loadArticles(currentPage);
+        loadArticles(requestedPage);
     });
 
     loadArticles();
