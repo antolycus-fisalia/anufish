@@ -12,6 +12,7 @@ import { initAuthLayout } from './auth-layout.js';
 import { scanUpload } from './scan.js';
 import { initHistoryImages } from './scan-history.js';
 import { initArticleList } from './article-list.js';
+import { initArticleForm } from './article-form.js';
 
 window.Alpine = Alpine;
 
@@ -27,5 +28,6 @@ initFishCardImages();
 initInvalidFieldFocus();
 initHistoryImages();
 initArticleList();
+initArticleForm();
 
 Alpine.start();

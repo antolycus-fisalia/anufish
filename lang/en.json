@@ -258,5 +258,20 @@
     "Daftar artikel belum dapat dimuat": "The article list could not be loaded",
     "Navigasi artikel": "Article navigation",
     "Edit": "Edit",
-    "Hapus": "Delete"
+    "Hapus": "Delete",
+    "Edit Artikel - Anufish": "Edit Article - Anufish",
+    "Buat Artikel - Anufish": "Create Article - Anufish",
+    "Edit Artikel": "Edit Article",
+    "Buat Artikel": "Create Article",
+    "Perbarui isi artikel. Artikel yang diedit akan kembali menunggu moderasi.": "Update the article content. Edited articles will return to moderation.",
+    "Tulis artikel untuk dibagikan kepada komunitas Anufish.": "Write an article to share with the Anufish community.",
+    "Judul": "Title",
+    "Kategori": "Category",
+    "Isi Artikel": "Article Content",
+    "Gambar Artikel": "Article Image",
+    "Format JPG, JPEG, atau PNG. Maksimal 5 MB.": "JPG, JPEG, or PNG format. Maximum 5 MB.",
+    "Pratinjau gambar artikel": "Article image preview",
+    "Batal": "Cancel",
+    "Artikel belum dapat dimuat. Silakan coba lagi.": "The article could not be loaded. Please try again.",
+    "Artikel belum dapat disimpan. Silakan coba lagi.": "The article could not be saved. Please try again."
 }

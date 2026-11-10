@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArtikelController;
@@ -29,14 +30,11 @@ Route::post('/language', [LocaleController::class, 'update'])
 
 Route::middleware('auth')->group(function () {
 
-        /*
-    |--------------------------------------------------------------------------
-    | User Articles
-    |--------------------------------------------------------------------------
-    */
-
-    Route::view('/artikel-saya', 'pages.article.mine.index')
-    ->name('artikel-saya.index');
+    Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
+        Route::view('/', 'pages.article.mine.index')->name('index');
+        Route::view('/buat', 'pages.article.form')->name('create');
+        Route::view('/{artikel}/edit', 'pages.article.form')->whereNumber('artikel')->name('edit');
+    });
 
     // Homepage
     Route::get('/', HomeController::class)
@@ -62,9 +60,19 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/history', [ScanHistoryController::class, 'index'])
             ->name('history.index');
-        Route::get('/history/{history}', [ScanHistoryController::class, 'show'])->whereNumber('history')->name('history.show');
-        Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])->whereNumber('history')->name('history.image');
-        Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])->whereNumber('history')->middleware('throttle:30,1')->name('history.reference');
+
+        Route::get('/history/{history}', [ScanHistoryController::class, 'show'])
+            ->whereNumber('history')
+            ->name('history.show');
+
+        Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])
+            ->whereNumber('history')
+            ->name('history.image');
+
+        Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])
+            ->whereNumber('history')
+            ->middleware('throttle:30,1')
+            ->name('history.reference');
 
         Route::controller(ScanController::class)->group(function () {
 
@@ -160,10 +168,35 @@ Route::middleware('auth')->group(function () {
         ->middleware('admin')
         ->name('admin.dashboard');
 
-    Route::prefix('admin/users')->name('admin.users.')->middleware('admin')
-        ->controller(AdminUserEditController::class)->group(function () {
-            Route::get('/{user}/edit', 'edit')->name('edit');
-            Route::put('/{user}', 'update')->name('update');
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Users - FSH-25
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('admin/users')
+        ->name('admin.users.')
+        ->middleware('admin')
+        ->group(function () {
+
+            // FSH-25: Daftar pengguna
+            Route::get('/', [AdminUserController::class, 'index'])
+                ->name('index');
+
+            // FSH-25: Detail pengguna
+            Route::get('/{user}', [AdminUserController::class, 'show'])
+                ->whereNumber('user')
+                ->name('show');
+
+            // Route edit pengguna (existing)
+            Route::get('/{user}/edit', [AdminUserEditController::class, 'edit'])
+                ->whereNumber('user')
+                ->name('edit');
+
+            // Route update pengguna (existing)
+            Route::put('/{user}', [AdminUserEditController::class, 'update'])
+                ->whereNumber('user')
+                ->name('update');
         });
 });
 
