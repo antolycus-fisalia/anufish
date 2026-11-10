@@ -18,6 +18,7 @@ export function initArticleForm() {
     const articleId = root.dataset.articleId ?? null;
 
     let submitting = false;
+    let articleReady = mode !== 'edit';
     let previewUrl = null;
 
     const csrfToken = document
@@ -87,7 +88,7 @@ export function initArticleForm() {
 
     function setSubmitting(value) {
         submitting = value;
-        submitButton.disabled = value;
+        submitButton.disabled = value || !articleReady;
         submitLabel.hidden = value;
         submitLoading.hidden = !value;
     }
@@ -165,6 +166,12 @@ export function initArticleForm() {
             return;
         }
 
+        const fields = ['judul', 'kategori', 'isi', 'gambar']
+            .map((name) => form.elements.namedItem(name));
+        fields.forEach((field) => { field.disabled = true; });
+        submitButton.disabled = true;
+        form.setAttribute('aria-busy', 'true');
+
         try {
             const response = await fetch(`/artikel/${articleId}`, {
                 headers: {
@@ -188,6 +195,9 @@ export function initArticleForm() {
             form.elements.isi.value = article.isi ?? '';
 
             showStoredImage(article.gambar);
+            articleReady = true;
+            fields.forEach((field) => { field.disabled = false; });
+            submitButton.disabled = false;
         } catch (error) {
             showMessage(
                 'error',
@@ -195,13 +205,15 @@ export function initArticleForm() {
                     ? error.message
                     : root.dataset.errorLoad,
             );
+        } finally {
+            form.removeAttribute('aria-busy');
         }
     }
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        if (submitting) {
+        if (submitting || !articleReady) {
             return;
         }
 
