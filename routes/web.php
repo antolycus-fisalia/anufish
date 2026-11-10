@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminArtikelModerationController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
@@ -197,6 +198,31 @@ Route::middleware('auth')->group(function () {
             Route::put('/{user}', [AdminUserEditController::class, 'update'])
                 ->whereNumber('user')
                 ->name('update');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Article Moderation - FSH-29
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('admin/artikel')
+        ->name('admin.artikel.')
+        ->middleware('admin')
+        ->controller(AdminArtikelModerationController::class)
+        ->group(function () {
+
+            Route::post('/{artikel}/approve', 'approve')
+                ->whereNumber('artikel')
+                ->name('approve');
+
+            Route::post('/{artikel}/reject', 'reject')
+                ->whereNumber('artikel')
+                ->name('reject');
+
+            Route::post('/{artikel}/delete', 'delete')
+                ->whereNumber('artikel')
+                ->name('delete');
         });
 });
 

@@ -10,6 +10,13 @@ return [
         'update_failed' => 'Failed to update article. Please retry.',
         'delete_failed' => 'Failed to delete article. Please retry.',
     ],
+    'moderation' => [
+        'approved' => 'Article approved successfully.',
+        'rejected' => 'Article rejected successfully.',
+        'deleted' => 'Article deleted successfully.',
+        'conflict' => 'The article status has changed. Refresh the list and try again.',
+        'failed' => 'Failed to update the moderation status. Please retry.',
+    ],
     'validation' => [
         'title_required' => 'The article title is required.',
         'title_string' => 'The article title must be text.',

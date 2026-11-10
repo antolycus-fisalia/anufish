@@ -10,6 +10,13 @@ return [
         'update_failed' => 'Gagal memperbarui artikel. Silakan coba lagi.',
         'delete_failed' => 'Gagal menghapus artikel. Silakan coba lagi.',
     ],
+    'moderation' => [
+        'approved' => 'Artikel berhasil disetujui.',
+        'rejected' => 'Artikel berhasil ditolak.',
+        'deleted' => 'Artikel berhasil dihapus.',
+        'conflict' => 'Status artikel sudah berubah. Segarkan daftar lalu coba lagi.',
+        'failed' => 'Gagal memperbarui status moderasi. Silakan coba lagi.',
+    ],
     'validation' => [
         'title_required' => 'Judul artikel wajib diisi.',
         'title_string' => 'Judul artikel harus berupa teks.',
