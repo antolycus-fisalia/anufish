@@ -30,6 +30,23 @@ Route::post('/language', [LocaleController::class, 'update'])
 
 Route::middleware('auth')->group(function () {
 
+    /*
+|--------------------------------------------------------------------------
+| Article Form Pages
+|--------------------------------------------------------------------------
+*/
+
+    Route::prefix('artikel-saya')
+    ->name('artikel-saya.')
+    ->group(function () {
+        Route::view('/buat', 'pages.article.form')
+            ->name('create');
+
+        Route::view('/{artikel}/edit', 'pages.article.form')
+            ->whereNumber('artikel')
+            ->name('edit');
+    });
+
     // Homepage
     Route::get('/', HomeController::class)
         ->name('homepage');
