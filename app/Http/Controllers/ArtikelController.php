@@ -92,6 +92,10 @@ class ArtikelController extends Controller
     ): JsonResponse {
         Gate::authorize('view', $artikel);
 
+        if (Gate::allows('moderate', $artikel)) {
+            $artikel->makeVisible('moderation_revision');
+        }
+
         return response()->json([
             'data' => $artikel,
         ]);
@@ -118,7 +122,6 @@ class ArtikelController extends Controller
             ]);
         }
 
-        $oldPath = $artikel->gambar;
         $newPath = null;
 
         try {
@@ -135,14 +138,18 @@ class ArtikelController extends Controller
                 $data['gambar'] = $newPath;
             }
 
-            $artikel->fill($data);
+            $oldPath = DB::transaction(function () use ($artikel, $data) {
+                $locked = Artikel::query()->lockForUpdate()->findOrFail($artikel->getKey());
+                $oldPath = $locked->gambar;
+                $locked->fill($data);
+                $locked->status = 'menunggu';
+                $locked->moderation_revision++;
 
-            // Perubahan artikel kembali menunggu moderasi.
-            $artikel->status = 'menunggu';
-            DB::transaction(function () use ($artikel) {
-                if (! $artikel->save()) {
+                if (! $locked->save()) {
                     throw new \RuntimeException('Article was not persisted.');
                 }
+
+                return $oldPath;
             });
         } catch (Throwable $e) {
             report($e);
