@@ -14,7 +14,7 @@ return [
         'approved' => 'Artikel berhasil disetujui.',
         'rejected' => 'Artikel berhasil ditolak.',
         'deleted' => 'Artikel berhasil dihapus.',
-        'conflict' => 'Status artikel sudah berubah. Segarkan daftar lalu coba lagi.',
+        'conflict' => 'Artikel sudah berubah atau tindakan ini sudah tidak tersedia. Buka ulang detail artikel.',
         'failed' => 'Gagal memperbarui status moderasi. Silakan coba lagi.',
     ],
     'validation' => [

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('artikel', function (Blueprint $table) {
             $table->softDeletes();
+            $table->unsignedBigInteger('moderation_revision')->default(1);
         });
     }
 
@@ -17,6 +18,7 @@ return new class extends Migration
     {
         Schema::table('artikel', function (Blueprint $table) {
             $table->dropSoftDeletes();
+            $table->dropColumn('moderation_revision');
         });
     }
 };

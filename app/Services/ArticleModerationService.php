@@ -19,24 +19,23 @@ class ArticleModerationService
      */
     private const ALLOWED_TRANSITIONS = [
         'menunggu' => ['disetujui', 'ditolak'],
-        'ditolak' => ['menunggu'],
     ];
 
-    public function approve(User $admin, Artikel $artikel): array
+    public function approve(User $admin, Artikel $artikel, int $revision): array
     {
-        return $this->transition($admin, $artikel, 'disetujui', 'approve');
+        return $this->transition($admin, $artikel, $revision, 'disetujui', 'approve');
     }
 
-    public function reject(User $admin, Artikel $artikel): array
+    public function reject(User $admin, Artikel $artikel, int $revision): array
     {
-        return $this->transition($admin, $artikel, 'ditolak', 'reject');
+        return $this->transition($admin, $artikel, $revision, 'ditolak', 'reject');
     }
 
-    public function deleteArticle(User $admin, Artikel $artikel): array
+    public function deleteArticle(User $admin, Artikel $artikel, int $revision): array
     {
         try {
-            $result = DB::transaction(function () use ($admin, $artikel) {
-                $locked = $this->lock($artikel);
+            return DB::transaction(function () use ($admin, $artikel, $revision) {
+                $locked = $this->lock($artikel, $revision);
 
                 if (! $locked) {
                     return $this->conflict();
@@ -47,7 +46,7 @@ class ArticleModerationService
                     throw new RuntimeException('Article was not deleted.');
                 }
 
-                $this->audit('delete', $admin, $locked);
+                $this->afterCommit('delete', $admin, $locked);
 
                 return [
                     'success' => true,
@@ -61,21 +60,14 @@ class ArticleModerationService
 
             return $this->failed();
         }
-
-        if ($result['success']) {
-            $this->notify('delete', $admin, $artikel);
-        }
-
-        return $result;
     }
 
-    private function transition(User $admin, Artikel $artikel, string $target, string $action): array
+    private function transition(User $admin, Artikel $artikel, int $revision, string $target, string $action): array
     {
         try {
-            $result = DB::transaction(function () use ($admin, $artikel, $target, $action) {
-                $locked = $this->lock($artikel);
+            return DB::transaction(function () use ($admin, $artikel, $revision, $target, $action) {
+                $locked = $this->lock($artikel, $revision);
 
-                // Baris tidak ketemu: status sudah berubah -> konflik atomik, bukan menimpa.
                 if (! $locked) {
                     return $this->conflict();
                 }
@@ -87,12 +79,13 @@ class ArticleModerationService
                 }
 
                 $locked->status = $target;
+                $locked->moderation_revision++;
 
                 if (! $locked->save()) {
                     throw new RuntimeException('Article was not persisted.');
                 }
 
-                $this->audit($action, $admin, $locked);
+                $this->afterCommit($action, $admin, $locked);
 
                 return [
                     'success' => true,
@@ -106,23 +99,13 @@ class ArticleModerationService
 
             return $this->failed();
         }
-
-        if ($result['success']) {
-            $this->notify($action, $admin, $artikel);
-        }
-
-        return $result;
     }
 
-    /**
-     * Kunci baris dengan status semacam yang admin lihat (compare-and-set):
-     * kalau admin lain menggeser status lebih dulu, query ini kosong.
-     */
-    private function lock(Artikel $artikel): ?Artikel
+    private function lock(Artikel $artikel, int $revision): ?Artikel
     {
         return Artikel::query()
             ->whereKey($artikel->getKey())
-            ->where('status', $artikel->status)
+            ->where('moderation_revision', $revision)
             ->lockForUpdate()
             ->first();
     }
@@ -159,14 +142,18 @@ class ArticleModerationService
         ]);
     }
 
-    /**
-     * Event notifikasi HANYA dipanggil setelah DB::transaction kembali
-     * (transaksi sudah commit). Listener/channel-nya adalah scope FSH-21.
-     */
-    private function notify(string $action, User $admin, Artikel $artikel): void
+    private function afterCommit(string $action, User $admin, Artikel $artikel): void
     {
-        app(Dispatcher::class)->dispatch(
-            new ArtikelModerated($action, $admin->id, (int) $artikel->getKey())
-        );
+        DB::afterCommit(function () use ($action, $admin, $artikel) {
+            $this->audit($action, $admin, $artikel);
+
+            try {
+                app(Dispatcher::class)->dispatch(
+                    new ArtikelModerated($action, $admin->id, (int) $artikel->getKey())
+                );
+            } catch (Throwable $e) {
+                report($e);
+            }
+        });
     }
 }

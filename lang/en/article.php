@@ -14,7 +14,7 @@ return [
         'approved' => 'Article approved successfully.',
         'rejected' => 'Article rejected successfully.',
         'deleted' => 'Article deleted successfully.',
-        'conflict' => 'The article status has changed. Refresh the list and try again.',
+        'conflict' => 'The article changed or this action is no longer available. Reopen the article details.',
         'failed' => 'Failed to update the moderation status. Please retry.',
     ],
     'validation' => [

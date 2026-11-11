@@ -16,7 +16,7 @@ class AdminArtikelModerationController extends Controller
         Gate::authorize('moderate', $artikel);
 
         return $this->respond(
-            app(ArticleModerationService::class)->approve($request->user(), $artikel)
+            app(ArticleModerationService::class)->approve($request->user(), $artikel, $this->revision($request))
         );
     }
 
@@ -25,7 +25,7 @@ class AdminArtikelModerationController extends Controller
         Gate::authorize('moderate', $artikel);
 
         return $this->respond(
-            app(ArticleModerationService::class)->reject($request->user(), $artikel)
+            app(ArticleModerationService::class)->reject($request->user(), $artikel, $this->revision($request))
         );
     }
 
@@ -34,8 +34,13 @@ class AdminArtikelModerationController extends Controller
         Gate::authorize('moderate', $artikel);
 
         return $this->respond(
-            app(ArticleModerationService::class)->deleteArticle($request->user(), $artikel)
+            app(ArticleModerationService::class)->deleteArticle($request->user(), $artikel, $this->revision($request))
         );
+    }
+
+    private function revision(Request $request): int
+    {
+        return (int) $request->validate(['moderation_revision' => ['required', 'integer', 'min:1']])['moderation_revision'];
     }
 
     private function respond(array $result): JsonResponse

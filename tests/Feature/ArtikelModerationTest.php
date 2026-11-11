@@ -54,7 +54,7 @@ class ArtikelModerationTest extends TestCase
         $artikel = $this->makeArtikel();
 
         $this->actingAs($admin)
-            ->post(route('admin.artikel.approve', $artikel))
+            ->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])
             ->assertOk()
             ->assertJsonPath('data.status', 'disetujui');
 
@@ -69,7 +69,7 @@ class ArtikelModerationTest extends TestCase
         $artikel = $this->makeArtikel();
 
         $this->actingAs($admin)
-            ->post(route('admin.artikel.reject', $artikel))
+            ->postJson(route('admin.artikel.reject', $artikel), ['moderation_revision' => $artikel->moderation_revision])
             ->assertOk()
             ->assertJsonPath('data.status', 'ditolak');
 
@@ -84,7 +84,7 @@ class ArtikelModerationTest extends TestCase
         $artikel = $this->makeArtikel(['status' => 'disetujui']);
 
         $this->actingAs($admin)
-            ->post(route('admin.artikel.delete', $artikel))
+            ->postJson(route('admin.artikel.delete', $artikel), ['moderation_revision' => $artikel->moderation_revision])
             ->assertOk();
 
         $this->assertSoftDeleted('artikel', ['id' => $artikel->id]);
@@ -97,9 +97,9 @@ class ArtikelModerationTest extends TestCase
         $user = $this->makeUser();
         $artikel = $this->makeArtikel();
 
-        $this->actingAs($user)->post(route('admin.artikel.approve', $artikel))->assertForbidden();
-        $this->actingAs($user)->post(route('admin.artikel.reject', $artikel))->assertForbidden();
-        $this->actingAs($user)->post(route('admin.artikel.delete', $artikel))->assertForbidden();
+        $this->actingAs($user)->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])->assertForbidden();
+        $this->actingAs($user)->postJson(route('admin.artikel.reject', $artikel), ['moderation_revision' => $artikel->moderation_revision])->assertForbidden();
+        $this->actingAs($user)->postJson(route('admin.artikel.delete', $artikel), ['moderation_revision' => $artikel->moderation_revision])->assertForbidden();
 
         $this->assertDatabaseHas('artikel', ['id' => $artikel->id, 'status' => 'menunggu']);
     }
@@ -110,14 +110,81 @@ class ArtikelModerationTest extends TestCase
         $admin = $this->makeAdmin();
         $artikel = $this->makeArtikel();
 
-        $this->actingAs($admin)->post(route('admin.artikel.approve', $artikel))->assertOk();
+        $this->actingAs($admin)->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])->assertOk();
 
         $stale = Artikel::findOrFail($artikel->id);
 
         $this->actingAs($admin)
-            ->post(route('admin.artikel.approve', $stale))
+            ->postJson(route('admin.artikel.approve', $stale), ['moderation_revision' => $artikel->moderation_revision])
             ->assertStatus(409)
             ->assertJsonPath('message', __('article.moderation.conflict'));
+
+        $this->assertDatabaseHas('artikel', ['id' => $artikel->id, 'status' => 'disetujui']);
+    }
+
+    public function test_moderation_requires_the_revision_from_admin_detail(): void
+    {
+        Event::fake();
+        $admin = $this->makeAdmin();
+        $artikel = $this->makeArtikel();
+        $url = route('admin.artikel.approve', $artikel);
+
+        $this->actingAs($admin)->postJson($url)->assertUnprocessable()
+            ->assertJsonValidationErrors('moderation_revision');
+
+        $revision = $this->getJson(url('/artikel/'.$artikel->id))->assertOk()
+            ->json('data.moderation_revision');
+
+        $this->actingAs($artikel->user)->putJson(url('/artikel/'.$artikel->id), [
+            'judul' => 'Artikel sudah diedit',
+            'kategori' => 'Berita',
+            'isi' => '<p>Isi baru.</p>',
+        ])->assertOk();
+
+        foreach (['approve', 'reject', 'delete'] as $action) {
+            $this->actingAs($admin)->postJson(route('admin.artikel.'.$action, $artikel), [
+                'moderation_revision' => $revision,
+            ])->assertConflict();
+        }
+
+        $this->assertDatabaseHas('artikel', [
+            'id' => $artikel->id, 'status' => 'menunggu', 'judul' => 'Artikel sudah diedit',
+        ]);
+        Event::assertNotDispatched(ArtikelModerated::class);
+    }
+
+    public function test_rolled_back_outer_transaction_sends_no_notification(): void
+    {
+        Event::fake();
+        $admin = $this->makeAdmin();
+        $artikel = $this->makeArtikel();
+
+        DB::beginTransaction();
+        try {
+            $this->actingAs($admin)->postJson(route('admin.artikel.approve', $artikel), [
+                'moderation_revision' => $artikel->moderation_revision,
+            ])->assertOk();
+
+            Event::assertNotDispatched(ArtikelModerated::class);
+        } finally {
+            DB::rollBack();
+        }
+
+        Event::assertNotDispatched(ArtikelModerated::class);
+        $this->assertDatabaseHas('artikel', ['id' => $artikel->id, 'status' => 'menunggu']);
+    }
+
+    public function test_listener_failure_keeps_successful_moderation_response(): void
+    {
+        $admin = $this->makeAdmin();
+        $artikel = $this->makeArtikel();
+        Event::listen(ArtikelModerated::class, function () {
+            throw new RuntimeException('Listener unavailable');
+        });
+
+        $this->actingAs($admin)->postJson(route('admin.artikel.approve', $artikel), [
+            'moderation_revision' => $artikel->moderation_revision,
+        ])->assertOk();
 
         $this->assertDatabaseHas('artikel', ['id' => $artikel->id, 'status' => 'disetujui']);
     }
@@ -131,7 +198,7 @@ class ArtikelModerationTest extends TestCase
         DB::shouldReceive('transaction')->once()->andThrow(new RuntimeException('boom'));
 
         $this->actingAs($admin)
-            ->post(route('admin.artikel.approve', $artikel))
+            ->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])
             ->assertStatus(500)
             ->assertJsonPath('message', __('article.moderation.failed'));
 
@@ -147,7 +214,7 @@ class ArtikelModerationTest extends TestCase
 
         Log::spy();
 
-        $this->actingAs($admin)->post(route('admin.artikel.approve', $artikel))->assertOk();
+        $this->actingAs($admin)->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])->assertOk();
 
         Log::shouldHaveReceived('info')
             ->with('article.moderated', Mockery::on(function (array $context) use ($adminId, $artikel) {

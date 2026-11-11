@@ -21,7 +21,12 @@ class Artikel extends Model
         'gambar',
     ];
 
+    protected $attributes = ['moderation_revision' => 1];
+
+    protected $hidden = ['moderation_revision'];
+
     protected $casts = [
+        'moderation_revision' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
