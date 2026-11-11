@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Artikel;
 use Illuminate\Contracts\View\View;
 

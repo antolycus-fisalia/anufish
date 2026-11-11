@@ -32,19 +32,20 @@
             @foreach ($artikel as $item)
                 <article class="min-w-0 overflow-hidden rounded-2xl border border-anufish-border bg-white">
 
-                    <div class="flex aspect-[16/10] items-center justify-center bg-anufish-pale">
-                        @if ($item->gambar && str_starts_with($item->gambar, 'artikel-images/'))
+                    @php($hasImage = $item->gambar && str_starts_with($item->gambar, 'artikel-images/'))
+                    <div data-image-fallback class="flex aspect-[16/10] items-center justify-center bg-anufish-pale">
+                        @if ($hasImage)
                             <img
+                                data-fallback-image
                                 src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($item->gambar) }}"
                                 alt="{{ $item->judul }}"
                                 loading="lazy"
                                 class="h-full w-full object-cover"
                             >
-                        @else
-                            <span class="px-4 text-center text-sm text-anufish-muted">
-                                {{ __('article.public.no_image') }}
-                            </span>
                         @endif
+                        <span data-fallback-placeholder @if ($hasImage) hidden @endif class="px-4 text-center text-sm text-anufish-muted">
+                            {{ __('article.public.no_image') }}
+                        </span>
                     </div>
 
                     <div class="space-y-3 p-5">
@@ -79,12 +80,11 @@
         </section>
 
         @if ($artikel->hasPages())
-            <nav
-                aria-label="{{ __('article.public.pagination') }}"
+            <div
                 class="pt-2"
             >
                 {{ $artikel->links() }}
-            </nav>
+            </div>
         @endif
     @endif
 </div>

@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\Admin\AdminUserController;
@@ -32,35 +31,17 @@ Route::post('/language', [LocaleController::class, 'update'])
 
 Route::middleware('auth')->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | My Articles - FSH-19 & FSH-20
-    |--------------------------------------------------------------------------
-    */
+    Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
+        Route::view('/', 'pages.article.mine.index')->name('index');
+        Route::view('/buat', 'pages.article.form')->name('create');
+        Route::view('/{artikel}/edit', 'pages.article.form')->whereNumber('artikel')->name('edit');
+    });
 
-    Route::prefix('artikel-saya')
-        ->name('artikel-saya.')
-        ->group(function () {
-            Route::view('/', 'pages.article.mine.index')
-                ->name('index');
-
-            Route::view('/buat', 'pages.article.form')
-                ->name('create');
-
-            Route::view('/{artikel}/edit', 'pages.article.form')
-                ->whereNumber('artikel')
-                ->name('edit');
-        });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Homepage
-    |--------------------------------------------------------------------------
-    */
-
+    // Homepage
     Route::get('/', HomeController::class)
         ->name('homepage');
 
+    // Logout
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
 
@@ -70,41 +51,40 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::prefix('scan')
-        ->name('scan.')
-        ->group(function () {
-            Route::view('/', 'pages.scan.index')
-                ->name('index');
+    Route::prefix('scan')->name('scan.')->group(function () {
 
-            Route::view('/detail-loading', 'pages.scan.detail-loading')
-                ->name('detail-loading');
+        Route::view('/', 'pages.scan.index')
+            ->name('index');
 
-            Route::get('/history', [ScanHistoryController::class, 'index'])
-                ->name('history.index');
+        Route::view('/detail-loading', 'pages.scan.detail-loading')
+            ->name('detail-loading');
 
-            Route::get('/history/{history}', [ScanHistoryController::class, 'show'])
-                ->whereNumber('history')
-                ->name('history.show');
+        Route::get('/history', [ScanHistoryController::class, 'index'])
+            ->name('history.index');
 
-            Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])
-                ->whereNumber('history')
-                ->name('history.image');
+        Route::get('/history/{history}', [ScanHistoryController::class, 'show'])
+            ->whereNumber('history')
+            ->name('history.show');
 
-            Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])
-                ->whereNumber('history')
+        Route::get('/history/{history}/image', [ScanHistoryController::class, 'image'])
+            ->whereNumber('history')
+            ->name('history.image');
+
+        Route::post('/history/{history}/reference', [ScanHistoryController::class, 'reference'])
+            ->whereNumber('history')
+            ->middleware('throttle:30,1')
+            ->name('history.reference');
+
+        Route::controller(ScanController::class)->group(function () {
+
+            Route::post('/upload', 'upload')
+                ->name('upload');
+
+            Route::get('/reference', 'reference')
                 ->middleware('throttle:30,1')
-                ->name('history.reference');
-
-            Route::controller(ScanController::class)
-                ->group(function () {
-                    Route::post('/upload', 'upload')
-                        ->name('upload');
-
-                    Route::get('/reference', 'reference')
-                        ->middleware('throttle:30,1')
-                        ->name('reference');
-                });
+                ->name('reference');
         });
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -116,6 +96,7 @@ Route::middleware('auth')->group(function () {
         ->name('profile.')
         ->controller(ProfileController::class)
         ->group(function () {
+
             Route::get('/', 'show')
                 ->name('show');
 
@@ -134,6 +115,7 @@ Route::middleware('auth')->group(function () {
         ->controller(FishController::class)
         ->where(['taxonId' => '[1-9][0-9]{0,9}'])
         ->group(function () {
+
             Route::get('/', 'index')
                 ->name('index');
 
@@ -152,23 +134,18 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Public Articles - FSH-23
+    | Articles
     |--------------------------------------------------------------------------
     */
 
     Route::get('/artikel-publik', [PublicArticleController::class, 'index'])
         ->name('artikel-publik.index');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Article CRUD - FSH-21
-    |--------------------------------------------------------------------------
-    */
-
     Route::prefix('artikel')
         ->name('artikel.')
         ->controller(ArtikelController::class)
         ->group(function () {
+
             Route::get('/', 'index')
                 ->name('index');
 
@@ -187,7 +164,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Admin Dashboard
+    | Admin
     |--------------------------------------------------------------------------
     */
 
@@ -205,17 +182,22 @@ Route::middleware('auth')->group(function () {
         ->name('admin.users.')
         ->middleware('admin')
         ->group(function () {
+
+            // FSH-25: Daftar pengguna
             Route::get('/', [AdminUserController::class, 'index'])
                 ->name('index');
 
+            // FSH-25: Detail pengguna
             Route::get('/{user}', [AdminUserController::class, 'show'])
                 ->whereNumber('user')
                 ->name('show');
 
+            // Route edit pengguna (existing)
             Route::get('/{user}/edit', [AdminUserEditController::class, 'edit'])
                 ->whereNumber('user')
                 ->name('edit');
 
+            // Route update pengguna (existing)
             Route::put('/{user}', [AdminUserEditController::class, 'update'])
                 ->whereNumber('user')
                 ->name('update');
@@ -230,6 +212,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('guest')->group(function () {
 
+    // Login
     Route::view('/login', 'pages.auth.login')
         ->name('login');
 
@@ -237,6 +220,7 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:login')
         ->name('login.store');
 
+    // Registration
     Route::view('/register', 'pages.auth.register')
         ->name('register');
 

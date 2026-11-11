@@ -4,7 +4,7 @@ import {
     initPasswordFields,
     initForms,
     initProfile,
-    initFishCardImages,
+    initImageFallbacks,
     initInvalidFieldFocus,
 } from './ui.js';
 import { initFishDetails } from './fish-detail.js';
@@ -24,7 +24,7 @@ initForms();
 initProfile();
 initFishDetails();
 initAuthLayout();
-initFishCardImages();
+initImageFallbacks();
 initInvalidFieldFocus();
 initHistoryImages();
 initArticleList();
