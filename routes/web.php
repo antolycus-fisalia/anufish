@@ -9,6 +9,7 @@ use App\Http\Controllers\FishController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
 use Illuminate\Support\Facades\Route;
@@ -136,6 +137,9 @@ Route::middleware('auth')->group(function () {
     | Articles
     |--------------------------------------------------------------------------
     */
+
+    Route::get('/artikel-publik', [PublicArticleController::class, 'index'])
+        ->name('artikel-publik.index');
 
     Route::prefix('artikel')
         ->name('artikel.')
