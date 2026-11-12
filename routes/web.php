@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
+use App\Http\Controllers\Admin\AdminArtikelListController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,6 +32,18 @@ Route::post('/language', [LocaleController::class, 'update'])
 */
 
 Route::middleware('auth')->group(function () {
+
+    Route::prefix('admin/artikel')
+    ->name('admin.artikel.')
+    ->middleware('admin')
+    ->controller(AdminArtikelListController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+
+        Route::get('/{artikel}', 'show')
+            ->whereNumber('artikel')
+            ->name('show');
+    });
 
     Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
         Route::view('/', 'pages.article.mine.index')->name('index');
