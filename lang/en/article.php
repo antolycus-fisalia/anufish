@@ -26,4 +26,9 @@ return [
         'image_max' => 'The article image must not exceed 5 MB.',
         'image_format' => 'The image must be JPG, JPEG, or PNG.',
     ],
+    'public' => [
+    'back_to_list' => 'Back to articles',
+    'author' => 'Author',
+    'unknown_author' => 'Unknown author',
+    ],
 ];

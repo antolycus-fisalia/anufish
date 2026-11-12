@@ -26,4 +26,10 @@ return [
         'image_max' => 'Ukuran gambar maksimal 5 MB.',
         'image_format' => 'Format gambar harus JPG, JPEG, atau PNG.',
     ],
+
+    'public' => [
+        'back_to_list' => 'Kembali ke daftar artikel',
+        'author' => 'Penulis',
+        'unknown_author' => 'Penulis tidak diketahui',
+    ],
 ];

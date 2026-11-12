@@ -11,7 +11,9 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
+use App\Http\Controllers\PublicArticleDetailController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +31,11 @@ Route::post('/language', [LocaleController::class, 'update'])
 */
 
 Route::middleware('auth')->group(function () {
+
+    // FSH-24: Detail artikel terpublikasi
+    Route::get('/artikel-publik/{artikel}', [PublicArticleDetailController::class, 'show'])
+    ->whereNumber('artikel')
+    ->name('artikel-publik.show');
 
     Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
         Route::view('/', 'pages.article.mine.index')->name('index');
