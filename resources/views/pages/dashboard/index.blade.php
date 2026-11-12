@@ -19,7 +19,6 @@
                     <a href="{{ route('scan.index') }}" class="btn btn-primary primary-action">
                         {{ __('Mulai scan ikan') }}
                     </a>
-                    <span>{{ __('Segera') }}</span>
                 </div>
                 <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi semua ikan') }} <span
                         aria-hidden="true">→</span></a>
@@ -45,7 +44,6 @@
         <section aria-labelledby="home-reading-title" class="home-reading">
             <header class="home-section-heading">
                 <h2 id="home-reading-title">{{ __('Bacaan untukmu') }}</h2>
-                <span class="home-coming-soon">{{ __('Segera') }}</span>
             </header>
             <div class="home-reading-empty">
                 <span class="home-reading-icon" aria-hidden="true"><x-navigation.icon name="article" /></span>
