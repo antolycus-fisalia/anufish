@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Artikel;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class HomePageTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_home_has_hero_and_shortcuts_without_a_search_form_or_external_request(): void
     {
         Http::fake();
@@ -18,9 +22,36 @@ class HomePageTest extends TestCase
             ->assertSee('Bacaan untukmu')
             ->assertSee('Belum ada artikel untuk ditampilkan')
             ->assertSee(route('fish.index'))
+            ->assertSee('href="' . route('scan.history.index') . '" class="home-text-link"', false)
+            ->assertSee('href="' . route('artikel-publik.index') . '" class="home-text-link"', false)
+            ->assertDontSee('Segera')
             ->assertDontSee('name="q"', false);
 
         Http::assertNothingSent();
+    }
+
+    public function test_home_shows_the_latest_published_article_instead_of_an_empty_state(): void
+    {
+        $author = User::factory()->create();
+
+        foreach ([
+            ['Bacaan terbit sebelumnya', 'disetujui'],
+            ['Bacaan terbit terbaru', 'disetujui'],
+            ['Bacaan belum terbit', 'menunggu'],
+        ] as [$title, $status]) {
+            $article = new Artikel(['judul' => $title, 'kategori' => 'Ikan', 'isi' => '<p>Konten artikel.</p>']);
+            $article->user()->associate($author);
+            $article->status = $status;
+            $article->save();
+        }
+
+        $this->actingAs($author)->get(route('homepage'))
+            ->assertOk()
+            ->assertSee('Bacaan terbit terbaru')
+            ->assertSee('Lihat semua artikel')
+            ->assertDontSee('Bacaan terbit sebelumnya')
+            ->assertDontSee('Bacaan belum terbit')
+            ->assertDontSee('Belum ada artikel untuk ditampilkan');
     }
 
     public function test_empty_exploration_is_a_separate_page_without_the_home_hero(): void
@@ -50,7 +81,7 @@ class HomePageTest extends TestCase
     public function test_english_home_and_exploration_keep_the_selected_language(): void
     {
         $this->actingAs(User::factory()->make())->withSession(['locale' => 'en'])
-            ->get(route('homepage'))->assertOk()->assertSee('Readings for you')->assertSee('Coming soon');
+            ->get(route('homepage'))->assertOk()->assertSee('Readings for you')->assertDontSee('Coming soon');
         $this->get(route('fish.index'))->assertOk()->assertSee('Search species by common or scientific name.');
     }
 

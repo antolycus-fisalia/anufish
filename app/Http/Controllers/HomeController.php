@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FishQueryRequest;
+use App\Models\Artikel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -16,6 +17,12 @@ class HomeController extends Controller
             return to_route('fish.index', $query);
         }
 
-        return view('pages.dashboard.index');
+        $latestArticle = Artikel::query()
+            ->where('status', 'disetujui')
+            ->latest('created_at')
+            ->orderByDesc('id')
+            ->first(['judul', 'kategori']);
+
+        return view('pages.dashboard.index', ['latestArticle' => $latestArticle]);
     }
 }

@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ApplicationShellTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_user_shell_has_navigation_and_post_logout_without_admin_access(): void
     {
         $this->actingAs(new User(['name' => 'Pengguna', 'role' => 'user']))

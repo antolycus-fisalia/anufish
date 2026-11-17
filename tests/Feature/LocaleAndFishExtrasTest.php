@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Tests\Support\InaturalistFixtures;
@@ -11,6 +12,7 @@ use Tests\TestCase;
 class LocaleAndFishExtrasTest extends TestCase
 {
     use InaturalistFixtures;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

@@ -19,7 +19,6 @@
                     <a href="{{ route('scan.index') }}" class="btn btn-primary primary-action">
                         {{ __('Mulai scan ikan') }}
                     </a>
-                    <span>{{ __('Segera') }}</span>
                 </div>
                 <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi semua ikan') }} <span
                         aria-hidden="true">→</span></a>
@@ -38,23 +37,28 @@
 
         <section class="home-shortcuts" aria-label="{{ __('Pintasan eksplorasi') }}">
             <x-home.shortcut icon="fish" :title="__('Cari informasi ikan')" :description="__('Nama, taksonomi, dan sumber spesies.')" :href="route('fish.index')" />
-            <x-home.shortcut icon="history" :title="__('Lanjutkan pengamatan')" :description="__('Buka kembali hasil scan milikmu.')" />
-            <x-home.shortcut icon="article" :title="__('Baca dan bagikan')" :description="__('Belajar dari tulisan komunitas.')" />
+            <x-home.shortcut icon="history" :title="__('Lanjutkan pengamatan')" :description="__('Buka kembali hasil scan milikmu.')" :href="route('scan.history.index')" />
+            <x-home.shortcut icon="article" :title="__('Baca dan bagikan')" :description="__('Belajar dari tulisan komunitas.')" :href="route('artikel-publik.index')" />
         </section>
 
         <section aria-labelledby="home-reading-title" class="home-reading">
             <header class="home-section-heading">
                 <h2 id="home-reading-title">{{ __('Bacaan untukmu') }}</h2>
-                <span class="home-coming-soon">{{ __('Segera') }}</span>
             </header>
             <div class="home-reading-empty">
                 <span class="home-reading-icon" aria-hidden="true"><x-navigation.icon name="article" /></span>
-                <div>
-                    <h3>{{ __('Belum ada artikel untuk ditampilkan') }}</h3>
-                    <p>{{ __('Artikel komunitas akan hadir di sini. Sementara itu, jelajahi informasi spesies dari iNaturalist.') }}
-                    </p>
-                    <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi Ikan') }} <span
-                            aria-hidden="true">→</span></a>
+                <div class="min-w-0 break-words">
+                    @if ($latestArticle)
+                        <h3>{{ $latestArticle->judul }}</h3>
+                        <p>{{ $latestArticle->kategori }}</p>
+                        <a href="{{ route('artikel-publik.index') }}" class="home-text-link">{{ __('Lihat semua artikel') }} <span
+                                aria-hidden="true">→</span></a>
+                    @else
+                        <h3>{{ __('Belum ada artikel untuk ditampilkan') }}</h3>
+                        <p>{{ __('Artikel komunitas akan hadir di sini. Sementara itu, jelajahi informasi spesies dari iNaturalist.') }}</p>
+                        <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi Ikan') }} <span
+                                aria-hidden="true">→</span></a>
+                    @endif
                 </div>
             </div>
         </section>
