@@ -37,7 +37,7 @@
     }
 
     .notification-message {
-        @apply text-base text-anufish-navy;
+        @apply text-base text-anufish-navy [overflow-wrap:anywhere];
     }
 
     .notification-meta {
@@ -65,7 +65,7 @@
     }
 
     .notification-link {
-        @apply text-sm font-semibold text-anufish-teal underline-offset-4
+        @apply inline-flex min-h-11 items-center text-sm font-semibold text-anufish-teal underline-offset-4
             hover:text-anufish-navy hover:underline
             focus-visible:outline-2 focus-visible:outline-anufish-teal;
     }

@@ -6,9 +6,13 @@ use App\Events\ArtikelModerated;
 use App\Listeners\SendArtikelModerationNotification;
 use App\Models\Artikel;
 use App\Models\User;
-use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Mockery;
 use Tests\TestCase;
 
 class ArtikelModerationNotificationTest extends TestCase
@@ -153,7 +157,8 @@ class ArtikelModerationNotificationTest extends TestCase
         $this->actingAs($owner)
             ->postJson(route('artikel-saya.notifikasi.baca', ['notificationId' => $notificationId]))
             ->assertOk()
-            ->assertJsonPath('data.read', true);
+            ->assertJsonPath('data.read', true)
+            ->assertJsonPath('unread_count', 0);
 
         $this->assertDatabaseMissing('notifications', [
             'id' => $notificationId,
@@ -206,6 +211,54 @@ class ArtikelModerationNotificationTest extends TestCase
         $this->assertDatabaseCount('notifications', 2);
     }
 
+    public function test_notification_describes_the_committed_transition_even_if_the_article_is_edited_before_delivery(): void
+    {
+        $admin = $this->makeAdmin();
+        $owner = $this->makeUser();
+        $artikel = $this->makeArtikel($owner);
+
+        DB::transaction(function () use ($admin, $owner, $artikel): void {
+            $this->moderate($admin, 'approve', $artikel, $artikel->moderation_revision);
+
+            $this->actingAs($owner)->putJson(route('artikel.update', $artikel), [
+                'judul' => 'Judul revisi',
+                'kategori' => 'Berita',
+                'isi' => '<p>Isi baru.</p>',
+            ])->assertOk();
+
+            $this->assertDatabaseCount('notifications', 0);
+        });
+
+        $this->assertSame('menunggu', $artikel->fresh()->status);
+        $this->notificationIndex($owner)
+            ->assertOk()
+            ->assertJsonPath('data.0.action', 'approve')
+            ->assertJsonPath('data.0.status', 'disetujui')
+            ->assertJsonPath('data.0.judul', 'Ikan Cupang');
+    }
+
+    public function test_mark_all_read_only_changes_the_current_owners_moderation_notifications(): void
+    {
+        $admin = $this->makeAdmin();
+        $owner = $this->makeUser();
+        $other = $this->makeUser();
+        $artikel = $this->makeArtikel($owner);
+        $otherArtikel = $this->makeArtikel($other);
+
+        $this->moderate($admin, 'approve', $artikel, $artikel->moderation_revision);
+        $this->moderate($admin, 'reject', $otherArtikel, $otherArtikel->moderation_revision);
+
+        $otherTypeId = (string) Str::uuid();
+        $owner->notifications()->create(['id' => $otherTypeId, 'type' => 'other-type', 'data' => []]);
+        $this->notificationIndex($owner)->assertJsonCount(1, 'data')->assertJsonPath('unread_count', 1);
+
+        $this->actingAs($owner)->postJson(route('artikel-saya.notifikasi.baca_semua'))->assertOk();
+
+        $this->notificationIndex($owner)->assertJsonPath('unread_count', 0)->assertJsonPath('data.0.read', true);
+        $this->notificationIndex($other)->assertJsonPath('unread_count', 1);
+        $this->assertDatabaseHas('notifications', ['id' => $otherTypeId, 'read_at' => null]);
+    }
+
     public function test_deleted_article_notification_is_kept_without_a_link(): void
     {
         $admin = $this->makeAdmin();
@@ -228,12 +281,14 @@ class ArtikelModerationNotificationTest extends TestCase
 
     public function test_failed_delivery_is_logged_without_aborting_moderation(): void
     {
+        Schema::drop('notifications');
+
         Log::shouldReceive('info')->andReturn(null);
         Log::shouldReceive('warning')->once()->with(
             'article.notification.delivery_failed',
-            \Mockery::on(function (array $context): bool {
+            Mockery::on(function (array $context): bool {
                 return $context['action'] === 'approve'
-                    && $context['artikel_id'] === 999999;
+                    && $context['exception'] === QueryException::class;
             })
         );
 
@@ -241,32 +296,30 @@ class ArtikelModerationNotificationTest extends TestCase
         $owner = $this->makeUser();
         $artikel = $this->makeArtikel($owner);
 
-        // Event dengan artikel yang tidak ada: listener mencatat gagal, tidak melempar.
-        app(Dispatcher::class)->dispatch(
-            new ArtikelModerated('approve', $admin->id, 999999)
-        );
-
-        $this->assertDatabaseCount('notifications', 0);
-
-        // Moderasi berikutnya tetap sukses dan mengirim notifikasi normal.
         $this->moderate($admin, 'approve', $artikel, $artikel->moderation_revision);
 
-        $this->assertDatabaseCount('notifications', 1);
+        $this->assertSame('disetujui', $artikel->fresh()->status);
     }
 
     public function test_listener_returns_without_throwing_when_owner_is_missing(): void
     {
-        Log::shouldReceive('warning')->once();
+        Log::shouldReceive('warning')->once()->with('article.notification.owner_missing', [
+            'action' => 'approve',
+            'actor_id' => 1,
+            'artikel_id' => 1,
+            'exception' => null,
+        ]);
 
         $listener = new SendArtikelModerationNotification;
 
-        $listener->handle(new ArtikelModerated('approve', 1, 999999));
+        $listener->handle(new ArtikelModerated('approve', 1, 1, 999999, 'disetujui', 'Ikan Cupang'));
 
         $this->assertDatabaseCount('notifications', 0);
     }
 
     public function test_notifications_page_renders_in_both_locales(): void
     {
+        $this->withoutVite();
         $owner = $this->makeUser();
 
         $this->actingAs($owner)

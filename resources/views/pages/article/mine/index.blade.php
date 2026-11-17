@@ -36,7 +36,7 @@
         <section
             class="notification-panel"
             data-notifications
-            data-endpoint="/artikel-saya/notifikasi"
+            data-endpoint="{{ route('artikel-saya.notifikasi.index') }}"
             data-error-load="{{ __('article.notification.load_failed') }}"
             data-error-mark="{{ __('article.notification.mark_failed') }}"
             data-message-approved="{{ __('article.notification.message_approved') }}"
@@ -45,11 +45,12 @@
             data-label-approved="{{ __('article.notification.status_approved') }}"
             data-label-rejected="{{ __('article.notification.status_rejected') }}"
             data-label-deleted="{{ __('article.notification.status_deleted') }}"
+            data-unread-count="{{ __('article.notification.unread_count') }}"
             data-locale="{{ app()->getLocale() }}"
         >
             <header class="notification-header">
                 <div>
-                    <h2 class="text-lg font-semibold text-anufish-navy">
+                    <h2 class="text-lg font-semibold text-anufish-navy" tabindex="-1" data-notification-heading>
                         {{ __('article.notification.title') }}
                     </h2>
 
@@ -58,11 +59,17 @@
                     </p>
                 </div>
 
-                <span
-                    class="notification-unread"
-                    data-notification-unread
-                    hidden
-                >0</span>
+                <div class="flex shrink-0 flex-wrap items-center gap-2">
+                    <span
+                        class="notification-unread"
+                        data-notification-unread
+                        role="status"
+                        hidden
+                    ></span>
+                    <button type="button" class="notification-secondary-action" data-notification-reload disabled>
+                        {{ __('article.notification.reload') }}
+                    </button>
+                </div>
             </header>
 
             <x-ui.state
@@ -123,7 +130,7 @@
             <template data-notification-template>
                 <article class="notification-item">
                     <div class="notification-item-main">
-                        <div>
+                        <div class="min-w-0">
                             <p
                                 class="notification-message"
                                 data-notification-message

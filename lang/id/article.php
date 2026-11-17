@@ -20,6 +20,8 @@ return [
     ],
 
     'notification' => [
+        'reload' => 'Muat ulang',
+        'unread_count' => ':count belum dibaca',
         'title' => 'Notifikasi Moderasi',
         'description' => 'Pembaruan status artikel kamu dari moderator.',
         'mark_all_read' => 'Tandai semua dibaca',

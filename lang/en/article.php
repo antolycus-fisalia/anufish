@@ -20,6 +20,8 @@ return [
     ],
 
     'notification' => [
+        'reload' => 'Refresh',
+        'unread_count' => ':count unread',
         'title' => 'Moderation Notifications',
         'description' => 'Updates about your article status from the moderator.',
         'mark_all_read' => 'Mark all as read',

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Artikel;
 use App\Models\User;
+use App\Notifications\ArtikelModerationNotification;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -20,22 +22,28 @@ class ArtikelSayaNotificationController extends Controller
     {
         $user = $request->user();
 
-        $notifications = $user->notifications()
+        $notifications = $this->moderationNotifications($user)
+            ->orderByDesc('id')
             ->limit(self::LIMIT)
-            ->get()
-            ->map(fn (DatabaseNotification $notification) => $this->present($user, $notification))
-            ->all();
+            ->get();
+
+        $articles = Artikel::findMany($notifications->pluck('data.artikel_id')->filter()->unique()->all())
+            ->keyBy('id');
 
         return response()->json([
-            'data' => $notifications,
-            'unread_count' => $user->unreadNotifications()->count(),
+            'data' => $notifications->map(
+                fn (DatabaseNotification $notification) => $this->present(
+                    $user, $notification, $articles->get($notification->data['artikel_id'] ?? 0),
+                )
+            )->all(),
+            'unread_count' => $this->moderationNotifications($user)->unread()->count(),
         ]);
     }
 
     public function markRead(Request $request, string $notificationId): JsonResponse
     {
-        $notification = $request->user()
-            ->notifications()
+        $user = $request->user();
+        $notification = $this->moderationNotifications($user)
             ->whereKey($notificationId)
             ->first();
 
@@ -49,27 +57,37 @@ class ArtikelSayaNotificationController extends Controller
 
         return response()->json([
             'message' => __('article.notification.marked'),
-            'data' => $this->present($request->user(), $notification->refresh()),
+            'data' => $this->present(
+                $user, $notification, Artikel::find((int) ($notification->data['artikel_id'] ?? 0)),
+            ),
+            'unread_count' => $this->moderationNotifications($user)->unread()->count(),
         ]);
     }
 
     public function markAllRead(Request $request): JsonResponse
     {
-        $request->user()->unreadNotifications->markRead();
+        $this->moderationNotifications($request->user())
+            ->unread()
+            ->reorder()
+            ->update(['read_at' => now()]);
 
         return response()->json([
             'message' => __('article.notification.marked_all'),
         ]);
     }
 
+    private function moderationNotifications(User $user): MorphMany
+    {
+        return $user->notifications()->where('type', ArtikelModerationNotification::class);
+    }
+
     /**
      * Tautan hanya dibuat bila artikel masih ada dan dimiliki user;
      * artikel yang sudah dihapus tidak lagi menautkan ke mana pun.
      */
-    private function present(User $user, DatabaseNotification $notification): array
+    private function present(User $user, DatabaseNotification $notification, ?Artikel $artikel): array
     {
         $payload = (array) $notification->data;
-        $artikel = Artikel::find((int) ($payload['artikel_id'] ?? 0));
 
         $link = null;
 

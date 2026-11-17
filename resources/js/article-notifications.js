@@ -16,10 +16,9 @@ export function initModerationNotifications() {
     const retryButton = root.querySelector('[data-notification-retry]');
     const markAllButton = root.querySelector('[data-notification-mark-all]');
     const reloadButton = root.querySelector('[data-notification-reload]');
+    const heading = root.querySelector('[data-notification-heading]');
 
-    let requestGeneration = 0;
-    let markingId = null;
-    let markingAll = false;
+    let busy = false;
     let notifications = [];
     let unreadCount = 0;
 
@@ -94,19 +93,17 @@ export function initModerationNotifications() {
             return;
         }
 
-        unreadBadge.textContent = unreadCount;
+        unreadBadge.textContent = root.dataset.unreadCount.replace(':count', unreadCount);
         unreadBadge.hidden = unreadCount === 0;
     }
 
-    function updateMarkAllButton() {
-        if (!markAllButton) {
-            return;
-        }
-
-        markAllButton.disabled =
-            unreadCount === 0 ||
-            markingAll ||
-            notifications.length === 0;
+    function updateControls() {
+        reloadButton.disabled = busy;
+        retryButton.disabled = busy;
+        markAllButton.disabled = busy || unreadCount === 0;
+        items.querySelectorAll('[data-notification-mark]').forEach((button) => {
+            button.disabled = busy;
+        });
     }
 
     function renderNotification(notification) {
@@ -121,7 +118,7 @@ export function initModerationNotifications() {
 
         message.textContent = messagePattern(notification.action).replace(
             ':title',
-            notification.judul ?? '-',
+            () => notification.judul ?? '-',
         );
 
         time.textContent = formatTime(notification.created_at);
@@ -144,7 +141,7 @@ export function initModerationNotifications() {
             markButton.hidden = true;
         } else {
             markButton.addEventListener('click', () => {
-                markRead(notification.id, markButton);
+                markRead(notification.id);
             });
         }
 
@@ -159,168 +156,85 @@ export function initModerationNotifications() {
         });
 
         updateBadge();
-        updateMarkAllButton();
     }
 
-    async function load() {
-        const generation = ++requestGeneration;
+    async function runRequest(operation, errorLabel) {
+        if (busy) {
+            return;
+        }
+
+        busy = true;
+        updateControls();
+
+        try {
+            await operation();
+        } catch {
+            unreadBadge.hidden = true;
+            showError(errorLabel);
+        } finally {
+            busy = false;
+            updateControls();
+        }
+    }
+
+    async function request(path = '', method = 'GET') {
+        const response = await fetch(`${root.dataset.endpoint}${path}`, {
+            method,
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                ...(method === 'POST' && csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Notification request failed (${response.status})`);
+        }
+
+        return response.json();
+    }
+
+    async function fetchNotifications() {
         hideStates();
         loading.hidden = false;
 
-        try {
-            const response = await fetch(
-                root.dataset.endpoint,
-                {
-                    headers: {
-                        Accept: 'application/json',
-                    },
-                    credentials: 'same-origin',
-                },
-            );
+        const payload = await request();
+        notifications = payload.data;
+        unreadCount = payload.unread_count;
 
-            const payload = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    payload.message || root.dataset.errorLoad,
-                );
-            }
-
-            if (generation !== requestGeneration) {
-                return;
-            }
-
-            notifications = Array.isArray(payload.data) ? payload.data : [];
-            unreadCount = Number(payload.unread_count) || 0;
-
-            hideStates();
-
-            if (notifications.length === 0) {
-                emptyState.hidden = false;
-
-                return;
-            }
-
-            renderNotifications();
-            ready.hidden = false;
-        } catch (error) {
-            if (generation !== requestGeneration) {
-                return;
-            }
-
-            showError(
-                error instanceof Error
-                    ? error.message
-                    : root.dataset.errorLoad,
-            );
-        }
+        hideStates();
+        renderNotifications();
+        emptyState.hidden = notifications.length !== 0;
+        ready.hidden = notifications.length === 0;
     }
 
-    async function markRead(notificationId, button) {
-        if (markingId !== null || markingAll) {
-            return;
-        }
+    function load() {
+        return runRequest(fetchNotifications, root.dataset.errorLoad);
+    }
 
-        markingId = notificationId;
-        button.disabled = true;
-
-        try {
-            const response = await fetch(
-                `${root.dataset.endpoint}/${notificationId}/baca`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        ...(csrfToken
-                            ? { 'X-CSRF-TOKEN': csrfToken }
-                            : {}),
-                    },
-                    credentials: 'same-origin',
-                },
-            );
-
-            const payload = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    payload.message || root.dataset.errorMark,
-                );
-            }
-
+    function markRead(notificationId) {
+        return runRequest(async () => {
+            const payload = await request(`/${notificationId}/baca`, 'POST');
             notifications = notifications.map((notification) =>
-                notification.id === notificationId
-                    ? payload.data
-                    : notification,
+                notification.id === notificationId ? payload.data : notification,
             );
-
-            unreadCount = Math.max(0, unreadCount - 1);
-
+            unreadCount = payload.unread_count;
             renderNotifications();
-        } catch (error) {
-            showError(
-                error instanceof Error
-                    ? error.message
-                    : root.dataset.errorMark,
-            );
-        } finally {
-            markingId = null;
-        }
+
+            const item = items.querySelector(`[data-notification-id="${notificationId}"]`);
+            const link = item?.querySelector('[data-notification-link]:not([hidden])');
+            (link ?? heading).focus();
+        }, root.dataset.errorMark);
     }
 
-    async function markAllRead() {
-        if (markingAll || unreadCount === 0) {
-            return;
-        }
-
-        markingAll = true;
-        updateMarkAllButton();
-
-        try {
-            const response = await fetch(
-                `${root.dataset.endpoint}/baca-semua`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        ...(csrfToken
-                            ? { 'X-CSRF-TOKEN': csrfToken }
-                            : {}),
-                    },
-                    credentials: 'same-origin',
-                },
-            );
-
-            const payload = await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    payload.message || root.dataset.errorMark,
-                );
-            }
-
-            await load();
-        } catch (error) {
-            showError(
-                error instanceof Error
-                    ? error.message
-                    : root.dataset.errorMark,
-            );
-        } finally {
-            markingAll = false;
-            updateMarkAllButton();
-        }
-    }
-
-    retryButton?.addEventListener('click', () => {
-        load();
-    });
-
-    reloadButton?.addEventListener('click', () => {
-        load();
-    });
-
-    markAllButton?.addEventListener('click', () => {
-        markAllRead();
+    retryButton.addEventListener('click', load);
+    reloadButton.addEventListener('click', load);
+    markAllButton.addEventListener('click', () => {
+        runRequest(async () => {
+            await request('/baca-semua', 'POST');
+            await fetchNotifications();
+            heading.focus();
+        }, root.dataset.errorMark);
     });
 
     load();
