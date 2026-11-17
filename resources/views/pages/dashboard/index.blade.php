@@ -47,12 +47,18 @@
             </header>
             <div class="home-reading-empty">
                 <span class="home-reading-icon" aria-hidden="true"><x-navigation.icon name="article" /></span>
-                <div>
-                    <h3>{{ __('Belum ada artikel untuk ditampilkan') }}</h3>
-                    <p>{{ __('Artikel komunitas akan hadir di sini. Sementara itu, jelajahi informasi spesies dari iNaturalist.') }}
-                    </p>
-                    <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi Ikan') }} <span
-                            aria-hidden="true">→</span></a>
+                <div class="min-w-0 break-words">
+                    @if ($latestArticle)
+                        <h3>{{ $latestArticle->judul }}</h3>
+                        <p>{{ $latestArticle->kategori }}</p>
+                        <a href="{{ route('artikel-publik.index') }}" class="home-text-link">{{ __('Lihat semua artikel') }} <span
+                                aria-hidden="true">→</span></a>
+                    @else
+                        <h3>{{ __('Belum ada artikel untuk ditampilkan') }}</h3>
+                        <p>{{ __('Artikel komunitas akan hadir di sini. Sementara itu, jelajahi informasi spesies dari iNaturalist.') }}</p>
+                        <a href="{{ route('fish.index') }}" class="home-text-link">{{ __('Jelajahi Ikan') }} <span
+                                aria-hidden="true">→</span></a>
+                    @endif
                 </div>
             </div>
         </section>

@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Artikel;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class HomePageTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_home_has_hero_and_shortcuts_without_a_search_form_or_external_request(): void
     {
         Http::fake();
@@ -24,6 +28,30 @@ class HomePageTest extends TestCase
             ->assertDontSee('name="q"', false);
 
         Http::assertNothingSent();
+    }
+
+    public function test_home_shows_the_latest_published_article_instead_of_an_empty_state(): void
+    {
+        $author = User::factory()->create();
+
+        foreach ([
+            ['Bacaan terbit sebelumnya', 'disetujui'],
+            ['Bacaan terbit terbaru', 'disetujui'],
+            ['Bacaan belum terbit', 'menunggu'],
+        ] as [$title, $status]) {
+            $article = new Artikel(['judul' => $title, 'kategori' => 'Ikan', 'isi' => '<p>Konten artikel.</p>']);
+            $article->user()->associate($author);
+            $article->status = $status;
+            $article->save();
+        }
+
+        $this->actingAs($author)->get(route('homepage'))
+            ->assertOk()
+            ->assertSee('Bacaan terbit terbaru')
+            ->assertSee('Lihat semua artikel')
+            ->assertDontSee('Bacaan terbit sebelumnya')
+            ->assertDontSee('Bacaan belum terbit')
+            ->assertDontSee('Belum ada artikel untuk ditampilkan');
     }
 
     public function test_empty_exploration_is_a_separate_page_without_the_home_hero(): void
