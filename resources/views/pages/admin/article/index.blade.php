@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <a href="{{ route('admin.artikel.show', $article->id) }}"
+                <a href="{{ route('admin.artikel.show', ['artikel' => $article, ...$listQuery]) }}"
                    class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg border border-anufish-border px-4 font-semibold text-anufish-teal hover:bg-anufish-pale focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-anufish-teal">
                     {{ __('article.admin_moderation.view_detail') }}
                 </a>

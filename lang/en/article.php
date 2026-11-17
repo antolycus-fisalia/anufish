@@ -76,6 +76,7 @@ return [
         'delete' => 'Delete',
         'confirm_delete' => 'Are you sure you want to delete this article?',
         'refresh_detail' => 'Reload article details',
+        'article_unavailable' => 'This article was deleted or is no longer available.',
         'request_failed' => 'Something went wrong. Please try again.',
 
         'statuses' => [

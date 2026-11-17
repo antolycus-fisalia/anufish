@@ -76,6 +76,7 @@ return [
         'delete' => 'Hapus',
         'confirm_delete' => 'Apakah kamu yakin ingin menghapus artikel ini?',
         'refresh_detail' => 'Muat ulang detail artikel',
+        'article_unavailable' => 'Artikel sudah dihapus atau tidak lagi tersedia.',
         'request_failed' => 'Terjadi kesalahan. Silakan coba lagi.',
 
         'statuses' => [

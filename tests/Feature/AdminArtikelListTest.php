@@ -59,6 +59,14 @@ class AdminArtikelListTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_dashboard_links_to_article_moderation(): void
+    {
+        $this->actingAs($this->admin())->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertViewIs('pages.admin.dashboard')
+            ->assertSee('href="' . route('admin.artikel.index') . '"', false);
+    }
+
     public function test_admin_can_view_pending_articles(): void
     {
         $admin = $this->admin();
@@ -254,6 +262,32 @@ class AdminArtikelListTest extends TestCase
 
         $this->get(route('admin.artikel.show', $article))
             ->assertNotFound();
+    }
+
+    public function test_detail_preserves_the_list_filter_and_page_after_navigation_and_removal(): void
+    {
+        $author = $this->regularUser();
+        $first = $this->createArticle($author, 'Artikel Ditolak Pertama', 'ditolak');
+
+        for ($index = 0; $index < 10; $index++) {
+            $this->createArticle($author, "Artikel Ditolak {$index}", 'ditolak');
+        }
+
+        $query = ['status' => 'ditolak', 'page' => 2];
+        $listUrl = route('admin.artikel.index', $query);
+        $detailUrl = route('admin.artikel.show', ['artikel' => $first, ...$query]);
+
+        $this->actingAs($this->admin())->get($listUrl)
+            ->assertOk()
+            ->assertSee('href="' . e($detailUrl) . '"', false);
+        $this->get($detailUrl)
+            ->assertOk()
+            ->assertSee('href="' . e($listUrl) . '"', false)
+            ->assertSee('data-redirect="' . e($listUrl) . '"', false);
+
+        $first->delete();
+
+        $this->get($listUrl)->assertRedirect(route('admin.artikel.index', ['status' => 'ditolak', 'page' => 1]));
     }
 
     public function test_legacy_article_content_is_sanitized(): void

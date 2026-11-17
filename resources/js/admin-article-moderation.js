@@ -8,6 +8,9 @@ function initializeArticleModeration() {
     const buttons = forms.map((form) => form.querySelector('button'));
     const feedback = panel.querySelector('[data-moderation-feedback]');
     const refreshLink = panel.querySelector('[data-moderation-refresh]');
+    const listLink = panel.querySelector('[data-moderation-list]');
+    const deleteForm = forms.find((form) => form.dataset.operation === 'delete');
+    const deleteDialog = panel.querySelector('[data-moderation-delete-dialog]');
 
     let submitting = false;
 
@@ -17,70 +20,84 @@ function initializeArticleModeration() {
         feedback.setAttribute('role', 'alert');
     }
 
-    for (const form of forms) {
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
+    async function submit(form) {
+        if (submitting) return;
 
-            if (submitting) return;
+        submitting = true;
+        buttons.forEach((button) => {
+            button.disabled = true;
+        });
 
-            const confirmation = form.dataset.confirm;
+        feedback.classList.add('hidden');
+        refreshLink.classList.add('hidden');
+        listLink.classList.add('hidden');
 
-            if (confirmation && !window.confirm(confirmation)) {
+        let canRetry = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(form),
+            });
+
+            if (response.status === 404) {
+                canRetry = false;
+                showError(panel.dataset.missing);
+                listLink.classList.remove('hidden');
                 return;
             }
 
-            submitting = true;
-            buttons.forEach((button) => {
-                button.disabled = true;
-            });
-
-            feedback.classList.add('hidden');
-            refreshLink.classList.add('hidden');
-
-            let succeeded = false;
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        Accept: 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: new FormData(form),
-                });
-
+            if (!response.ok) {
                 const result = await response.json().catch(() => ({}));
+                showError(result.message || panel.dataset.error);
 
-                if (!response.ok) {
-                    showError(result.message || panel.dataset.error);
-
-                    if (response.status === 409) {
-                        refreshLink.classList.remove('hidden');
-                    }
-
-                    return;
+                if (response.status === 409) {
+                    refreshLink.classList.remove('hidden');
                 }
 
-                succeeded = true;
-
-                if (form.dataset.operation === 'delete') {
-                    window.location.assign(form.dataset.redirect);
-                } else {
-                    window.location.reload();
-                }
-            } catch {
-                showError(panel.dataset.error);
-            } finally {
-                if (!succeeded) {
-                    submitting = false;
-                    buttons.forEach((button) => {
-                        button.disabled = false;
-                    });
-                }
+                return;
             }
+
+            canRetry = false;
+
+            if (form === deleteForm) {
+                window.location.assign(form.dataset.redirect);
+            } else {
+                window.location.reload();
+            }
+        } catch {
+            showError(panel.dataset.error);
+        } finally {
+            if (canRetry) {
+                submitting = false;
+                buttons.forEach((button) => {
+                    button.disabled = false;
+                });
+            }
+        }
+    }
+
+    for (const form of forms) {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (form !== deleteForm) submit(form);
         });
     }
+
+    deleteForm.querySelector('button').addEventListener('click', () => {
+        if (submitting) return;
+        deleteDialog.returnValue = '';
+        deleteDialog.showModal();
+    });
+
+    deleteDialog.addEventListener('close', () => {
+        if (deleteDialog.returnValue === 'delete') submit(deleteForm);
+    });
 }
 
 if (document.readyState === 'loading') {

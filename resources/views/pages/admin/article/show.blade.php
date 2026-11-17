@@ -7,7 +7,7 @@
 <div class="space-y-6">
     {{-- Header --}}
     <header>
-        <a href="{{ route('admin.artikel.index') }}"
+        <a href="{{ $listUrl }}"
            class="inline-flex min-h-11 items-center text-sm font-semibold text-anufish-teal hover:underline focus-visible:outline-2 focus-visible:outline-anufish-teal">
             {{ __('article.admin_moderation.back_to_list') }}
         </a>
@@ -72,6 +72,7 @@
     <section
         data-moderation-panel
         data-error="{{ __('article.admin_moderation.request_failed') }}"
+        data-missing="{{ __('article.admin_moderation.article_unavailable') }}"
         class="rounded-2xl border border-anufish-border bg-white p-4 sm:p-6"
     >
         <h2 class="text-lg font-semibold text-anufish-navy">
@@ -88,10 +89,18 @@
         {{-- Refresh ketika revision conflict --}}
         <a
             data-moderation-refresh
-            href="{{ url()->current() }}"
+            href="{{ request()->fullUrl() }}"
             class="mt-3 hidden text-sm font-semibold text-anufish-teal underline"
         >
             {{ __('article.admin_moderation.refresh_detail') }}
+        </a>
+
+        <a
+            data-moderation-list
+            href="{{ $listUrl }}"
+            class="mt-3 hidden text-sm font-semibold text-anufish-teal underline"
+        >
+            {{ __('article.admin_moderation.back_to_list') }}
         </a>
 
         <div class="mt-4 flex flex-wrap gap-3">
@@ -153,8 +162,7 @@
                 action="{{ route('admin.artikel.delete', $article->id) }}"
                 data-moderation-form
                 data-operation="delete"
-                data-confirm="{{ __('article.admin_moderation.confirm_delete') }}"
-                data-redirect="{{ route('admin.artikel.index') }}"
+                data-redirect="{{ $listUrl }}"
             >
                 @csrf
 
@@ -165,7 +173,7 @@
                 >
 
                 <button
-                    type="submit"
+                    type="button"
                     class="min-h-11 rounded-lg bg-red-700 px-5 font-semibold text-white hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {{ __('article.admin_moderation.delete') }}
@@ -173,6 +181,21 @@
             </form>
 
         </div>
+
+        <dialog data-moderation-delete-dialog aria-labelledby="moderation-delete-title"
+            class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-anufish-border bg-white p-6 backdrop:bg-anufish-navy/40">
+            <form method="dialog" class="space-y-4">
+                <h2 id="moderation-delete-title" class="font-semibold text-anufish-navy">
+                    {{ __('article.admin_moderation.confirm_delete') }}
+                </h2>
+                <div class="flex flex-wrap justify-end gap-3">
+                    <button value="cancel" autofocus class="secondary-action">{{ __('Batal') }}</button>
+                    <button value="delete" class="min-h-11 rounded-lg bg-red-700 px-5 font-semibold text-white hover:bg-red-800">
+                        {{ __('article.admin_moderation.delete') }}
+                    </button>
+                </div>
+            </form>
+        </dialog>
     </section>
 </div>
 @endsection

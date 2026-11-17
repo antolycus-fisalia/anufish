@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Artikel;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -14,7 +15,45 @@ class AdminArtikelListController extends Controller
 {
     private const PER_PAGE = 10;
 
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
+    {
+        $listQuery = $this->listQuery($request);
+        $status = $listQuery['status'] ?? 'menunggu';
+
+        $articles = Artikel::query()
+            ->with('user:id,name')
+            ->when(
+                $status !== '',
+                fn ($query) => $query->where('status', $status)
+            )
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(self::PER_PAGE)
+            ->appends($listQuery);
+
+        if ($articles->currentPage() > $articles->lastPage()) {
+            return to_route('admin.artikel.index', [...$listQuery, 'page' => $articles->lastPage()]);
+        }
+
+        return view('pages.admin.article.index', [
+            'articles' => $articles,
+            'listQuery' => $listQuery,
+            'status' => $status,
+        ]);
+    }
+
+    public function show(Request $request, Artikel $artikel): View
+    {
+        $artikel->load('user:id,name');
+
+        return view('pages.admin.article.show', [
+            'article' => $artikel,
+            'listUrl' => route('admin.artikel.index', $this->listQuery($request)),
+            'moderationRevision' => $artikel->moderation_revision,
+        ]);
+    }
+
+    private function listQuery(Request $request): array
     {
         $validator = Validator::make($request->query(), [
             'status' => [
@@ -39,38 +78,13 @@ class AdminArtikelListController extends Controller
                 ->redirectTo(route('admin.artikel.index'));
         }
 
-        $validated = $validator->validated();
+        $query = $validator->validated();
 
-        // Tanpa parameter status: tampilkan artikel menunggu.
-        // Parameter status kosong: tampilkan semua artikel.
-        $status = array_key_exists('status', $validated)
-            ? ($validated['status'] ?? '')
-            : 'menunggu';
+        if (array_key_exists('status', $query)) {
+            // Pertahankan status kosong sebagai pilihan "Semua Status" di URL.
+            $query['status'] ??= '';
+        }
 
-        $articles = Artikel::query()
-            ->with('user:id,name')
-            ->when(
-                $status !== '',
-                fn ($query) => $query->where('status', $status)
-            )
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->paginate(self::PER_PAGE)
-            ->withQueryString();
-
-        return view('pages.admin.article.index', [
-            'articles' => $articles,
-            'status' => $status,
-        ]);
-    }
-
-    public function show(Artikel $artikel): View
-    {
-        $artikel->load('user:id,name');
-
-        return view('pages.admin.article.show', [
-            'article' => $artikel,
-            'moderationRevision' => $artikel->moderation_revision,
-        ]);
+        return $query;
     }
 }
