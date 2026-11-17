@@ -18,6 +18,9 @@ class HomePageTest extends TestCase
             ->assertSee('Bacaan untukmu')
             ->assertSee('Belum ada artikel untuk ditampilkan')
             ->assertSee(route('fish.index'))
+            ->assertSee('href="' . route('scan.history.index') . '" class="home-text-link"', false)
+            ->assertSee('href="' . route('artikel-publik.index') . '" class="home-text-link"', false)
+            ->assertDontSee('Segera')
             ->assertDontSee('name="q"', false);
 
         Http::assertNothingSent();
@@ -50,7 +53,7 @@ class HomePageTest extends TestCase
     public function test_english_home_and_exploration_keep_the_selected_language(): void
     {
         $this->actingAs(User::factory()->make())->withSession(['locale' => 'en'])
-            ->get(route('homepage'))->assertOk()->assertSee('Readings for you')->assertSee('Coming soon');
+            ->get(route('homepage'))->assertOk()->assertSee('Readings for you')->assertDontSee('Coming soon');
         $this->get(route('fish.index'))->assertOk()->assertSee('Search species by common or scientific name.');
     }
 

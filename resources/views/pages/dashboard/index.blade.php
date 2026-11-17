@@ -37,8 +37,8 @@
 
         <section class="home-shortcuts" aria-label="{{ __('Pintasan eksplorasi') }}">
             <x-home.shortcut icon="fish" :title="__('Cari informasi ikan')" :description="__('Nama, taksonomi, dan sumber spesies.')" :href="route('fish.index')" />
-            <x-home.shortcut icon="history" :title="__('Lanjutkan pengamatan')" :description="__('Buka kembali hasil scan milikmu.')" />
-            <x-home.shortcut icon="article" :title="__('Baca dan bagikan')" :description="__('Belajar dari tulisan komunitas.')" />
+            <x-home.shortcut icon="history" :title="__('Lanjutkan pengamatan')" :description="__('Buka kembali hasil scan milikmu.')" :href="route('scan.history.index')" />
+            <x-home.shortcut icon="article" :title="__('Baca dan bagikan')" :description="__('Belajar dari tulisan komunitas.')" :href="route('artikel-publik.index')" />
         </section>
 
         <section aria-labelledby="home-reading-title" class="home-reading">

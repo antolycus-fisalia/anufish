@@ -7,7 +7,6 @@
     .home-hero-description { @apply max-w-xl text-base leading-6 text-anufish-muted; }
     .home-scan-action { @apply flex flex-wrap items-center gap-3; }
     .home-scan-action .primary-action { @apply w-full bg-anufish-teal sm:w-55; }
-    .home-scan-action > span { @apply text-xs font-medium text-anufish-teal; }
     .home-text-link { @apply inline-flex min-h-11 items-center gap-1 rounded-lg text-sm font-semibold text-anufish-teal hover:text-anufish-navy focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-anufish-teal; }
     .home-hero-media { @apply min-w-0 space-y-2; }
     .home-hero-media img { @apply h-auto w-full rounded-lg object-cover; aspect-ratio: 416 / 264; }
@@ -18,7 +17,6 @@
     .home-shortcut { @apply flex min-w-0 flex-col items-start gap-4 rounded-2xl border border-anufish-border bg-white p-6 text-anufish-navy; }
     .home-shortcut h2 { @apply text-lg font-semibold leading-[26px]; }
     .home-shortcut p { @apply flex-1 text-base leading-6 text-anufish-muted; }
-    .home-coming-soon { @apply inline-flex min-h-11 items-center text-sm font-medium text-anufish-muted; }
     .home-section-heading { @apply mb-4 flex items-center justify-between gap-4; }
     .home-section-heading h2 { @apply text-2xl font-semibold leading-8 text-anufish-navy; }
     .home-reading-empty { @apply flex flex-col items-start gap-4 rounded-2xl border border-anufish-border bg-white p-6 sm:flex-row; }
