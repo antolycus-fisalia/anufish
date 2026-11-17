@@ -44,6 +44,7 @@ return [
         'author' => 'Penulis',
         'unknown_author' => 'Penulis tidak diketahui',
         'pagination' => 'Navigasi halaman artikel',
+        'back_to_list' => 'Kembali ke daftar artikel',
     ],
 
 ];

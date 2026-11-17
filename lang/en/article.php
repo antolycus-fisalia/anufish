@@ -44,6 +44,7 @@ return [
         'author' => 'Author',
         'unknown_author' => 'Unknown author',
         'pagination' => 'Article pagination',
+        'back_to_list' => 'Back to articles',
     ],
 
 ];

@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicArticleController;
+use App\Http\Controllers\PublicArticleDetailController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
 use Illuminate\Support\Facades\Route;
@@ -141,6 +142,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/artikel-publik', [PublicArticleController::class, 'index'])
         ->name('artikel-publik.index');
+
+    Route::get('/artikel-publik/{artikel}', [PublicArticleDetailController::class, 'show'])
+        ->whereNumber('artikel')
+        ->name('artikel-publik.show');
 
     Route::prefix('artikel')
         ->name('artikel.')

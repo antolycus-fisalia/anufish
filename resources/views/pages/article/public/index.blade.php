@@ -54,7 +54,12 @@
                         </p>
 
                         <h2 class="break-words text-lg font-semibold text-anufish-navy">
-                            {{ $item->judul }}
+                            <a href="{{ route('artikel-publik.show', [
+                                'artikel' => $item,
+                                'page' => $artikel->currentPage() > 1 ? $artikel->currentPage() : null,
+                            ]) }}" class="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-anufish-teal">
+                                {{ $item->judul }}
+                            </a>
                         </h2>
 
                         <p class="break-words text-sm leading-6 text-anufish-muted">
