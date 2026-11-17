@@ -61,6 +61,8 @@
                         request()->routeIs('admin.users.index') => __('admin_users.list_title'),
                         request()->routeIs('admin.users.show') => __('admin_users.detail_title'),
                         request()->routeIs('admin.users.edit', 'admin.users.update') => __('admin_users.edit_title'),
+                        request()->routeIs('admin.artikel.index') => __('article.admin_moderation.list_title'),
+                        request()->routeIs('admin.artikel.show') => __('article.admin_moderation.detail_title'),
                         request()->routeIs('admin.dashboard') => __('Dashboard Admin'),
                         request()->routeIs('artikel-publik.*') => __('article.public.title'),
                         request()->routeIs('fish.show') => __('Detail Ikan'),

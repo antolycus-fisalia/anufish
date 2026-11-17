@@ -48,6 +48,13 @@
             <h2 class="mb-2 mt-6 px-3 text-xs font-semibold text-anufish-muted">Admin</h2>
             <ul><x-navigation.item icon="grid" :href="route('admin.dashboard')">{{ __('Dashboard Admin') }}</x-navigation.item>
                 <x-navigation.item icon="grid" :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">{{ __('admin_users.list_title') }}</x-navigation.item>
+                <x-navigation.item
+                    icon="article"
+                    :href="route('admin.artikel.index')"
+                    :active="request()->routeIs('admin.artikel.*')">
+                    {{ __('article.admin_moderation.list_title') }}
+                </x-navigation.item>
+
             </ul>
         @endif
     </nav>

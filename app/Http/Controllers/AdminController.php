@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
+use Illuminate\Contracts\View\View;
 
 class AdminController extends Controller
 {
-    public function index(): Response
+    public function index(): View
     {
-        return response('Dashboard Admin');
+        return view('pages.admin.dashboard');
     }
 }
