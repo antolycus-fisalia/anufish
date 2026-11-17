@@ -64,7 +64,38 @@ class AdminArtikelListTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.dashboard'))
             ->assertOk()
             ->assertViewIs('pages.admin.dashboard')
-            ->assertSee('href="' . route('admin.artikel.index') . '"', false);
+            ->assertSee(__('admin_dashboard.empty_queue'))
+            ->assertSee('href="'.route('admin.artikel.index').'"', false)
+            ->assertSee('href="'.route('admin.users.index').'"', false);
+    }
+
+    public function test_admin_dashboard_counts_visible_articles_and_previews_three_latest_pending(): void
+    {
+        $admin = $this->admin();
+        $author = $this->regularUser();
+        User::factory()->create(['status' => 'diblokir']);
+
+        $older = $this->createArticle($author, 'Kiriman lama');
+        $first = $this->createArticle($author, 'Kiriman satu');
+        $second = $this->createArticle($author, 'Kiriman dua');
+        $latest = $this->createArticle($author, 'Kiriman tiga');
+        $deleted = $this->createArticle($author, 'Kiriman dihapus');
+        $deleted->delete();
+        $this->createArticle($author, 'Kiriman disetujui', 'disetujui');
+        $this->createArticle($author, 'Kiriman ditolak', 'ditolak');
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSeeInOrder([$latest->judul, $second->judul, $first->judul])
+            ->assertDontSee($older->judul)
+            ->assertDontSee($deleted->judul)
+            ->assertDontSee('Kiriman disetujui')
+            ->assertDontSee('Kiriman ditolak')
+            ->assertSee('href="'.route('admin.artikel.show', $latest).'"', false)
+            ->assertSee('href="'.route('admin.artikel.index', ['status' => 'disetujui']).'"', false);
+
+        $this->assertEquals(['menunggu' => 4, 'disetujui' => 1, 'ditolak' => 1], $response->viewData('articleCounts')->all());
+        $this->assertEquals(['aktif' => 2, 'diblokir' => 1], $response->viewData('userCounts')->all());
     }
 
     public function test_admin_can_view_pending_articles(): void
