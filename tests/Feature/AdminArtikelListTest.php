@@ -171,11 +171,30 @@ class AdminArtikelListTest extends TestCase
 
     public function test_invalid_status_is_rejected(): void
     {
-        $this->actingAs($this->admin())
-            ->get(route('admin.artikel.index', [
-                'status' => 'invalid',
-            ]))
+        $list = route('admin.artikel.index');
+        $invalid = route('admin.artikel.index', ['status' => 'invalid']);
+
+        $response = $this->actingAs($this->admin())
+            ->from($invalid)
+            ->get($invalid)
+            ->assertRedirect($list)
             ->assertSessionHasErrors('status');
+
+        $message = session('errors')->first('status');
+        $cookie = $response->getCookie(config('session.cookie'));
+
+        $this->withCookie($cookie->getName(), $cookie->getValue())
+            ->get($list)
+            ->assertOk()
+            ->assertSee($message);
+    }
+
+    public function test_invalid_page_is_reported_as_json_when_requested(): void
+    {
+        $this->actingAs($this->admin())
+            ->getJson(route('admin.artikel.index', ['page' => 0]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('page');
     }
 
     public function test_moderation_list_is_paginated(): void

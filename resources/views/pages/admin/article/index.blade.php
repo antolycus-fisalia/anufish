@@ -47,6 +47,14 @@
                 {{ __('article.admin_moderation.apply_filter') }}
             </button>
         </form>
+
+        @if ($errors->hasAny(['status', 'page']))
+            <ul role="alert" class="mt-3 text-sm text-red-700">
+                @foreach ($errors->all() as $message)
+                    <li>{{ $message }}</li>
+                @endforeach
+            </ul>
+        @endif
     </section>
 
     <section class="overflow-hidden rounded-2xl border border-anufish-border bg-white">
@@ -88,9 +96,7 @@
     </section>
 
     @if ($articles->hasPages())
-        <nav aria-label="{{ __('article.admin_moderation.pagination') }}">
-            {{ $articles->links() }}
-        </nav>
+        {{ $articles->links() }}
     @endif
 </div>
 @endsection

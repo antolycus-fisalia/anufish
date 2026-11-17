@@ -1,4 +1,3 @@
-
 <?php
 
 return [
@@ -67,7 +66,6 @@ return [
         'back_to_list' => 'Kembali ke Daftar',
 
         'empty' => 'Tidak ada artikel dengan status ini.',
-        'pagination' => 'Navigasi halaman artikel',
 
         'actions_title' => 'Aksi Moderasi',
         'actions_pending' => 'Kontrol moderasi akan dihubungkan ke backend pada tahap integrasi.',

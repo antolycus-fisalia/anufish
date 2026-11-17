@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AdminArtikelListController extends Controller
 {
@@ -15,7 +16,7 @@ class AdminArtikelListController extends Controller
 
     public function index(Request $request): View
     {
-        $validated = Validator::make($request->query(), [
+        $validator = Validator::make($request->query(), [
             'status' => [
                 'sometimes',
                 'nullable',
@@ -31,7 +32,14 @@ class AdminArtikelListController extends Controller
                 'integer',
                 'min:1',
             ],
-        ])->validate();
+        ]);
+
+        if ($validator->fails()) {
+            throw (new ValidationException($validator))
+                ->redirectTo(route('admin.artikel.index'));
+        }
+
+        $validated = $validator->validated();
 
         // Tanpa parameter status: tampilkan artikel menunggu.
         // Parameter status kosong: tampilkan semua artikel.

@@ -1,4 +1,3 @@
-
 <?php
 
 return [
@@ -67,7 +66,6 @@ return [
         'back_to_list' => 'Back to List',
 
         'empty' => 'No articles found for this status.',
-        'pagination' => 'Article page navigation',
 
         'actions_title' => 'Moderation Actions',
         'actions_pending' => 'Moderation controls will be connected to the backend during integration.',
