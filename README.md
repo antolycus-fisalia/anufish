@@ -257,3 +257,20 @@ AdminSeeder melalui DatabaseSeeder.
 Admin baru memiliki role `admin` dan status `aktif`; hashing ditangani model User.
 Seed berulang mempertahankan password, nama dan status akun yang sudah ada.
 Email yang dipakai akun non-admin ditolak tanpa menaikkan hak aksesnya.
+
+### Seed artikel demo
+
+Pada lingkungan `local` atau `testing`, jalankan migrasi dan isi data demo dengan:
+
+```bash
+php artisan migrate
+php artisan db:seed --class=ArticleDemoSeeder
+```
+
+Masuk sebagai `penulis-demo@anufish.test` dengan password `anufish-demo-local`
+untuk mencoba Artikel Saya. Seeder membuat satu artikel disetujui, dua artikel
+menunggu, dan satu artikel ditolak. Untuk mencoba aksi moderasi, masuk dengan
+akun yang dibuat oleh `AdminSeeder`.
+
+Menjalankan ulang seeder mempertahankan akun dan artikel yang sudah ada,
+termasuk status moderasi dan artikel demo yang sudah dihapus.
