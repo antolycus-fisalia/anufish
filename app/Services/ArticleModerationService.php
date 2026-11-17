@@ -145,15 +145,25 @@ class ArticleModerationService
     private function afterCommit(string $action, User $admin, Artikel $artikel): void
     {
         DB::afterCommit(function () use ($action, $admin, $artikel) {
-            $this->audit($action, $admin, $artikel);
+            try {
+                $this->audit($action, $admin, $artikel);
+            } catch (Throwable $e) {
+                $this->reportAfterCommitFailure($e);
+            }
 
             try {
                 app(Dispatcher::class)->dispatch(
                     new ArtikelModerated($action, $admin->id, (int) $artikel->getKey())
                 );
             } catch (Throwable $e) {
-                report($e);
+                $this->reportAfterCommitFailure($e);
             }
         });
+    }
+
+    private function reportAfterCommitFailure(Throwable $exception): void
+    {
+        // Reporting can fail when the same logging channel is unavailable.
+        rescue(fn () => report($exception), report: false);
     }
 }

@@ -60,6 +60,22 @@ class AuthRoutesTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'user']))->get('/admin')->assertForbidden();
     }
 
+    public function test_blocked_admin_with_an_existing_session_cannot_access_admin_pages(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'status' => 'aktif']);
+        $login = $this->post('/login', ['email' => $admin->email, 'password' => 'password'])
+            ->assertRedirect(route('admin.dashboard'));
+        $cookie = $login->getCookie(config('session.cookie'));
+
+        $admin->update(['status' => 'diblokir']);
+        $this->app['auth']->forgetGuards();
+
+        $this->withCookie($cookie->getName(), $cookie->getValue())
+            ->get(route('admin.dashboard'))
+            ->assertForbidden();
+        $this->get(route('admin.users.index'))->assertForbidden();
+    }
+
     public function test_login_validation_and_throttle_are_preserved(): void
     {
         for ($attempt = 0; $attempt < 5; $attempt++) {
