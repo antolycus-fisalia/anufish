@@ -7,6 +7,7 @@
 @import "./scan.css";
 @import "./scan-history.css";
 @import "./article-list.css";
+@import "./article-notifications.css";
 @import "./article-form.css";
 
 @theme {

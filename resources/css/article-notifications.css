@@ -1,0 +1,81 @@
+@layer components {
+    .notification-panel {
+        @apply rounded-2xl border border-anufish-border bg-white p-4 sm:p-6;
+    }
+
+    .notification-header {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+    }
+
+    .notification-header h2 {
+        @apply text-lg font-semibold text-anufish-navy;
+    }
+
+    .notification-header p {
+        @apply mt-1 text-sm leading-[22px] text-anufish-muted;
+    }
+
+    .notification-unread {
+        @apply inline-flex min-h-8 items-center rounded-full bg-anufish-teal px-3 py-1
+            text-xs font-semibold text-white;
+    }
+
+    .notification-list {
+        @apply mt-4 divide-y divide-anufish-border;
+    }
+
+    .notification-item {
+        @apply py-5 first:pt-0 last:pb-0;
+    }
+
+    .notification-item-main {
+        @apply flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between;
+    }
+
+    .notification-item-unread {
+        @apply border-l-2 border-anufish-teal pl-3;
+    }
+
+    .notification-message {
+        @apply text-base text-anufish-navy;
+    }
+
+    .notification-meta {
+        @apply mt-1 flex flex-wrap items-center gap-2 text-sm text-anufish-muted;
+    }
+
+    .notification-chip {
+        @apply inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-semibold;
+    }
+
+    .notification-chip[data-action="approve"] {
+        @apply bg-emerald-50 text-emerald-700;
+    }
+
+    .notification-chip[data-action="reject"] {
+        @apply bg-rose-50 text-rose-700;
+    }
+
+    .notification-chip[data-action="delete"] {
+        @apply bg-amber-50 text-amber-700;
+    }
+
+    .notification-missing {
+        @apply text-sm text-anufish-muted;
+    }
+
+    .notification-link {
+        @apply text-sm font-semibold text-anufish-teal underline-offset-4
+            hover:text-anufish-navy hover:underline
+            focus-visible:outline-2 focus-visible:outline-anufish-teal;
+    }
+
+    .notification-secondary-action {
+        @apply inline-flex min-h-11 items-center justify-center rounded-lg
+            border border-anufish-border bg-white px-4 py-2
+            text-sm font-semibold text-anufish-navy
+            transition-colors hover:bg-anufish-pale
+            focus-visible:outline-2 focus-visible:outline-anufish-teal
+            disabled:cursor-not-allowed disabled:opacity-60;
+    }
+}

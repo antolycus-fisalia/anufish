@@ -9,6 +9,7 @@ use App\Policies\UserPolicy;
 use App\Services\ArticleHtmlSanitizer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Artikel::class, ArtikelPolicy::class);
+
+        // FSH-30: listener notifikasi moderasi (auto-discovery tidak aktif di repo ini)
+        Event::listen(ArtikelModerated::class, SendArtikelModerationNotification::class);
 
         RateLimiter::for('register', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());

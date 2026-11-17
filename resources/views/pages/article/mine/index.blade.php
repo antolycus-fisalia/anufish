@@ -33,6 +33,142 @@
             </a>
         </header>
 
+        <section
+            class="notification-panel"
+            data-notifications
+            data-endpoint="/artikel-saya/notifikasi"
+            data-error-load="{{ __('article.notification.load_failed') }}"
+            data-error-mark="{{ __('article.notification.mark_failed') }}"
+            data-message-approved="{{ __('article.notification.message_approved') }}"
+            data-message-rejected="{{ __('article.notification.message_rejected') }}"
+            data-message-deleted="{{ __('article.notification.message_deleted') }}"
+            data-label-approved="{{ __('article.notification.status_approved') }}"
+            data-label-rejected="{{ __('article.notification.status_rejected') }}"
+            data-label-deleted="{{ __('article.notification.status_deleted') }}"
+            data-locale="{{ app()->getLocale() }}"
+        >
+            <header class="notification-header">
+                <div>
+                    <h2 class="text-lg font-semibold text-anufish-navy">
+                        {{ __('article.notification.title') }}
+                    </h2>
+
+                    <p class="mt-1 text-sm leading-[22px] text-anufish-muted">
+                        {{ __('article.notification.description') }}
+                    </p>
+                </div>
+
+                <span
+                    class="notification-unread"
+                    data-notification-unread
+                    hidden
+                >0</span>
+            </header>
+
+            <x-ui.state
+                data-notification-loading
+                state="loading"
+                :title="__('Memuat notifikasi...')"
+                :message="__('Mohon tunggu sementara notifikasi dimuat.')"
+            />
+
+            <x-ui.state
+                data-notification-error
+                state="failure"
+                :title="__('article.notification.load_failed')"
+                hidden
+            >
+                <x-slot:body>
+                    <span data-notification-error-message></span>
+                </x-slot:body>
+
+                <button
+                    type="button"
+                    class="notification-secondary-action"
+                    data-notification-retry
+                >
+                    {{ __('Coba lagi') }}
+                </button>
+            </x-ui.state>
+
+            <x-ui.state
+                data-notification-empty
+                state="empty"
+                :title="__('article.notification.empty_title')"
+                :message="__('article.notification.empty_message')"
+                hidden
+            />
+
+            <section
+                class="notification-ready"
+                data-notification-ready
+                hidden
+            >
+                <div
+                    class="notification-list"
+                    data-notification-items
+                ></div>
+
+                <div class="mt-4 flex justify-end">
+                    <button
+                        type="button"
+                        class="notification-secondary-action"
+                        data-notification-mark-all
+                    >
+                        {{ __('article.notification.mark_all_read') }}
+                    </button>
+                </div>
+            </section>
+
+            <template data-notification-template>
+                <article class="notification-item">
+                    <div class="notification-item-main">
+                        <div>
+                            <p
+                                class="notification-message"
+                                data-notification-message
+                            ></p>
+
+                            <div class="notification-meta">
+                                <span
+                                    class="notification-chip"
+                                    data-notification-chip
+                                ></span>
+
+                                <time data-notification-time></time>
+                            </div>
+
+                            <p
+                                class="notification-missing"
+                                data-notification-missing
+                                hidden
+                            >
+                                {{ __('article.notification.link_missing') }}
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <a
+                                href="#"
+                                class="notification-link"
+                                data-notification-link
+                            >
+                                {{ __('article.notification.view_article') }}
+                            </a>
+
+                            <button
+                                type="button"
+                                class="notification-secondary-action"
+                                data-notification-mark
+                            >
+                                {{ __('article.notification.mark_read') }}
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </template>
+        </section>
+
         <x-ui.state
             data-article-loading
             state="loading"

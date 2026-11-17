@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminArtikelListController;
 use App\Http\Controllers\Admin\AdminArtikelModerationController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArtikelController;
+use App\Http\Controllers\ArtikelSayaNotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FishController;
 use App\Http\Controllers\HomeController;
@@ -14,7 +16,6 @@ use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\PublicArticleDetailController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
-use App\Http\Controllers\Admin\AdminArtikelListController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,19 +36,34 @@ Route::post('/language', [LocaleController::class, 'update'])
 Route::middleware('auth')->group(function () {
 
     Route::prefix('admin/artikel')
-    ->name('admin.artikel.')
-    ->middleware('admin')
-    ->controller(AdminArtikelListController::class)
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
+        ->name('admin.artikel.')
+        ->middleware('admin')
+        ->controller(AdminArtikelListController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
 
-        Route::get('/{artikel}', 'show')
-            ->whereNumber('artikel')
-            ->name('show');
-    });
+            Route::get('/{artikel}', 'show')
+                ->whereNumber('artikel')
+                ->name('show');
+        });
 
     Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
         Route::view('/', 'pages.article.mine.index')->name('index');
+
+        // FSH-30: Notifikasi status moderasi
+        Route::prefix('notifikasi')
+            ->name('notifikasi.')
+            ->controller(ArtikelSayaNotificationController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+
+                Route::post('/baca-semua', 'markAllRead')->name('baca_semua');
+
+                Route::post('/{notificationId}/baca', 'markRead')
+                    ->whereUuid('notificationId')
+                    ->name('baca');
+            });
+
         Route::view('/buat', 'pages.article.form')->name('create');
         Route::view('/{artikel}/edit', 'pages.article.form')->whereNumber('artikel')->name('edit');
     });
