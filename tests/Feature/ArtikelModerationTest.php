@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use RuntimeException;
@@ -203,6 +204,25 @@ class ArtikelModerationTest extends TestCase
             ->assertJsonPath('message', __('article.moderation.failed'));
 
         Event::assertNotDispatched(ArtikelModerated::class);
+    }
+
+    public function test_audit_failure_preserves_moderation_success_and_notification(): void
+    {
+        $admin = $this->makeAdmin();
+        $artikel = $this->makeArtikel();
+        Event::fake([ArtikelModerated::class]);
+        Exceptions::fake();
+        $failure = new RuntimeException('Audit log unavailable');
+        Log::shouldReceive('info')->once()->with('article.moderated', Mockery::type('array'))->andThrow($failure);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.artikel.approve', $artikel), ['moderation_revision' => $artikel->moderation_revision])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'disetujui');
+
+        $this->assertDatabaseHas('artikel', ['id' => $artikel->id, 'status' => 'disetujui']);
+        Exceptions::assertReported(fn (RuntimeException $reported) => $reported === $failure);
+        Event::assertDispatched(ArtikelModerated::class);
     }
 
     public function test_audit_log_contains_only_ids_and_no_article_content(): void
