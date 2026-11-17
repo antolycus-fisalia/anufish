@@ -1,12 +1,13 @@
-
 @extends('layouts.authenticated')
+
+@section('title', $article->judul . ' - Anufish')
 
 @section('page-content')
 <div class="mx-auto max-w-4xl space-y-6">
 
     <header class="space-y-4">
         <a
-            href="{{ url('/artikel-publik') }}"
+            href="{{ route('artikel-publik.index') }}"
             class="inline-flex min-h-11 items-center text-sm font-semibold text-anufish-teal hover:underline focus-visible:outline-2 focus-visible:outline-anufish-teal"
         >
             {{ __('article.public.back_to_list') }}
@@ -39,12 +40,16 @@
         str_starts_with($article->gambar, 'artikel-images/') &&
         ! str_contains($article->gambar, '..')
     )
-        <figure class="overflow-hidden rounded-2xl border border-anufish-border bg-white">
+        <figure data-image-fallback class="overflow-hidden rounded-2xl border border-anufish-border bg-white">
             <img
+                data-fallback-image
                 src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($article->gambar) }}"
                 alt="{{ $article->judul }}"
                 class="max-h-[480px] w-full object-contain"
             >
+            <figcaption data-fallback-placeholder hidden class="p-4 text-center text-sm text-anufish-muted">
+                {{ __('article.public.no_image') }}
+            </figcaption>
         </figure>
     @endif
 

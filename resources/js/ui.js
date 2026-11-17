@@ -8,14 +8,14 @@ function setFormState(scope, state) {
     });
 }
 
-export function initFishCardImages() {
-    document.querySelectorAll('[data-fish-card-image]').forEach((image) => {
+export function initImageFallbacks() {
+    document.querySelectorAll('[data-fish-card-image], [data-fallback-image]').forEach((image) => {
         const showPlaceholder = () => {
             image.hidden = true;
 
             image
-                .closest('[data-fish-card-media]')
-                .querySelector('[data-fish-card-placeholder]')
+                .closest('[data-fish-card-media], [data-image-fallback]')
+                .querySelector('[data-fish-card-placeholder], [data-fallback-placeholder]')
                 .hidden = false;
         };
 

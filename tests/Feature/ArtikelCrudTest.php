@@ -144,9 +144,8 @@ class ArtikelCrudTest extends TestCase
             ->deleteJson(route('artikel.destroy', $artikel))
             ->assertOk();
 
-        $this->assertDatabaseMissing('artikel', [
-            'id' => $artikel->id,
-        ]);
+        // FSH-29: hapus artikel memakai soft delete, baris tetap tersimpan.
+        $this->assertSoftDeleted('artikel', ['id' => $artikel->id]);
     }
 
     public function test_invalid_article_does_not_enter_database(): void

@@ -55,21 +55,23 @@
                         {{ __('Ruang eksplorasi / ') }}
                     </span>
 
-                    @php
-                        $breadcrumb = match (true) {
-                            request()->routeIs('admin.users.index') => __('admin_users.list_title'),
-                            request()->routeIs('admin.users.show') => __('admin_users.detail_title'),
-                            request()->routeIs('admin.users.edit', 'admin.users.update') => __('admin_users.edit_title'),
-                            request()->routeIs('admin.dashboard') => __('Dashboard Admin'),
-                            request()->routeIs('fish.show') => __('Detail Ikan'),
-                            request()->routeIs('profile.*') => __('Profil Saya'),
-                            request()->routeIs('scan.history.*') => __('Riwayat Scan'),
-                            request()->routeIs('scan.*') => __('Scan Ikan'),
-                            request()->routeIs('fish.*') => __('Jelajahi Ikan'),
-                            request()->routeIs('artikel-saya.*') => __('Artikel Saya'),
-                            default => __('Beranda'),
-                        };
-                    @endphp
+
+                @php
+                    $breadcrumb = match (true) {
+                        request()->routeIs('admin.users.index') => __('admin_users.list_title'),
+                        request()->routeIs('admin.users.show') => __('admin_users.detail_title'),
+                        request()->routeIs('admin.users.edit', 'admin.users.update') => __('admin_users.edit_title'),
+                        request()->routeIs('admin.dashboard') => __('Dashboard Admin'),
+                        request()->routeIs('artikel-publik.*') => __('article.public.title'),
+                        request()->routeIs('fish.show') => __('Detail Ikan'),
+                        request()->routeIs('profile.*') => __('Profil Saya'),
+                        request()->routeIs('scan.history.*') => __('Riwayat Scan'),
+                        request()->routeIs('scan.*') => __('Scan Ikan'),
+                        request()->routeIs('fish.*') => __('Jelajahi Ikan'),
+                        default => __('Beranda'),
+                    };
+                @endphp
+
 
                     {{ $breadcrumb }}
                 </p>

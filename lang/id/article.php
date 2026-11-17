@@ -10,6 +10,13 @@ return [
         'update_failed' => 'Gagal memperbarui artikel. Silakan coba lagi.',
         'delete_failed' => 'Gagal menghapus artikel. Silakan coba lagi.',
     ],
+    'moderation' => [
+        'approved' => 'Artikel berhasil disetujui.',
+        'rejected' => 'Artikel berhasil ditolak.',
+        'deleted' => 'Artikel berhasil dihapus.',
+        'conflict' => 'Artikel sudah berubah atau tindakan ini sudah tidak tersedia. Buka ulang detail artikel.',
+        'failed' => 'Gagal memperbarui status moderasi. Silakan coba lagi.',
+    ],
     'validation' => [
         'title_required' => 'Judul artikel wajib diisi.',
         'title_string' => 'Judul artikel harus berupa teks.',
@@ -27,9 +34,17 @@ return [
         'image_format' => 'Format gambar harus JPG, JPEG, atau PNG.',
     ],
 
+
     'public' => [
-        'back_to_list' => 'Kembali ke daftar artikel',
+        'title' => 'Artikel',
+        'description' => 'Jelajahi artikel yang telah dipublikasikan.',
+        'empty_title' => 'Belum ada artikel',
+        'empty_description' => 'Artikel yang telah disetujui akan ditampilkan di sini.',
+        'no_image' => 'Gambar tidak tersedia',
         'author' => 'Penulis',
         'unknown_author' => 'Penulis tidak diketahui',
+        'pagination' => 'Navigasi halaman artikel',
+        'back_to_list' => 'Kembali ke daftar artikel',
     ],
+
 ];

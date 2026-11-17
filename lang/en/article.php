@@ -10,6 +10,13 @@ return [
         'update_failed' => 'Failed to update article. Please retry.',
         'delete_failed' => 'Failed to delete article. Please retry.',
     ],
+    'moderation' => [
+        'approved' => 'Article approved successfully.',
+        'rejected' => 'Article rejected successfully.',
+        'deleted' => 'Article deleted successfully.',
+        'conflict' => 'The article changed or this action is no longer available. Reopen the article details.',
+        'failed' => 'Failed to update the moderation status. Please retry.',
+    ],
     'validation' => [
         'title_required' => 'The article title is required.',
         'title_string' => 'The article title must be text.',
@@ -26,9 +33,18 @@ return [
         'image_max' => 'The article image must not exceed 5 MB.',
         'image_format' => 'The image must be JPG, JPEG, or PNG.',
     ],
+
+
     'public' => [
-    'back_to_list' => 'Back to articles',
-    'author' => 'Author',
-    'unknown_author' => 'Unknown author',
+        'title' => 'Articles',
+        'description' => 'Explore published articles.',
+        'empty_title' => 'No articles yet',
+        'empty_description' => 'Approved articles will appear here.',
+        'no_image' => 'Image unavailable',
+        'author' => 'Author',
+        'unknown_author' => 'Unknown author',
+        'pagination' => 'Article pagination',
+        'back_to_list' => 'Back to articles',
     ],
+
 ];

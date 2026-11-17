@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Artikel;
 use Illuminate\Contracts\View\View;
 
 class PublicArticleDetailController extends Controller
 {
-    public function show(int $artikel): View
+    public function show(string $artikel): View
     {
         $article = Artikel::query()
             ->with('user:id,name')

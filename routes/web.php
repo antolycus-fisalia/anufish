@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminArtikelModerationController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminUserEditController;
 use App\Http\Controllers\AdminController;
@@ -9,11 +10,11 @@ use App\Http\Controllers\FishController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicArticleController;
+use App\Http\Controllers\PublicArticleDetailController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScanHistoryController;
-use App\Http\Controllers\PublicArticleDetailController;
 use Illuminate\Support\Facades\Route;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -31,11 +32,6 @@ Route::post('/language', [LocaleController::class, 'update'])
 */
 
 Route::middleware('auth')->group(function () {
-
-    // FSH-24: Detail artikel terpublikasi
-    Route::get('/artikel-publik/{artikel}', [PublicArticleDetailController::class, 'show'])
-    ->whereNumber('artikel')
-    ->name('artikel-publik.show');
 
     Route::prefix('artikel-saya')->name('artikel-saya.')->group(function () {
         Route::view('/', 'pages.article.mine.index')->name('index');
@@ -144,6 +140,13 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    Route::get('/artikel-publik', [PublicArticleController::class, 'index'])
+        ->name('artikel-publik.index');
+
+    Route::get('/artikel-publik/{artikel}', [PublicArticleDetailController::class, 'show'])
+        ->whereNumber('artikel')
+        ->name('artikel-publik.show');
+
     Route::prefix('artikel')
         ->name('artikel.')
         ->controller(ArtikelController::class)
@@ -204,6 +207,31 @@ Route::middleware('auth')->group(function () {
             Route::put('/{user}', [AdminUserEditController::class, 'update'])
                 ->whereNumber('user')
                 ->name('update');
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Article Moderation - FSH-29
+    |--------------------------------------------------------------------------
+    */
+
+    Route::prefix('admin/artikel')
+        ->name('admin.artikel.')
+        ->middleware('admin')
+        ->controller(AdminArtikelModerationController::class)
+        ->group(function () {
+
+            Route::post('/{artikel}/approve', 'approve')
+                ->whereNumber('artikel')
+                ->name('approve');
+
+            Route::post('/{artikel}/reject', 'reject')
+                ->whereNumber('artikel')
+                ->name('reject');
+
+            Route::post('/{artikel}/delete', 'delete')
+                ->whereNumber('artikel')
+                ->name('delete');
         });
 });
 

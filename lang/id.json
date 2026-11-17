@@ -216,5 +216,11 @@
     "Confidence merupakan skor keluaran AI dan bukan verifikasi dari iNaturalist.": "Confidence merupakan skor keluaran AI dan bukan verifikasi dari iNaturalist.",
     "AI sedang menganalisis foto ikan yang dipilih.": "AI sedang menganalisis foto ikan yang dipilih.",
     "AI tidak menemukan kandidat ikan dari gambar ini.": "AI tidak menemukan kandidat ikan dari gambar ini.",
-    "Hasil AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.": "Hasil AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia."
+    "Hasil AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.": "Hasil AI tetap ditampilkan, tetapi detail iNaturalist belum tersedia.",
+    "Pagination Navigation": "Navigasi halaman",
+    "Showing": "Menampilkan",
+    "to": "sampai",
+    "of": "dari",
+    "results": "hasil",
+    "Go to page :page": "Ke halaman :page"
 }

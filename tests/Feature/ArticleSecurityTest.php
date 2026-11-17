@@ -168,16 +168,17 @@ class ArticleSecurityTest extends TestCase
 
     public function test_successful_replacement_and_deletion_cleanup_only_after_persistence(): void
     {
-        Storage::fake('public');
+        // FilesystemAdapter dari fake(): IDE kenal assertExists/assertMissing.
+        $disk = Storage::fake('public');
         $this->actingAs(User::factory()->create());
         $id = $this->postJson('/artikel', array_merge($this->data(), ['gambar' => UploadedFile::fake()->image('old.jpg')]))->assertCreated()->json('data.id');
         $old = Artikel::findOrFail($id)->gambar;
         $this->putJson('/artikel/'.$id, array_merge($this->data(), ['gambar' => UploadedFile::fake()->image('new.png')]))->assertOk();
         $new = Artikel::findOrFail($id)->gambar;
-        Storage::disk('public')->assertMissing($old);
-        Storage::disk('public')->assertExists($new);
+        $disk->assertMissing($old);
+        $disk->assertExists($new);
         $this->deleteJson('/artikel/'.$id)->assertOk();
-        Storage::disk('public')->assertMissing($new);
+        $disk->assertMissing($new);
     }
 
     public function test_post_write_db_exception_rolls_back_update_and_keeps_old_file(): void

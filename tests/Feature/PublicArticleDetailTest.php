@@ -48,10 +48,16 @@ class PublicArticleDetailTest extends TestCase
         $viewer = User::factory()->create();
 
         $article = $this->makeArticle($author);
+        $detailUrl = route('artikel-publik.show', $article);
 
         $this->actingAs($viewer)
-            ->get(route('artikel-publik.show', $article->id))
+            ->get(route('artikel-publik.index'))
             ->assertOk()
+            ->assertSee('href="' . $detailUrl . '"', false);
+
+        $this->get($detailUrl)
+            ->assertOk()
+            ->assertSee('href="' . route('artikel-publik.index') . '"', false)
             ->assertSee('Artikel Edukasi Ikan')
             ->assertSee('Penulis Anufish')
             ->assertSee('Informasi tentang ikan.');
@@ -83,6 +89,13 @@ class PublicArticleDetailTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('artikel-publik.show', 999999))
+            ->assertNotFound();
+    }
+
+    public function test_oversized_article_id_returns_404(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('artikel-publik.show', str_repeat('9', 24)))
             ->assertNotFound();
     }
 
