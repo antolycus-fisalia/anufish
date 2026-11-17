@@ -7,7 +7,7 @@
 
     <header class="space-y-4">
         <a
-            href="{{ route('artikel-publik.index') }}"
+            href="{{ route('artikel-publik.index', ['page' => $listPage]) }}"
             class="inline-flex min-h-11 items-center text-sm font-semibold text-anufish-teal hover:underline focus-visible:outline-2 focus-visible:outline-anufish-teal"
         >
             {{ __('article.public.back_to_list') }}

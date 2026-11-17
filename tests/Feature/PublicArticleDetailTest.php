@@ -73,6 +73,24 @@ class PublicArticleDetailTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_return_from_detail_preserves_the_public_list_page(): void
+    {
+        $author = User::factory()->create();
+        $first = $this->makeArticle($author);
+
+        for ($index = 0; $index < 10; $index++) {
+            $this->makeArticle($author);
+        }
+
+        $listUrl = route('artikel-publik.index', ['page' => 2]);
+        $detailUrl = route('artikel-publik.show', ['artikel' => $first, 'page' => 2]);
+
+        $this->actingAs($author)->get($listUrl)
+            ->assertOk()
+            ->assertSee('href="' . $detailUrl . '"', false);
+        $this->get($detailUrl)->assertOk()->assertSee('href="' . $listUrl . '"', false);
+    }
+
     public function test_rejected_article_cannot_be_accessed(): void
     {
         $user = User::factory()->create();
