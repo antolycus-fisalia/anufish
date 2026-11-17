@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-class ArtikelModerated
+readonly class ArtikelModerated
 {
     /**
      * @param  string  $action  approve|reject|delete
@@ -11,5 +11,8 @@ class ArtikelModerated
         public string $action,
         public int $actorId,
         public int $artikelId,
+        public int $ownerId,
+        public string $status,
+        public string $title,
     ) {}
 }

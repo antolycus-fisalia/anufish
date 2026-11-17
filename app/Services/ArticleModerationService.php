@@ -144,7 +144,16 @@ class ArticleModerationService
 
     private function afterCommit(string $action, User $admin, Artikel $artikel): void
     {
-        DB::afterCommit(function () use ($action, $admin, $artikel) {
+        $event = new ArtikelModerated(
+            $action,
+            $admin->id,
+            (int) $artikel->getKey(),
+            (int) $artikel->user_id,
+            $artikel->status,
+            $artikel->judul,
+        );
+
+        DB::afterCommit(function () use ($action, $admin, $artikel, $event) {
             try {
                 $this->audit($action, $admin, $artikel);
             } catch (Throwable $e) {
@@ -152,9 +161,7 @@ class ArticleModerationService
             }
 
             try {
-                app(Dispatcher::class)->dispatch(
-                    new ArtikelModerated($action, $admin->id, (int) $artikel->getKey())
-                );
+                app(Dispatcher::class)->dispatch($event);
             } catch (Throwable $e) {
                 $this->reportAfterCommitFailure($e);
             }
