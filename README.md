@@ -2,6 +2,8 @@
 
 Aplikasi untuk mencari dan mengidentifikasi ikan dari foto, menyimpan riwayat scan, serta membaca dan memoderasi artikel komunitas. Data spesies berasal dari iNaturalist, dan identifikasi foto menggunakan Ruvicode.
 
+[Health check dan pemantauan uptime](docs/AVAILABILITY.md).
+
 ## Jalankan secara lokal
 
 Butuh PHP 8.3+ dengan ekstensi GD dan PDO MySQL, Composer, Node.js 22.12+, dan MySQL.
