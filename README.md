@@ -246,7 +246,16 @@ Tidak ada migrasi. FSH-17 tetap wajib memvalidasi ulang identitas sebelum menyim
 
 Dokumentasi API: https://ruvicode.com/docs/chat-completions.
 
-### Seed admin
+### Akun dari seeder
+
+Kedua akun dibuat dengan status aktif. Gunakan email dan password berikut di halaman `/login`.
+
+| Nama akun | Role | Email | Password | Seeder |
+| --- | --- | --- | --- | --- |
+| Admin Anufish (default) | `admin` | `admin@anufish.test` (default) | Isi `ADMIN_PASSWORD` di `.env` | `AdminSeeder` |
+| Penulis Demo Anufish | `user` | `penulis-demo@anufish.test` | `anufish-demo-local` | `ArticleDemoSeeder` |
+
+#### Seed admin
 
 Tambahkan `ADMIN_NAME`, `ADMIN_EMAIL`, dan `ADMIN_PASSWORD` ke `.env` sesuai
 `.env.example`. Password wajib diisi, minimal 8 karakter; tidak ada password default.
@@ -258,7 +267,7 @@ Admin baru memiliki role `admin` dan status `aktif`; hashing ditangani model Use
 Seed berulang mempertahankan password, nama dan status akun yang sudah ada.
 Email yang dipakai akun non-admin ditolak tanpa menaikkan hak aksesnya.
 
-### Seed artikel demo
+#### Seed artikel demo
 
 Pada lingkungan `local` atau `testing`, jalankan migrasi dan isi data demo dengan:
 
@@ -267,10 +276,9 @@ php artisan migrate
 php artisan db:seed --class=ArticleDemoSeeder
 ```
 
-Masuk sebagai `penulis-demo@anufish.test` dengan password `anufish-demo-local`
-untuk mencoba Artikel Saya. Seeder membuat satu artikel disetujui, dua artikel
-menunggu, dan satu artikel ditolak. Untuk mencoba aksi moderasi, masuk dengan
-akun yang dibuat oleh `AdminSeeder`.
+Gunakan akun penulis demo untuk mencoba Artikel Saya. Seeder membuat satu
+artikel disetujui, dua artikel menunggu, dan satu artikel ditolak. Untuk mencoba
+aksi moderasi, masuk dengan akun admin.
 
 Menjalankan ulang seeder mempertahankan akun dan artikel yang sudah ada,
 termasuk status moderasi dan artikel demo yang sudah dihapus.
