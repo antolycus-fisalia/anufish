@@ -4,6 +4,8 @@ Aplikasi untuk mencari dan mengidentifikasi ikan dari foto, menyimpan riwayat sc
 
 [Health check dan pemantauan uptime](docs/AVAILABILITY.md).
 
+REST API seluruh fitur tersedia di `/api/v1`: [endpoint, autentikasi, dan koleksi Postman](docs/API.md).
+
 ## Jalankan secara lokal
 
 Butuh PHP 8.3+ dengan ekstensi GD dan PDO MySQL, Composer, Node.js 22.12+, dan MySQL.

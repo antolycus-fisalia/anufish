@@ -92,7 +92,10 @@ class ArtikelSayaNotificationController extends Controller
         $link = null;
 
         if ($artikel && $user->can('update', $artikel)) {
-            $link = route('artikel-saya.edit', ['artikel' => $artikel->getKey()]);
+            $link = route(
+                request()->routeIs('api.v1.*') ? 'api.v1.articles.show' : 'artikel-saya.edit',
+                ['artikel' => $artikel->getKey()],
+            );
         }
 
         return [

@@ -46,6 +46,10 @@ class AdminArtikelModerationController extends Controller
     private function respond(array $result): JsonResponse
     {
         if ($result['success']) {
+            if (request()->routeIs('api.v1.*') && $result['data'] instanceof Artikel) {
+                $result['data']->makeVisible('moderation_revision');
+            }
+
             return response()->json([
                 'message' => $result['message'],
                 'data' => $result['data'],

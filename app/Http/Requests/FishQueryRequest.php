@@ -14,7 +14,7 @@ class FishQueryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'q' => [$this->routeIs('fish.search') ? 'required' : 'nullable', 'string', 'min:1', 'max:150'],
+            'q' => [$this->routeIs('fish.search', 'api.v1.fish.search') ? 'required' : 'nullable', 'string', 'min:1', 'max:150'],
             'page' => ['nullable', 'integer', 'min:1', 'max:5000'],
         ];
     }

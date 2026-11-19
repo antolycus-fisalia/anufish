@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Artikel;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +16,7 @@ class AdminArtikelListController extends Controller
 {
     private const PER_PAGE = 10;
 
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request): View|RedirectResponse|JsonResponse
     {
         $listQuery = $this->listQuery($request);
         $status = $listQuery['status'] ?? 'menunggu';
@@ -31,6 +32,10 @@ class AdminArtikelListController extends Controller
             ->paginate(self::PER_PAGE)
             ->appends($listQuery);
 
+        if ($request->expectsJson()) {
+            return response()->json($articles);
+        }
+
         if ($articles->currentPage() > $articles->lastPage()) {
             return to_route('admin.artikel.index', [...$listQuery, 'page' => $articles->lastPage()]);
         }
@@ -42,9 +47,13 @@ class AdminArtikelListController extends Controller
         ]);
     }
 
-    public function show(Request $request, Artikel $artikel): View
+    public function show(Request $request, Artikel $artikel): View|JsonResponse
     {
         $artikel->load('user:id,name');
+
+        if ($request->expectsJson()) {
+            return response()->json(['data' => $artikel->makeVisible('moderation_revision')]);
+        }
 
         return view('pages.admin.article.show', [
             'article' => $artikel,

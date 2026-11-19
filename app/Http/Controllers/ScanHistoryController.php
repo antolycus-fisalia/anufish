@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ScanHistoryResource;
 use App\Models\RiwayatScan;
 use App\Services\ScanReferenceResolver;
 use Illuminate\Http\Request;
@@ -20,12 +21,20 @@ class ScanHistoryController extends Controller
     {
         $histories = RiwayatScan::where('user_id', $request->user()->id)->latest()->orderByDesc('id')->paginate(12);
 
+        if ($request->expectsJson()) {
+            return ScanHistoryResource::collection($histories);
+        }
+
         return view('pages.scan.history.index', compact('histories'));
     }
 
     public function show(Request $request, RiwayatScan $history)
     {
         $this->owned($request, $history);
+
+        if ($request->expectsJson()) {
+            return new ScanHistoryResource($history);
+        }
 
         return view('pages.scan.history.show', compact('history'));
     }

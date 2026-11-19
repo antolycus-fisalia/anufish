@@ -123,7 +123,10 @@ class ScanController extends Controller
                 'mime_type' => $file->getMimeType(),
                 'candidates' => $candidates,
                 'history_id' => $record?->id,
-                'history_url' => $record ? route('scan.history.show', $record) : null,
+                'history_url' => $record ? route(
+                    $request->routeIs('api.v1.*') ? 'api.v1.scan.history.show' : 'scan.history.show',
+                    $record,
+                ) : null,
             ],
         ], 201);
     }

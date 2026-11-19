@@ -27,7 +27,7 @@ class FishController extends Controller
         return response()->json($result, $result['status']);
     }
 
-    public function show(FishQueryRequest $request, string $taxonId, FishDetailService $details): Response
+    public function show(FishQueryRequest $request, string $taxonId, FishDetailService $details): Response|JsonResponse
     {
         $validated = $request->validated();
         $result = $details->find((int) $taxonId);
@@ -40,6 +40,13 @@ class FishController extends Controller
                 }
             }
         }
+        if ($request->expectsJson()) {
+            return response()->json([
+                'data' => $result['fish'],
+                'message' => $result['message'] ?? null,
+            ], $result['status']);
+        }
+
         $returnParameters = isset($validated['q']) && $validated['q'] !== ''
             ? ['q' => $validated['q'], 'page' => (int) ($validated['page'] ?? 1)] : [];
 
@@ -51,13 +58,17 @@ class FishController extends Controller
         ], $result['status']);
     }
 
-    public function index(FishQueryRequest $request, InaturalistService $inaturalist): View
+    public function index(FishQueryRequest $request, InaturalistService $inaturalist): View|JsonResponse
     {
         $validated = $request->validated();
 
         $result = isset($validated['q']) && $validated['q'] !== ''
             ? $inaturalist->searchSpecies($validated['q'], 20, (int) ($validated['page'] ?? 1))
             : ['success' => true, 'data' => [], 'message' => null];
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['status'] ?? 200);
+        }
 
         return view('pages.fish.index', [
             'fishes' => $result['data'],
