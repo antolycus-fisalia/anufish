@@ -3,6 +3,10 @@
 @php
     $isEdit = request()->routeIs('artikel-saya.edit');
     $articleId = $isEdit ? request()->route('artikel') : null;
+    $imageLimit = \App\Http\Requests\ArticleRequest::imageUploadLimit();
+    $imageLimitLabel = $imageLimit % (1024 * 1024) === 0
+        ? ($imageLimit / (1024 * 1024)) . ' MB'
+        : intdiv($imageLimit, 1024) . ' KB';
 @endphp
 
 @section('title', $isEdit ? __('Edit Artikel - Anufish') : __('Buat Artikel - Anufish'))
@@ -14,12 +18,15 @@
         data-mode="{{ $isEdit ? 'edit' : 'create' }}"
         data-error-load="{{ __('Artikel belum dapat dimuat. Silakan coba lagi.') }}"
         data-error-submit="{{ __('Artikel belum dapat disimpan. Silakan coba lagi.') }}"
-        data-error-image-format="{{ __('Format gambar harus JPG, JPEG, atau PNG.') }}"
-        data-error-image-max="{{ __('Ukuran gambar maksimal adalah 5 MB.') }}"
+        data-error-image-format="{{ __('Format gambar harus JPG, JPEG, PNG, atau WebP.') }}"
+        data-error-image-max="{{ __('article.form.image_max', ['limit' => $imageLimitLabel]) }}"
         data-error-image-invalid="{{ __('File gambar tidak dapat dibaca. Pilih gambar lain yang valid.') }}"
         @if ($articleId)
-        data-article-id="{{ $articleId }}"
+        data-load-url="{{ route('artikel.show', $articleId) }}"
         @endif
+        data-image-max-bytes="{{ $imageLimit }}"
+        data-error-request-size="{{ __('article.form.request_size') }}"
+        data-success-create="{{ __('article.form.submitted') }}"
     >
         <header class="article-form-header">
             <div>
@@ -38,10 +45,16 @@
 
         <form
             class="article-form"
+            method="POST"
+            action="{{ $isEdit ? route('artikel.update', $articleId) : route('artikel.store') }}"
             data-article-form-element
             enctype="multipart/form-data"
             novalidate
         >
+            @csrf
+            @if ($isEdit)
+                @method('PUT')
+            @endif
             <div class="article-form-field">
                 <label for="judul">
                     {{ __('Judul') }}
@@ -113,12 +126,13 @@
                     id="gambar"
                     name="gambar"
                     type="file"
-                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                     data-article-image-input
+                    aria-describedby="article-image-help"
                 >
 
-                <p class="article-form-help">
-                    {{ __('Format JPG, JPEG, atau PNG. Maksimal 5 MB.') }}
+                <p id="article-image-help" class="article-form-help">
+                    {{ __('article.form.image_help', ['limit' => $imageLimitLabel]) }}
                 </p>
 
                 <p
@@ -127,6 +141,10 @@
                     hidden
                 ></p>
 
+                <button type="button" class="article-secondary-action" data-article-image-clear hidden>
+                    {{ __('article.form.clear_image_selection') }}
+                </button>
+
                 <div
                     class="article-image-preview"
                     data-article-image-preview
@@ -134,7 +152,6 @@
                 >
                     <img
                         data-article-image-preview-image
-                        src=""
                         alt="{{ __('Pratinjau gambar artikel') }}"
                     >
                 </div>
@@ -143,13 +160,17 @@
             <div
                 class="article-form-message"
                 data-article-form-message
-                aria-live="polite"
                 hidden
-            ></div>
+            >
+                <p data-article-form-message-text role="status"></p>
+                <a href="{{ route('artikel-saya.index') }}" class="mt-2 inline-flex min-h-11 items-center underline" data-article-form-success-link hidden>
+                    {{ __('article.form.view_my_articles') }}
+                </a>
+            </div>
 
             <div class="article-form-actions">
                 <a
-                    href="{{ route('homepage') }}"
+                    href="{{ route('artikel-saya.index') }}"
                     class="article-secondary-action"
                 >
                     {{ __('Batal') }}
@@ -159,6 +180,7 @@
                     type="submit"
                     class="primary-action"
                     data-article-submit
+                    @disabled($isEdit)
                 >
                     <span data-submit-label>
                         {{ $isEdit ? __('Simpan Perubahan') : __('Buat Artikel') }}

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\ArticleRequest;
 use App\Models\Artikel;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,6 +51,32 @@ class ArtikelCrudTest extends TestCase
             'judul' => 'Ikan Tuna',
             'status' => 'menunggu',
         ]);
+    }
+
+    public function test_create_form_exposes_the_runtime_image_limit(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('artikel-saya.create'))
+            ->assertOk()
+            ->assertSee('action="'.route('artikel.store').'"', false)
+            ->assertSee('data-image-max-bytes="'.ArticleRequest::imageUploadLimit().'"', false);
+    }
+
+    public function test_php_rejected_upload_returns_an_image_error_without_creating_article(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs(User::factory()->create())
+            ->postJson(route('artikel.store'), [
+                'judul' => 'Artikel dengan gambar terlalu besar',
+                'kategori' => 'Edukasi',
+                'isi' => 'Contoh isi artikel.',
+                'gambar' => new UploadedFile('', 'ikan.png', 'image/png', UPLOAD_ERR_INI_SIZE, true),
+            ])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.gambar.0', __('article.validation.image_server_max'));
+
+        $this->assertDatabaseCount('artikel', 0);
     }
 
     public function test_user_cannot_override_owner_or_status(): void
@@ -224,6 +251,45 @@ class ArtikelCrudTest extends TestCase
             ->assertJsonValidationErrors('gambar');
 
         $this->assertDatabaseCount('artikel', 0);
+    }
+
+    public function test_webp_article_image_can_be_created_and_replaced(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $data = ['judul' => 'Artikel WebP', 'kategori' => 'Edukasi', 'isi' => 'Foto ikan dalam format WebP.'];
+        $response = $this->actingAs($user)->postJson(route('artikel.store'), [
+            ...$data, 'gambar' => UploadedFile::fake()->image('ikan.webp', 80, 80),
+        ])->assertCreated();
+        $oldPath = $response->json('data.gambar');
+        $this->assertStringEndsWith('.webp', $oldPath);
+        Storage::disk('public')->assertExists($oldPath);
+
+        $response = $this->putJson(route('artikel.update', $response->json('data.id')), [
+            ...$data, 'gambar' => UploadedFile::fake()->image('baru.webp', 80, 80),
+        ])->assertOk();
+        $newPath = $response->json('data.gambar');
+        $this->assertStringEndsWith('.webp', $newPath);
+        $this->assertNotSame($oldPath, $newPath);
+        Storage::disk('public')->assertExists($newPath);
+        Storage::disk('public')->assertMissing($oldPath);
+    }
+
+    public function test_invalid_and_oversized_webp_images_are_rejected(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->create());
+        foreach ([
+            UploadedFile::fake()->createWithContent('fake.webp', 'not an image'),
+            UploadedFile::fake()->image('large.webp')->size(6000),
+        ] as $photo) {
+            $this->postJson(route('artikel.store'), [
+                'judul' => 'Artikel WebP', 'kategori' => 'Edukasi', 'isi' => 'Foto ikan.',
+                'gambar' => $photo,
+            ])->assertUnprocessable()->assertJsonValidationErrors('gambar');
+        }
+        $this->assertDatabaseCount('artikel', 0);
+        $this->assertSame([], Storage::disk('public')->allFiles());
     }
 
     public function test_guest_cannot_create_article(): void

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Services\RuvicodeService;
+use App\Services\NineRouterService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use League\Flysystem\UnableToReadFile;
 use Tests\TestCase;
 
-class RuvicodeServiceTest extends TestCase
+class NineRouterServiceTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -22,7 +22,11 @@ class RuvicodeServiceTest extends TestCase
         parent::setUp();
         Http::preventStrayRequests();
         Storage::fake('local');
-        config(['services.ruvicode.api_key' => 'test-only-key', 'services.ruvicode.model' => 'test-vision']);
+        config([
+            'services.ninerouter.base_url' => 'http://192.168.1.10:20128/v1',
+            'services.ninerouter.api_key' => 'test-only-key',
+            'services.ninerouter.model' => 'test-vision',
+        ]);
     }
 
     private function image(): string
@@ -38,7 +42,7 @@ class RuvicodeServiceTest extends TestCase
     public function test_upload_sends_private_image_with_configured_model_and_preserves_contract(): void
     {
         Http::fake([
-            'api.ruvicode.com/*' => Http::response($this->reply([['scientific_name' => 'Channa striata', 'confidence' => 0.9]])),
+            '192.168.1.10:20128/*' => Http::response($this->reply([['scientific_name' => 'Channa striata', 'confidence' => 0.9]])),
             'api.inaturalist.org/*' => Http::response(['results' => []]),
         ]);
         $response = $this->actingAs(User::factory()->create())->postJson('/scan/upload', ['fish_image' => UploadedFile::fake()->image('fish.png')]);
@@ -46,10 +50,10 @@ class RuvicodeServiceTest extends TestCase
             ->assertJsonStructure(['data' => ['path', 'disk', 'size', 'mime_type', 'original_name', 'candidates']]);
         Storage::disk('local')->assertExists($response->json('data.path'));
         Http::assertSent(function ($request) {
-            if (! str_contains($request->url(), 'api.ruvicode.com/')) {
+            if (! str_contains($request->url(), '192.168.1.10:20128/')) {
                 return false;
             }
-            $this->assertSame('https://api.ruvicode.com/v1/chat/completions', $request->url());
+            $this->assertSame('http://192.168.1.10:20128/v1/chat/completions', $request->url());
             $this->assertTrue($request->hasHeader('Authorization', 'Bearer test-only-key'));
             $this->assertSame('test-vision', $request['model']);
             $this->assertStringStartsWith('data:image/png;base64,', $request['messages'][1]['content'][1]['image_url']['url']);
@@ -64,23 +68,43 @@ class RuvicodeServiceTest extends TestCase
     {
         $path = $this->image();
         Http::fake(['*' => Http::sequence()->push($this->reply([]))->push($this->reply([['scientific_name' => 'Channa striata']]))]);
-        $service = app(RuvicodeService::class);
+        $service = app(NineRouterService::class);
         $this->assertSame(['success' => true, 'candidates' => [], 'error' => null], $service->identify($path));
         $this->assertNull($service->identify($path)['candidates'][0]['confidence']);
+    }
+
+    public function test_webp_upload_is_sent_as_jpeg_and_the_private_original_is_preserved(): void
+    {
+        $photo = UploadedFile::fake()->image('fish.webp', 80, 80);
+        $original = file_get_contents($photo->getRealPath());
+        Http::fake(['*' => Http::response($this->reply([['scientific_name' => 'Channa striata']]))]);
+
+        $response = $this->actingAs(User::factory()->create())
+            ->postJson('/scan/upload', ['fish_image' => $photo]);
+        $response->assertCreated()->assertJsonPath('data.mime_type', 'image/webp');
+        $this->assertSame($original, Storage::disk('local')->get($response->json('data.path')));
+        Http::assertSent(function ($request) {
+            $url = $request['messages'][1]['content'][1]['image_url']['url'];
+            $this->assertStringStartsWith('data:image/jpeg;base64,', $url);
+            $bytes = base64_decode(explode(',', $url, 2)[1], true);
+            $this->assertSame(IMAGETYPE_JPEG, getimagesizefromstring($bytes)[2]);
+
+            return true;
+        });
     }
 
     public function test_https_verification_uses_configured_ca_bundle(): void
     {
         $path = $this->image();
         $bundle = base_path('resources/certificates/cacert.pem');
-        config(['services.ruvicode.ca_bundle' => $bundle]);
+        config(['services.ninerouter.ca_bundle' => $bundle]);
         $verification = null;
         Http::fake(function ($request, $options) use (&$verification) {
             $verification = $options['verify'] ?? null;
 
             return Http::response($this->reply([]));
         });
-        $this->assertTrue(app(RuvicodeService::class)->identify($path)['success']);
+        $this->assertTrue(app(NineRouterService::class)->identify($path)['success']);
         $this->assertSame($bundle, $verification);
     }
 
@@ -89,7 +113,7 @@ class RuvicodeServiceTest extends TestCase
         $original = file_get_contents(public_path('images/clownfish.jpg'));
         Storage::disk('local')->put('scans/fish.jpg', $original);
         Http::fake(['*' => Http::response($this->reply([]))]);
-        $this->assertTrue(app(RuvicodeService::class)->identify('scans/fish.jpg')['success']);
+        $this->assertTrue(app(NineRouterService::class)->identify('scans/fish.jpg')['success']);
         Http::assertSent(function ($request) use ($original) {
             $url = $request['messages'][1]['content'][1]['image_url']['url'];
             $this->assertStringStartsWith('data:image/jpeg;base64,', $url);
@@ -105,7 +129,7 @@ class RuvicodeServiceTest extends TestCase
 
     public function test_timeout_is_localized_and_configured_above_ten_seconds(): void
     {
-        config(['services.ruvicode.timeout' => 45]);
+        config(['services.ninerouter.timeout' => 45]);
         $path = $this->image();
         $requestOptions = [];
         Http::fake(function ($request, $options) use (&$requestOptions) {
@@ -114,7 +138,7 @@ class RuvicodeServiceTest extends TestCase
         });
         foreach (['id', 'en'] as $locale) {
             app()->setLocale($locale);
-            $result = app(RuvicodeService::class)->identify($path);
+            $result = app(NineRouterService::class)->identify($path);
             $this->assertSame(trans('scan.errors.timeout', [], $locale), $result['error']);
         }
         $this->assertSame(45.0, $requestOptions['timeout']);
@@ -125,7 +149,7 @@ class RuvicodeServiceTest extends TestCase
     {
         $original = (int) ini_get('max_execution_time');
         $path = $this->image();
-        config(['services.ruvicode.timeout' => 45]);
+        config(['services.ninerouter.timeout' => 45]);
         try {
             set_time_limit(30);
             Http::fake(function () {
@@ -133,14 +157,14 @@ class RuvicodeServiceTest extends TestCase
 
                 return Http::response($this->reply([]));
             });
-            $this->assertTrue(app(RuvicodeService::class)->identify($path)['success']);
+            $this->assertTrue(app(NineRouterService::class)->identify($path)['success']);
             $this->assertSame(30, (int) ini_get('max_execution_time'));
 
             Http::fake(function () {
                 $this->assertGreaterThan(45, (int) ini_get('max_execution_time'));
                 throw new ConnectionException('cURL error 28: Operation timed out');
             });
-            $this->assertSame(__('scan.errors.timeout'), app(RuvicodeService::class)->identify($path)['error']);
+            $this->assertSame(__('scan.errors.timeout'), app(NineRouterService::class)->identify($path)['error']);
             $this->assertSame(30, (int) ini_get('max_execution_time'));
         } finally {
             set_time_limit($original);
@@ -153,19 +177,40 @@ class RuvicodeServiceTest extends TestCase
         $values = ['"scalar"', '{}', '{"candidates":"bad"}', '{"candidates":[{"scientific_name":[]}]}', '{"candidates":[{"scientific_name":"tuna"}]}', '{"candidates":[{"scientific_name":"Channa striata","confidence":2}]}', '{"candidates":[{"scientific_name":"Channa striata","confidence":true}]}', 'not json'];
         foreach ($values as $text) {
             Http::fake(['*' => Http::response(['choices' => [['finish_reason' => 'stop', 'message' => ['content' => $text]]]])]);
-            $this->assertFalse(app(RuvicodeService::class)->identify($path)['success'], $text);
+            $this->assertFalse(app(NineRouterService::class)->identify($path)['success'], $text);
         }
         foreach (['"scalar"', '[]', '{"choices":"bad"}', '{"choices":[{"finish_reason":"length"}]}'] as $raw) {
             Http::fake(['*' => Http::response($raw, 200, ['Content-Type' => 'application/json'])]);
-            $this->assertFalse(app(RuvicodeService::class)->identify($path)['success']);
+            $this->assertFalse(app(NineRouterService::class)->identify($path)['success']);
         }
     }
 
-    public function test_missing_key_or_model_does_not_send_image(): void
+    public function test_missing_configuration_does_not_send_image(): void
     {
-        foreach (['api_key', 'model'] as $field) {
-            config(['services.ruvicode.api_key' => 'test', 'services.ruvicode.model' => 'test', 'services.ruvicode.'.$field => '']);
-            $this->assertFalse(app(RuvicodeService::class)->identify($this->image())['success']);
+        foreach (['base_url', 'api_key', 'model'] as $field) {
+            config([
+                'services.ninerouter.base_url' => 'http://192.168.1.10:20128/v1',
+                'services.ninerouter.api_key' => 'test',
+                'services.ninerouter.model' => 'test',
+                'services.ninerouter.'.$field => '',
+            ]);
+            $this->assertSame(__('scan.errors.configuration'), app(NineRouterService::class)->identify($this->image())['error']);
+        }
+        Http::assertNothingSent();
+    }
+
+    public function test_base_url_accepts_trailing_slash_and_rejects_invalid_urls(): void
+    {
+        $path = $this->image();
+        config(['services.ninerouter.base_url' => ' http://192.168.1.10:20128/v1/ ']);
+        Http::fake(['*' => Http::response($this->reply([]))]);
+        $this->assertTrue(app(NineRouterService::class)->identify($path)['success']);
+        Http::assertSent(fn ($request) => $request->url() === 'http://192.168.1.10:20128/v1/chat/completions');
+
+        Http::fake();
+        foreach (['192.168.1.10:20128/v1', 'ftp://192.168.1.10/v1', 'not a URL'] as $url) {
+            config(['services.ninerouter.base_url' => $url]);
+            $this->assertSame(__('scan.errors.configuration'), app(NineRouterService::class)->identify($path)['error']);
         }
         Http::assertNothingSent();
     }
@@ -176,7 +221,7 @@ class RuvicodeServiceTest extends TestCase
         $disk->shouldReceive('exists')->andReturn(true);
         $disk->shouldReceive('get')->andThrow(UnableToReadFile::fromLocation('scans/fish.png'));
         Storage::shouldReceive('disk')->with('local')->andReturn($disk);
-        $this->assertFalse(app(RuvicodeService::class)->identify('scans/fish.png')['success']);
+        $this->assertFalse(app(NineRouterService::class)->identify('scans/fish.png')['success']);
         Http::assertNothingSent();
     }
 
@@ -196,9 +241,9 @@ class RuvicodeServiceTest extends TestCase
     {
         $path = $this->image();
         Http::fake(['*' => Http::response([], 429)]);
-        $this->assertSame(__('scan.errors.rate_limit'), app(RuvicodeService::class)->identify($path)['error']);
+        $this->assertSame(__('scan.errors.rate_limit'), app(NineRouterService::class)->identify($path)['error']);
         Http::assertSentCount(1);
         Http::fake(fn () => throw new ConnectionException('private connection detail'));
-        $this->assertSame(__('scan.errors.connection'), app(RuvicodeService::class)->identify($path)['error']);
+        $this->assertSame(__('scan.errors.connection'), app(NineRouterService::class)->identify($path)['error']);
     }
 }

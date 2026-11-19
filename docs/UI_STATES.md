@@ -24,7 +24,7 @@ dan Alpine.js.
 - HTTP 429, timeout, atau outage saat data inti sudah tersedia → `partial`.
 - Foto tidak tersedia atau gagal dimuat → gunakan placeholder foto; jangan
   mengubah seluruh halaman menjadi `failure`.
-- Hasil AI Ruvicode yang sudah tersedia tidak boleh dihapus ketika enrichment
+- Hasil AI 9Router yang sudah tersedia tidak boleh dihapus ketika enrichment
   iNaturalist gagal.
 
 ## Interaction
@@ -144,7 +144,7 @@ Scan menggunakan state berikut:
   pemilihan kandidat eksplisit.
 
 Kegagalan iNaturalist tidak boleh menghapus kandidat dan confidence AI yang
-sudah diterima dari Ruvicode.
+sudah diterima dari 9Router.
 
 Contoh partial:
 
@@ -317,7 +317,7 @@ enrichment tambahan gagal.
 
 Contoh:
 
-- Kandidat AI Ruvicode tetap ditampilkan ketika iNaturalist timeout.
+- Kandidat AI 9Router tetap ditampilkan ketika iNaturalist timeout.
 - Nama dan takson inti tetap ditampilkan ketika foto gagal.
 - Foto gagal dimuat menggunakan placeholder.
 - Error enrichment ditampilkan sebagai `partial`, bukan mengubah seluruh
@@ -330,7 +330,7 @@ Contoh:
 - Fixture/mock tidak dianggap sebagai bukti integrasi API live.
 - Pengujian API live dicatat secara terpisah.
 - Kegagalan enrichment tidak boleh menghapus data inti yang sudah tersedia.
-- Hasil AI Ruvicode tetap dipertahankan ketika referensi iNaturalist gagal.
+- Hasil AI 9Router tetap dipertahankan ketika referensi iNaturalist gagal.
 
 ## Ringkasan kontrak
 

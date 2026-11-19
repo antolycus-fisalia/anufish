@@ -1,18 +1,24 @@
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
 export function scanUpload() {
     let pendingDetailTab = null;
+    let cameraStream = null;
 
     return {
         previewUrl: null,
         selectedFileName: '',
+        selectedFile: null,
         hasFile: false,
         operationId: null,
         historyId: null,
         historyUrl: null,
         errorMessage: '',
         processing: false,
+        cameraStatus: 'idle',
+        cameraNotice: '',
+        cameraError: '',
+        cameraGeneration: 0,
 
         selectionGeneration: 0,
         uploadGeneration: 0,
@@ -31,32 +37,140 @@ export function scanUpload() {
         detailTabStatus: 'idle',
         resultError: '',
 
-        openCamera() {
-            const input = this.$refs.fileInput;
+        async openCamera() {
+            if (this.processing || this.cameraStatus !== 'idle') {
+                return;
+            }
 
-            input.setAttribute('capture', 'environment');
-            input.click();
+            const messages = this.$refs.fileInput.closest('[data-scan]').dataset;
+            this.cameraError = '';
+            this.errorMessage = '';
+
+            if (!navigator.mediaDevices?.getUserMedia) {
+                const input = this.$refs.cameraInput;
+                if (navigator.maxTouchPoints > 0 && input && 'capture' in input) {
+                    this.cameraNotice = messages.cameraNative;
+                    input.value = '';
+                    input.click();
+                } else {
+                    this.cameraError = window.isSecureContext
+                        ? messages.cameraUnsupported
+                        : messages.cameraInsecure;
+                }
+                return;
+            }
+
+            const generation = ++this.cameraGeneration;
+            this.cameraStatus = 'requesting';
+            this.cameraNotice = messages.cameraPermission;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' } },
+                    audio: false,
+                });
+                if (generation !== this.cameraGeneration) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
+
+                cameraStream = stream;
+                const video = this.$refs.cameraVideo;
+                video.srcObject = stream;
+                await video.play();
+                if (generation !== this.cameraGeneration) {
+                    return;
+                }
+                this.cameraStatus = 'ready';
+                this.cameraNotice = messages.cameraReady;
+            } catch (error) {
+                if (generation !== this.cameraGeneration) {
+                    return;
+                }
+                this.stopCamera();
+                const errors = {
+                    NotAllowedError: messages.cameraDenied,
+                    SecurityError: messages.cameraDenied,
+                    NotFoundError: messages.cameraMissing,
+                    NotReadableError: messages.cameraBusy,
+                    AbortError: messages.cameraBusy,
+                };
+                this.cameraError = errors[error.name] || messages.cameraFailed;
+            }
+        },
+
+        stopCamera() {
+            this.cameraGeneration += 1;
+            cameraStream?.getTracks().forEach((track) => track.stop());
+            cameraStream = null;
+            const video = this.$refs?.cameraVideo;
+            if (video) {
+                video.srcObject = null;
+            }
+            this.cameraStatus = 'idle';
+            this.cameraNotice = '';
+        },
+
+        async capturePhoto() {
+            if (this.cameraStatus !== 'ready') {
+                return;
+            }
+            const video = this.$refs.cameraVideo;
+            const messages = this.$refs.fileInput.closest('[data-scan]').dataset;
+            if (!video.videoWidth || !video.videoHeight) {
+                this.cameraError = messages.cameraFailed;
+                return;
+            }
+
+            this.cameraStatus = 'capturing';
+            this.cameraError = '';
+            const generation = this.cameraGeneration;
+            try {
+                const canvas = document.createElement('canvas');
+                const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+                canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+                canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                if (generation !== this.cameraGeneration) {
+                    return;
+                }
+                if (!blob) {
+                    throw new Error('Camera frame could not be encoded');
+                }
+                const photo = new File([blob], `fish-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                this.stopCamera();
+                this.$refs.fileInput.value = '';
+                await this.handleFile({ target: this.$refs.fileInput }, photo);
+            } catch {
+                if (generation === this.cameraGeneration) {
+                    this.cameraStatus = 'ready';
+                    this.cameraError = messages.cameraFailed;
+                }
+            }
         },
 
         openUpload() {
+            this.stopCamera();
+            this.cameraError = '';
             const input = this.$refs.fileInput;
 
-            input.removeAttribute('capture');
+            input.value = '';
             input.click();
         },
 
-        async handleFile(event) {
+        async handleFile(event, capturedFile = null) {
+            const input = event.target;
+            const file = capturedFile ?? input.files?.[0];
+            if (!file) {
+                return;
+            }
+            this.stopCamera();
+            this.cameraError = '';
             // Mencegah hasil decode file lama menimpa file terbaru.
             const generation = ++this.selectionGeneration;
 
             this.resetResult();
-
-            const input = event.target;
-            const file = input.files?.[0];
-
-            if (!file) {
-                return;
-            }
 
             const root = input.closest('[data-scan]');
             const validationError = this.validateFile(file, root);
@@ -90,6 +204,7 @@ export function scanUpload() {
 
             this.previewUrl = imageUrl;
             this.selectedFileName = file.name;
+            this.selectedFile = file;
             this.hasFile = true;
         },
 
@@ -136,6 +251,7 @@ export function scanUpload() {
             this.clearPreviewUrl();
 
             this.selectedFileName = '';
+            this.selectedFile = null;
             this.hasFile = false;
         },
 
@@ -426,6 +542,7 @@ export function scanUpload() {
         },
 
         chooseAnotherImage() {
+            this.stopCamera();
             this.resetSelection();
             this.resetResult();
 
@@ -442,12 +559,12 @@ export function scanUpload() {
 
         async processImage() {
             // Mencegah double click.
-            if (!this.hasFile || this.processing) {
+            if (!this.hasFile || this.processing || this.cameraStatus !== 'idle') {
                 return;
             }
 
             const input = this.$refs.fileInput;
-            const file = input?.files?.[0];
+            const file = this.selectedFile ?? input?.files?.[0];
 
             if (!file) {
                 return;
@@ -474,7 +591,7 @@ export function scanUpload() {
                     'fish_image',
                     file
                 );
-                this.operationId ??= crypto.randomUUID();
+                this.operationId ??= this.createOperationId();
                 formData.append('operation_id', this.operationId);
 
                 const response = await fetch(
@@ -577,7 +694,20 @@ export function scanUpload() {
             this.previewUrl = null;
         },
 
+        createOperationId() {
+            if (typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+
+            const bytes = crypto.getRandomValues(new Uint8Array(16));
+            bytes[6] = (bytes[6] & 0x0f) | 0x40;
+            bytes[8] = (bytes[8] & 0x3f) | 0x80;
+            const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+            return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+        },
+
         destroy() {
+            this.stopCamera();
             this.closePendingDetailTab();
 
             // Membuat seluruh proses async yang masih berjalan menjadi stale.

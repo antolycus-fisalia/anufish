@@ -2,7 +2,7 @@
 
 ## Kontrak penyimpanan dan pembaca FSH-18
 
-Server menyimpan satu riwayat setelah Ruvicode mengembalikan kandidat nonkosong.
+Server menyimpan satu riwayat setelah 9Router mengembalikan kandidat nonkosong.
 Tidak ada endpoint yang menerima hasil AI, path file, confidence atau user_id dari
 klien sebagai data riwayat. Kandidat yang belum dipilih tetap tersimpan dan diberi
 label belum dipilih, bukan identifikasi spesies yang sudah terkonfirmasi.
@@ -58,7 +58,7 @@ Rollback menjatuhkan tabel baru; lakukan backup sebelum rollback berisi data nya
 ## Verifikasi lokal
 
 PHP menggunakan SQLite in-memory dan Storage::fake; provider memakai mock/fake.
-Tidak ada panggilan Ruvicode berbayar atau klaim integrasi provider live.
+Tidak ada panggilan 9Router berbayar atau klaim integrasi provider live.
 
 - Suite PHP: 164 tes, 769 assertions lulus.
 - `npm run test:scan`: 23 tes lulus, termasuk UUID retry dan POST pilihan server.

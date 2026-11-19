@@ -9,11 +9,23 @@
     data-reference-network="{{ __('scan.reference.network') }}"
     data-reference-rate-limit="{{ __('scan.reference.request_limit') }}"
     data-reference-session="{{ __('scan.reference.session') }}"
-    data-error-format="{{ __('Foto harus berformat JPG, JPEG, atau PNG.') }}"
+    data-error-format="{{ __('Foto harus berformat JPG, JPEG, PNG, atau WebP.') }}"
     data-error-size="{{ __('Ukuran foto maksimal 5 MB.') }}"
     data-error-image="{{ __('File gambar tidak dapat dibaca. Pilih gambar lain yang valid.') }}"
     data-error-request="{{ __('Identifikasi gagal. Silakan coba lagi.') }}"
     data-error-result="{{ __('Hasil identifikasi belum tersedia.') }}"
+    data-camera-permission="{{ __('scan.camera.permission') }}"
+    data-camera-ready="{{ __('scan.camera.ready') }}"
+    data-camera-denied="{{ __('scan.camera.denied') }}"
+    data-camera-missing="{{ __('scan.camera.missing') }}"
+    data-camera-busy="{{ __('scan.camera.busy') }}"
+    data-camera-failed="{{ __('scan.camera.failed') }}"
+    data-camera-insecure="{{ __('scan.camera.insecure') }}"
+    data-camera-unsupported="{{ __('scan.camera.unsupported') }}"
+    data-camera-native="{{ __('scan.camera.native') }}"
+    @keydown.escape.window="stopCamera()"
+    @pagehide.window="stopCamera()"
+    @visibilitychange.document="if (document.hidden) stopCamera()"
 >
     <p x-cloak x-show="historyUrl" class="scan-result-note" role="status">
         {{ __('history.saved') }}
@@ -34,16 +46,30 @@
                 id="fish_image"
                 name="fish_image"
                 type="file"
-                accept="image/jpeg,image/png"
+                accept="image/jpeg,image/png,image/webp"
                 class="sr-only"
+                aria-label="{{ __('Unggah Foto') }}"
                 @change="handleFile($event)"
+            >
+            <input
+                x-ref="cameraInput"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                class="sr-only"
+                aria-label="{{ __('Ambil Foto') }}"
+                @change="handleFile($event)"
+                @cancel="cameraNotice = ''"
             >
 
             <div class="scan-source-actions">
                 <button
                     type="button"
                     class="scan-secondary-action"
-                    :disabled="processing"
+                    x-ref="cameraButton"
+                    :disabled="processing || cameraStatus !== 'idle'"
+                    :aria-expanded="cameraStatus !== 'idle'"
+                    aria-controls="scan-camera"
                     @click="openCamera()"
                 >
                     {{ __('Ambil Foto') }}
@@ -59,8 +85,12 @@
                 </button>
             </div>
 
+            <p class="scan-result-note">{{ __('scan.camera.hint') }}</p>
+            <p x-cloak x-show="cameraNotice" x-text="cameraNotice" class="scan-camera-notice" role="status"></p>
+            <p x-cloak x-show="cameraError" x-text="cameraError" class="scan-error" role="alert"></p>
+
             <div class="scan-file-info">
-                <p>{{ __('Format JPG, JPEG, atau PNG.') }}</p>
+                <p>{{ __('Format JPG, JPEG, PNG, atau WebP.') }}</p>
                 <p>{{ __('Ukuran maksimal 5 MB.') }}</p>
             </div>
 
@@ -73,23 +103,45 @@
             ></p>
         </div>
 
-        <div class="scan-preview-section">
-            <div
-                x-show="!previewUrl"
-                class="scan-preview-placeholder"
-            >
-                <x-navigation.icon name="scan" />
+        <div class="scan-preview-area">
+            <div class="scan-preview-section">
+                <div
+                    x-show="!previewUrl && cameraStatus === 'idle'"
+                    class="scan-preview-placeholder"
+                >
+                    <x-navigation.icon name="scan" />
 
-                <p>{{ __('Preview foto akan tampil di sini.') }}</p>
+                    <p>{{ __('Preview foto akan tampil di sini.') }}</p>
+                </div>
+
+                <img
+                    x-cloak
+                    x-show="previewUrl && cameraStatus === 'idle'"
+                    :src="previewUrl"
+                    class="scan-preview-image"
+                    alt="{{ __('Preview foto ikan') }}"
+                >
+                <video
+                    id="scan-camera"
+                    x-ref="cameraVideo"
+                    x-cloak
+                    x-show="cameraStatus !== 'idle'"
+                    class="scan-preview-image"
+                    autoplay
+                    muted
+                    playsinline
+                    aria-label="{{ __('scan.camera.preview') }}"
+                    :aria-busy="cameraStatus === 'requesting'"
+                ></video>
             </div>
-
-            <img
-                x-cloak
-                x-show="previewUrl"
-                :src="previewUrl"
-                class="scan-preview-image"
-                alt="{{ __('Preview foto ikan') }}"
-            >
+            <div class="scan-source-actions" x-cloak x-show="cameraStatus !== 'idle'">
+                <button type="button" class="scan-secondary-action" :disabled="cameraStatus !== 'ready'" @click="capturePhoto()">
+                    {{ __('scan.camera.capture') }}
+                </button>
+                <button type="button" class="scan-secondary-action" @click="stopCamera(); $refs.cameraButton.focus()">
+                    {{ __('scan.camera.close') }}
+                </button>
+            </div>
         </div>
     </div>
 
@@ -103,7 +155,7 @@
 
         <x-ui.button
             type="button"
-            x-bind:disabled="!hasFile || processing"
+            x-bind:disabled="!hasFile || processing || cameraStatus !== 'idle'"
             @click="processImage()"
         >
             <span x-show="!processing">

@@ -57,7 +57,18 @@ return [
         'image_dimensions' => 'The article image must not exceed 8 megapixels.',
         'image_resources' => 'The image is too large to process. Please reduce its resolution.',
         'image_max' => 'The article image must not exceed 5 MB.',
-        'image_format' => 'The image must be JPG, JPEG, or PNG.',
+        'image_server_max' => 'The image exceeds the server upload limit. Try a smaller image.',
+        'image_upload_failed' => 'The article image could not be uploaded. Select the image again.',
+        'image_format' => 'The image must be JPG, JPEG, PNG, or WebP.',
+    ],
+
+    'form' => [
+        'image_help' => 'JPG, JPEG, PNG, or WebP format. Maximum :limit.',
+        'image_max' => 'Maximum image size is :limit.',
+        'request_size' => 'The submission exceeds the server size limit. Try a smaller image.',
+        'clear_image_selection' => 'Clear selected image',
+        'view_my_articles' => 'View My Articles',
+        'submitted' => 'Your article was created and is awaiting moderation.',
     ],
 
     'public' => [

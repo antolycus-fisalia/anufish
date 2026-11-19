@@ -6,7 +6,7 @@
 | `GET /ready` | Database utama menerima query dan pemeliharaan sedang tidak aktif | 200 | `{"status":"ready"}` |
 | `GET /ready` | Database atau pemeriksaan readiness gagal, atau pemeliharaan aktif | 503 | `{"status":"unavailable"}` |
 
-Kedua endpoint bisa dipanggil tanpa login dan memakai `Cache-Control: no-store`. Gangguan iNaturalist dan Ruvicode dicatat terpisah. Untuk diagnosis readiness, periksa event `health.readiness_failed` di log aplikasi yang aksesnya dibatasi. Event tersebut hanya mencatat tipe exception.
+Kedua endpoint bisa dipanggil tanpa login dan memakai `Cache-Control: no-store`. Gangguan iNaturalist dan 9Router dicatat terpisah. Untuk diagnosis readiness, periksa event `health.readiness_failed` di log aplikasi yang aksesnya dibatasi. Event tersebut hanya mencatat tipe exception.
 
 ## Catat satu sampel setiap 60 detik
 

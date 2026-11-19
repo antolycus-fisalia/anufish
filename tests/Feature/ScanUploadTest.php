@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Services\RuvicodeService;
+use App\Services\NineRouterService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +16,7 @@ class ScanUploadTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->mock(RuvicodeService::class, function ($mock) {
+        $this->mock(NineRouterService::class, function ($mock) {
             $mock->shouldReceive('identify')->andReturn(['success' => true, 'candidates' => [['scientific_name' => 'Channa striata', 'confidence' => null]], 'error' => null]);
         });
     }
@@ -196,7 +196,7 @@ class ScanUploadTest extends TestCase
             ->assertJsonValidationErrors('fish_image');
     }
 
-    public function test_webp_file_is_rejected(): void
+    public function test_webp_file_is_uploaded_and_stored(): void
     {
         Storage::fake('local');
 
@@ -209,9 +209,10 @@ class ScanUploadTest extends TestCase
                 'fish_image' => $file,
             ]);
 
-        $response
-            ->assertStatus(422)
-            ->assertJsonValidationErrors('fish_image');
+        $response->assertCreated()->assertJsonPath('data.mime_type', 'image/webp');
+        $path = $response->json('data.path');
+        $this->assertStringEndsWith('.webp', $path);
+        Storage::disk('local')->assertExists($path);
     }
 
     public function test_pdf_file_is_rejected(): void

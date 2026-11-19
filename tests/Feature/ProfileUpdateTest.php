@@ -12,6 +12,22 @@ class ProfileUpdateTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_webp_profile_photo_is_stored_and_displayed(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+        $this->actingAs($user)->put(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'profile_photo' => UploadedFile::fake()->image('avatar.webp', 80, 80),
+        ])->assertSessionHasNoErrors()->assertSessionHas('success');
+        $path = $user->fresh()->profile_photo_path;
+        $this->assertStringEndsWith('.webp', $path);
+        Storage::disk('public')->assertExists($path);
+        $this->get(route('profile.show'))->assertOk()
+            ->assertViewHas('photoUrl', Storage::disk('public')->url($path));
+    }
+
     public function test_profile_uses_initials_when_stored_photo_is_too_small(): void
     {
         Storage::fake('public');

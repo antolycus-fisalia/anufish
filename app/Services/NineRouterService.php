@@ -8,13 +8,18 @@ use Illuminate\Support\Facades\Storage;
 use JsonException;
 use League\Flysystem\FilesystemException;
 
-class RuvicodeService
+class NineRouterService
 {
     public function identify(string $path): array
     {
-        $key = trim((string) config('services.ruvicode.api_key'));
-        $model = trim((string) config('services.ruvicode.model'));
-        if ($key === '' || $model === '') {
+        $baseUrl = rtrim(trim((string) config('services.ninerouter.base_url')), '/');
+        $key = trim((string) config('services.ninerouter.api_key'));
+        $model = trim((string) config('services.ninerouter.model'));
+        if (
+            $key === '' || $model === '' ||
+            ! filter_var($baseUrl, FILTER_VALIDATE_URL) ||
+            ! in_array(parse_url($baseUrl, PHP_URL_SCHEME), ['http', 'https'], true)
+        ) {
             return $this->failure('configuration');
         }
 
@@ -28,7 +33,7 @@ class RuvicodeService
         } catch (FilesystemException) {
             return $this->failure('image');
         }
-        if (! is_string($bytes) || $bytes === '' || ! in_array($mime, ['image/jpeg', 'image/png'], true)) {
+        if (! is_string($bytes) || $bytes === '' || ! in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
             return $this->failure('image');
         }
         $photo = $this->preparePhoto($bytes, $mime);
@@ -37,7 +42,7 @@ class RuvicodeService
         }
         [$bytes, $mime] = $photo;
 
-        $timeout = max(1, min(60, (float) config('services.ruvicode.timeout', 45)));
+        $timeout = max(1, min(60, (float) config('services.ninerouter.timeout', 45)));
         $executionLimit = (int) ini_get('max_execution_time');
         $requestBudget = (int) ceil($timeout) + 10;
         $extendExecutionLimit = $executionLimit > 0 && $executionLimit < $requestBudget;
@@ -47,9 +52,9 @@ class RuvicodeService
         }
         try {
             $response = Http::acceptJson()->withToken($key)
-                ->withOptions(['verify' => config('services.ruvicode.ca_bundle') ?: true, 'expect' => false])
+                ->withOptions(['verify' => config('services.ninerouter.ca_bundle') ?: true, 'expect' => false])
                 ->connectTimeout(min(8, $timeout))->timeout($timeout)
-                ->post(rtrim(config('services.ruvicode.base_url'), '/').'/chat/completions', [
+                ->post($baseUrl.'/chat/completions', [
                     'model' => $model,
                     'stream' => false,
                     'max_tokens' => 1024,
@@ -120,7 +125,7 @@ class RuvicodeService
 
     private function preparePhoto(string $bytes, string $mime): ?array
     {
-        if (strlen($bytes) <= 256 * 1024) {
+        if (strlen($bytes) <= 256 * 1024 && $mime !== 'image/webp') {
             return [$bytes, $mime];
         }
         if (! function_exists('imagecreatefromstring')) {

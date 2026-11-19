@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ScanUploadRequest;
 use App\Models\RiwayatScan;
-use App\Services\RuvicodeService;
+use App\Services\NineRouterService;
 use App\Services\ScanHistoryService;
 use App\Services\ScanReferenceResolver;
 use Illuminate\Http\JsonResponse;
@@ -31,9 +31,9 @@ class ScanController extends Controller
      *
      * The file is stored with a UUID-based name so it never depends on
      * the user's original filename. The path is returned so downstream
-     * services (Ruvicode, iNaturalist, riwayat) can reference it.
+     * services (9Router, iNaturalist, riwayat) can reference it.
      */
-    public function upload(ScanUploadRequest $request, RuvicodeService $identifier, ScanHistoryService $history): JsonResponse
+    public function upload(ScanUploadRequest $request, NineRouterService $identifier, ScanHistoryService $history): JsonResponse
     {
         $operationId = $request->validated('operation_id') ?? (string) Str::uuid();
         $lock = Cache::lock('scan-upload:'.$request->user()->id.':'.$operationId, 180);
@@ -57,7 +57,7 @@ class ScanController extends Controller
         }
     }
 
-    private function identifyAndSave(ScanUploadRequest $request, RuvicodeService $identifier, ScanHistoryService $history, string $operationId, string $hash): JsonResponse
+    private function identifyAndSave(ScanUploadRequest $request, NineRouterService $identifier, ScanHistoryService $history, string $operationId, string $hash): JsonResponse
     {
         $file = $request->file('fish_image');
 

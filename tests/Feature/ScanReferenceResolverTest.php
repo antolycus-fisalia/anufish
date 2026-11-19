@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Services\InaturalistClient;
-use App\Services\RuvicodeService;
+use App\Services\NineRouterService;
 use App\Services\ScanReferenceResolver;
 use GuzzleHttp\Exception\ConnectTimeoutException;
 use GuzzleHttp\Psr7\Request;
@@ -217,7 +217,7 @@ class ScanReferenceResolverTest extends TestCase
     public function test_upload_returns_ai_candidates_without_contacting_inaturalist(): void
     {
         Storage::fake('local');
-        $this->mock(RuvicodeService::class, fn ($mock) => $mock->shouldReceive('identify')->andReturn([
+        $this->mock(NineRouterService::class, fn ($mock) => $mock->shouldReceive('identify')->andReturn([
             'success' => true, 'candidates' => [['scientific_name' => 'Channa striata', 'confidence' => null]], 'error' => null,
         ]));
         Http::fake(['*' => Http::response([], 503)]);

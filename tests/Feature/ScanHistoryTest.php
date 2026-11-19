@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\RiwayatScan;
 use App\Models\User;
-use App\Services\RuvicodeService;
+use App\Services\NineRouterService;
 use App\Services\ScanReferenceResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -28,7 +28,7 @@ class ScanHistoryTest extends TestCase
 
     private function identify(array $candidates = [['scientific_name' => 'Channa striata', 'confidence' => null]], bool $success = true): void
     {
-        $this->mock(RuvicodeService::class)->shouldReceive('identify')->once()->andReturn([
+        $this->mock(NineRouterService::class)->shouldReceive('identify')->once()->andReturn([
             'success' => $success, 'candidates' => $candidates, 'error' => 'Provider unavailable',
         ]);
     }
@@ -85,7 +85,7 @@ class ScanHistoryTest extends TestCase
 
     public function test_same_operation_id_is_scoped_to_owner(): void
     {
-        $this->mock(RuvicodeService::class)->shouldReceive('identify')->twice()->andReturn(['success' => true, 'candidates' => [['scientific_name' => 'Channa striata']], 'error' => null]);
+        $this->mock(NineRouterService::class)->shouldReceive('identify')->twice()->andReturn(['success' => true, 'candidates' => [['scientific_name' => 'Channa striata']], 'error' => null]);
         $id = (string) Str::uuid();
         $this->upload(['operation_id' => $id])->assertCreated();
         $this->actingAs(User::factory()->create());

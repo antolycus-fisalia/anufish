@@ -10,6 +10,20 @@ class ScanPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_camera_controls_and_permission_messages_are_localized(): void
+    {
+        $this->actingAs(User::factory()->create());
+        foreach (['id' => 'Jepret Foto', 'en' => 'Capture Photo'] as $locale => $capture) {
+            $this->withSession(['locale' => $locale])->get('/scan')
+                ->assertOk()
+                ->assertSee($capture)
+                ->assertSee(trans('scan.camera.hint', [], $locale))
+                ->assertSee('data-camera-denied="'.trans('scan.camera.denied', [], $locale).'"', false)
+                ->assertSee('playsinline', false)
+                ->assertDontSee('scan.camera.');
+        }
+    }
+
     public function test_detail_loading_page_requires_login_and_has_localized_status(): void
     {
         $this->get('/scan/detail-loading')->assertRedirect('/login');

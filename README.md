@@ -1,6 +1,6 @@
 # Anufish
 
-Aplikasi untuk mencari dan mengidentifikasi ikan dari foto, menyimpan riwayat scan, serta membaca dan memoderasi artikel komunitas. Data spesies berasal dari iNaturalist, dan identifikasi foto menggunakan Ruvicode.
+Aplikasi untuk mencari dan mengidentifikasi ikan dari foto, menyimpan riwayat scan, serta membaca dan memoderasi artikel komunitas. Data spesies berasal dari iNaturalist, dan identifikasi foto menggunakan model vision melalui 9Router.
 
 [Health check dan pemantauan uptime](docs/AVAILABILITY.md).
 
@@ -8,7 +8,7 @@ Aplikasi untuk mencari dan mengidentifikasi ikan dari foto, menyimpan riwayat sc
 
 Butuh PHP 8.3+ dengan ekstensi GD dan PDO MySQL, Composer, Node.js 22.12+, dan MySQL.
 
-Salin `.env.example` menjadi `.env`, buat database MySQL, lalu sesuaikan `DB_*`. Isi `RUVICODE_API_KEY` di `.env` untuk menggunakan fitur scan.
+Salin `.env.example` menjadi `.env`, buat database MySQL, lalu sesuaikan `DB_*`. Untuk scan, isi `NINEROUTER_BASE_URL` (termasuk `/v1`), `NINEROUTER_API_KEY`, dan `NINEROUTER_MODEL` dengan model yang mendukung gambar. Server Laravel harus dapat mengakses alamat 9Router. Jalankan `php artisan config:clear` setelah mengubah `.env`.
 
 ```bash
 composer setup
@@ -17,6 +17,8 @@ php artisan serve
 ```
 
 Buka [localhost:8000](http://localhost:8000).
+
+Untuk pengembangan dengan Vite dan antrean, jalankan `composer run dev` sebagai pengganti `php artisan serve`. Log menampilkan jam dan nama proses agar mudah diikuti.
 
 ## Akun dari seeder
 

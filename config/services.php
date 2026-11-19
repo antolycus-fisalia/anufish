@@ -35,12 +35,12 @@ return [
         ],
     ],
 
-    'ruvicode' => [
-        'base_url' => env('RUVICODE_BASE_URL', 'https://api.ruvicode.com/v1'),
-        'api_key' => env('RUVICODE_API_KEY'),
-        'model' => env('RUVICODE_MODEL', 'gemini-3-5-flash'),
-        'timeout' => (float) env('RUVICODE_TIMEOUT', 45),
-        'ca_bundle' => env('RUVICODE_CA_BUNDLE', base_path('resources/certificates/cacert.pem')),
+    'ninerouter' => [
+        'base_url' => env('NINEROUTER_BASE_URL'),
+        'api_key' => env('NINEROUTER_API_KEY'),
+        'model' => env('NINEROUTER_MODEL'),
+        'timeout' => (float) env('NINEROUTER_TIMEOUT', 45),
+        'ca_bundle' => env('NINEROUTER_CA_BUNDLE', base_path('resources/certificates/cacert.pem')),
     ],
 
     'inaturalist' => [

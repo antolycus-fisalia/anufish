@@ -16,7 +16,7 @@ class ArticleImage implements ValidationRule
             return;
         }
         $size = @getimagesize($value->getRealPath());
-        if (! is_array($size) || ! in_array($size[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG], true)) {
+        if (! is_array($size) || ! in_array($size[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) {
             $fail(__('article.validation.image_invalid'));
 
             return;

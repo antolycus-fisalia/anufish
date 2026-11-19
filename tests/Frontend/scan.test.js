@@ -61,6 +61,28 @@ function mockObjectUrls() {
     };
 }
 
+test('WebP files can be selected and previewed while oversized files are rejected', async () => {
+    const urls = mockObjectUrls();
+    try {
+        const component = scanUpload();
+        component.canDecodeImage = async () => true;
+        const file = createFile('fish.webp', 'image/webp');
+        const input = createInput(file);
+        await component.handleFile({ target: input });
+        assert.equal(component.hasFile, true);
+        assert.equal(component.selectedFile, file);
+        assert.equal(component.previewUrl, 'blob:fish.webp');
+        assert.equal(component.errorMessage, '');
+
+        input.files = [{ ...file, size: 5 * 1024 * 1024 + 1 }];
+        await component.handleFile({ target: input });
+        assert.equal(component.hasFile, false);
+        assert.equal(component.errorMessage, 'size-error');
+    } finally {
+        urls.restore();
+    }
+});
+
 test('stale successful decode cannot revive a file replaced by invalid input', async () => {
     const urls = mockObjectUrls();
 

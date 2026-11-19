@@ -7,41 +7,38 @@ export function initArticleForm() {
 
     const form = root.querySelector('[data-article-form-element]');
     const imageInput = root.querySelector('[data-article-image-input]');
+    const clearImage = root.querySelector('[data-article-image-clear]');
     const preview = root.querySelector('[data-article-image-preview]');
     const previewImage = root.querySelector('[data-article-image-preview-image]');
     const message = root.querySelector('[data-article-form-message]');
+    const messageText = root.querySelector('[data-article-form-message-text]');
+    const successLink = root.querySelector('[data-article-form-success-link]');
     const submitButton = root.querySelector('[data-article-submit]');
     const submitLabel = root.querySelector('[data-submit-label]');
     const submitLoading = root.querySelector('[data-submit-loading]');
 
     const mode = root.dataset.mode;
-    const articleId = root.dataset.articleId ?? null;
+    const imageLimit = Number(root.dataset.imageMaxBytes);
 
     let submitting = false;
     let articleReady = mode !== 'edit';
     let previewUrl = null;
-
-    const csrfToken = document
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
+    let storedImage = null;
+    let imageError = null;
 
     function clearMessage() {
         message.hidden = true;
-        message.textContent = '';
+        messageText.textContent = '';
         message.removeAttribute('data-state');
-        message.removeAttribute('role');
+        successLink.hidden = true;
     }
 
     function showMessage(state, text) {
         message.dataset.state = state;
-        message.textContent = text;
+        messageText.setAttribute('role', state === 'error' ? 'alert' : 'status');
         message.hidden = false;
-
-        if (state === 'error') {
-            message.setAttribute('role', 'alert');
-        } else {
-            message.removeAttribute('role');
-        }
+        messageText.textContent = text;
+        successLink.hidden = state !== 'success';
     }
 
     function clearFieldError(name) {
@@ -50,7 +47,12 @@ export function initArticleForm() {
 
         if (field instanceof HTMLElement) {
             field.removeAttribute('aria-invalid');
-            field.removeAttribute('aria-describedby');
+
+            if (field === imageInput) {
+                field.setAttribute('aria-describedby', 'article-image-help');
+            } else {
+                field.removeAttribute('aria-describedby');
+            }
         }
 
         if (error) {
@@ -79,7 +81,7 @@ export function initArticleForm() {
         error.hidden = false;
 
         field.setAttribute('aria-invalid', 'true');
-        field.setAttribute('aria-describedby', errorId);
+        field.setAttribute('aria-describedby', field === imageInput ? `${errorId} article-image-help` : errorId);
     }
 
     function focusFirstInvalidField() {
@@ -106,63 +108,62 @@ export function initArticleForm() {
         previewImage.removeAttribute('src');
     }
 
-    function showStoredImage(path) {
-        if (!path) {
-            return;
-        }
-
-        previewImage.src = `/storage/${path.replace(/^\/+/, '')}`;
-        preview.hidden = false;
-    }
-
-    function handleImageChange() {
+    async function handleImageChange() {
         clearFieldError('gambar');
-        clearPreviewUrl();
-
-        const file = imageInput.files?.[0];
-
-        if (!file) {
-            hidePreview();
-            return;
-        }
-
-        if (!['image/jpeg', 'image/png'].includes(file.type)) {
-            imageInput.value = '';
-            showFieldError('gambar', root.dataset.errorImageFormat);
-            hidePreview();
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            imageInput.value = '';
-            showFieldError('gambar', root.dataset.errorImageMax);
-            hidePreview();
-            return;
-        }
-
-        previewUrl = URL.createObjectURL(file);
-        previewImage.src = previewUrl;
-        preview.hidden = false;
-    }
-
-    previewImage.addEventListener('error', () => {
-        if (!previewImage.src.startsWith('blob:')) {
-            return;
-        }
-
-        imageInput.value = '';
         hidePreview();
 
-        showFieldError(
-            'gambar',
-            root.dataset.errorImageInvalid,
-        );
-    });
+        const file = imageInput.files?.[0];
+        clearImage.hidden = !file;
+        imageError = null;
+
+        if (!file) {
+            if (storedImage) {
+                previewImage.src = `/storage/${storedImage}`;
+                preview.hidden = false;
+            }
+            return;
+        }
+
+        if (!/\.(jpeg|jpg|png|webp)$/i.test(file.name)) {
+            imageError = root.dataset.errorImageFormat;
+        } else if (file.size > imageLimit) {
+            imageError = root.dataset.errorImageMax;
+        }
+
+        if (imageError) {
+            showFieldError('gambar', imageError);
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        previewUrl = url;
+        const image = new Image();
+        image.src = url;
+
+        try {
+            await image.decode();
+            if (previewUrl === url) {
+                previewImage.src = url;
+                preview.hidden = false;
+            }
+        } catch {
+            if (previewUrl === url) {
+                hidePreview();
+                imageError = root.dataset.errorImageInvalid;
+                showFieldError('gambar', imageError);
+            }
+        }
+    }
 
     imageInput.addEventListener('change', handleImageChange);
+    clearImage.addEventListener('click', () => {
+        imageInput.value = '';
+        handleImageChange();
+        imageInput.focus();
+    });
 
     async function loadArticle() {
-        if (mode !== 'edit' || !articleId) {
+        if (mode !== 'edit') {
             return;
         }
 
@@ -173,19 +174,18 @@ export function initArticleForm() {
         form.setAttribute('aria-busy', 'true');
 
         try {
-            const response = await fetch(`/artikel/${articleId}`, {
+            const response = await fetch(root.dataset.loadUrl, {
                 headers: {
                     Accept: 'application/json',
                 },
                 credentials: 'same-origin',
             });
 
-            const payload = await response.json();
+            const payload = await response.json().catch(() => null);
 
-            if (!response.ok) {
-                throw new Error(
-                    payload.message || root.dataset.errorLoad,
-                );
+            if (!response.ok || !payload?.data) {
+                showMessage('error', payload?.message || root.dataset.errorLoad);
+                return;
             }
 
             const article = payload.data;
@@ -194,17 +194,13 @@ export function initArticleForm() {
             form.elements.kategori.value = article.kategori ?? '';
             form.elements.isi.value = article.isi ?? '';
 
-            showStoredImage(article.gambar);
+            storedImage = article.gambar;
+            handleImageChange();
             articleReady = true;
             fields.forEach((field) => { field.disabled = false; });
             submitButton.disabled = false;
-        } catch (error) {
-            showMessage(
-                'error',
-                error instanceof Error
-                    ? error.message
-                    : root.dataset.errorLoad,
-            );
+        } catch {
+            showMessage('error', root.dataset.errorLoad);
         } finally {
             form.removeAttribute('aria-busy');
         }
@@ -220,34 +216,33 @@ export function initArticleForm() {
         clearMessage();
         clearFieldErrors();
 
-        const formData = new FormData(form);
-
-        let endpoint = '/artikel';
-
-        if (mode === 'edit' && articleId) {
-            endpoint = `/artikel/${articleId}`;
-            formData.append('_method', 'PUT');
+        if (imageError) {
+            showFieldError('gambar', imageError);
+            imageInput.focus();
+            return;
         }
 
         setSubmitting(true);
 
         try {
-            const response = await fetch(endpoint, {
+            const response = await fetch(form.action, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    ...(csrfToken
-                        ? { 'X-CSRF-TOKEN': csrfToken }
-                        : {}),
                 },
                 credentials: 'same-origin',
-                body: formData,
+                body: new FormData(form),
             });
 
-            const payload = await response.json();
+            if (response.status === 413) {
+                showMessage('error', root.dataset.errorRequestSize);
+                return;
+            }
 
-            if (response.status === 422) {
-                Object.entries(payload.errors ?? {}).forEach(
+            const payload = await response.json().catch(() => null);
+
+            if (response.status === 422 && payload?.errors) {
+                Object.entries(payload.errors).forEach(
                     ([name, errors]) => {
                         const firstError = Array.isArray(errors)
                             ? errors[0]
@@ -261,25 +256,23 @@ export function initArticleForm() {
                 return;
             }
 
-            if (!response.ok) {
-                throw new Error(
-                    payload.message || root.dataset.errorSubmit,
-                );
+            if (!response.ok || !payload?.data) {
+                showMessage('error', payload?.message || root.dataset.errorSubmit);
+                return;
             }
 
-            showMessage('success', payload.message);
+            showMessage('success', mode === 'create' ? root.dataset.successCreate : payload.message);
 
             if (mode === 'create') {
                 form.reset();
-                hidePreview();
+            } else {
+                form.elements.isi.value = payload.data.isi;
+                storedImage = payload.data.gambar;
+                imageInput.value = '';
             }
-        } catch (error) {
-            showMessage(
-                'error',
-                error instanceof Error
-                    ? error.message
-                    : root.dataset.errorSubmit,
-            );
+            handleImageChange();
+        } catch {
+            showMessage('error', root.dataset.errorSubmit);
         } finally {
             setSubmitting(false);
         }

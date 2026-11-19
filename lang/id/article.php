@@ -57,7 +57,18 @@ return [
         'image_dimensions' => 'Resolusi gambar artikel maksimal 8 megapiksel.',
         'image_resources' => 'Gambar terlalu besar untuk diproses. Silakan kurangi resolusinya.',
         'image_max' => 'Ukuran gambar maksimal 5 MB.',
-        'image_format' => 'Format gambar harus JPG, JPEG, atau PNG.',
+        'image_server_max' => 'Ukuran gambar melebihi batas unggahan server. Coba gambar yang lebih kecil.',
+        'image_upload_failed' => 'Gambar artikel gagal diunggah. Silakan pilih ulang gambar.',
+        'image_format' => 'Format gambar harus JPG, JPEG, PNG, atau WebP.',
+    ],
+
+    'form' => [
+        'image_help' => 'Format JPG, JPEG, PNG, atau WebP. Maksimal :limit.',
+        'image_max' => 'Ukuran gambar maksimal :limit.',
+        'request_size' => 'Kiriman melebihi batas ukuran server. Coba gambar yang lebih kecil.',
+        'clear_image_selection' => 'Hapus pilihan gambar',
+        'view_my_articles' => 'Lihat Artikel Saya',
+        'submitted' => 'Artikel berhasil dibuat dan menunggu moderasi.',
     ],
 
     'public' => [
